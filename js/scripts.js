@@ -260,6 +260,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         selectedStages.add(stageNum);
                     }
                     this.classList.toggle('selected');
+                    
+                    // Show popup when stages are selected in Mix & Match mode
+                    if (selectedStages.size > 0) {
+                        const selectedCount = selectedStages.size;
+                        const stageNames = getSelectedStageNames();
+                        showServicePopup(`Mix & Match - ${selectedCount} Stage${selectedCount !== 1 ? 's' : ''}`, stageNames);
+                    }
                 }
                 updateJourneyInfo(this);
             });
@@ -301,6 +308,11 @@ function selectServiceMode(mode) {
         });
         if (modeDisplay) modeDisplay.textContent = '✓ Complete Journey';
         if (descEl) descEl.textContent = 'You\'re getting all stages handled by ReWall. Hover over any stage to see details.';
+        
+        // Show popup for Complete Package
+        setTimeout(() => {
+            showServicePopup('Complete Package - All 6 Stages');
+        }, 300);
     } else {
         // Custom mode - clear selections
         selectedStages = new Set();
@@ -438,6 +450,64 @@ window.addEventListener('error', function(event) {
 // ===================================
 // LOG INITIALIZATION
 // ===================================
+
+// ===================================
+// SERVICE SELECTION POPUP
+// ===================================
+
+function showServicePopup(title, details = '') {
+    const popup = document.getElementById('service-popup');
+    const summary = document.getElementById('popup-selection-summary');
+    
+    if (popup && summary) {
+        if (details) {
+            summary.innerHTML = `<strong>${title}</strong><br><small>${details}</small>`;
+        } else {
+            summary.textContent = title;
+        }
+        popup.classList.add('active');
+    }
+}
+
+function closeServicePopup() {
+    const popup = document.getElementById('service-popup');
+    if (popup) {
+        popup.classList.remove('active');
+    }
+}
+
+function getSelectedStageNames() {
+    const stageNames = {
+        1: 'Site Planning',
+        2: 'Engineering Design',
+        3: 'Cost Estimate',
+        4: 'Council Consent',
+        5: 'Construction',
+        6: 'Final Sign-Off'
+    };
+    
+    const selected = Array.from(selectedStages)
+        .sort((a, b) => a - b)
+        .map(num => stageNames[num])
+        .join(', ');
+    
+    return `Selected services: ${selected}`;
+}
+
+// Close popup when clicking outside of it
+document.addEventListener('click', function(event) {
+    const popup = document.getElementById('service-popup');
+    if (popup && event.target === popup) {
+        closeServicePopup();
+    }
+});
+
+// Close popup on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeServicePopup();
+    }
+});
 
 console.log('ReWall NZ Website - Initialized Successfully');
 console.log('Version: 1.0');

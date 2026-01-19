@@ -331,6 +331,22 @@
             </div>
         </section>
 
+        <!-- Service Selection Popup Modal -->
+        <div id="service-popup" class="service-popup">
+            <div class="service-popup-content">
+                <button class="popup-close" onclick="closeServicePopup()">×</button>
+                <h3>Ready to Get Started?</h3>
+                <p id="popup-selection-summary" style="font-size: 1.1rem; margin: var(--spacing-md) 0; color: var(--slate);"></p>
+                <p style="color: var(--slate); margin-bottom: var(--spacing-lg);">
+                    Complete the next step by requesting a quote from our team. We'll review your selections and provide a detailed proposal.
+                </p>
+                <div style="display: flex; gap: var(--spacing-md); justify-content: center;">
+                    <button class="btn" onclick="window.location.href='contact.html'">Request a Quote</button>
+                    <button class="btn secondary" onclick="closeServicePopup()">Continue Browsing</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Future Tools -->
         <section class="container">
             <div class="card" style="background: linear-gradient(135deg, var(--soft-blue) 0%, #dbe8f0 100%); border-left: 4px solid var(--teal-accent);">
