@@ -1,0 +1,1 @@
+console.log('ReWall NZ - Website loaded successfully!');
