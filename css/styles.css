@@ -988,38 +988,37 @@ svg.animation line {
     }
 }
 
-/* Positioning each stage in a circle (6 stages) */
-.journey-stage:nth-child(2) { /* Planning - Top */
+/* Positioning each stage in a circle (6 stages) - evenly spaced 60 degrees apart */
+.journey-stage:nth-child(2) { /* Planning - Top (0°) */
     top: 0;
     left: 50%;
     transform: translateX(-50%);
 }
 
-.journey-stage:nth-child(3) { /* Estimate - Top Right */
-    top: 80px;
-    right: 60px;
-    /* Ensure consistent styling across all stages */
+.journey-stage:nth-child(3) { /* Design - Top Right (60°) */
+    top: 130px;
+    right: 35px;
 }
 
-.journey-stage:nth-child(4) { /* Estimate - Bottom Right */
-    bottom: 80px;
-    right: 60px;
+.journey-stage:nth-child(4) { /* Estimate - Bottom Right (120°) */
+    bottom: 130px;
+    right: 35px;
 }
 
-.journey-stage:nth-child(5) { /* Consent - Bottom */
+.journey-stage:nth-child(5) { /* Consent - Bottom (180°) */
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
 }
 
-.journey-stage:nth-child(6) { /* Construction - Bottom Left */
-    bottom: 80px;
-    left: 60px;
+.journey-stage:nth-child(6) { /* Construction - Bottom Left (240°) */
+    bottom: 130px;
+    left: 35px;
 }
 
-.journey-stage:nth-child(7) { /* Sign-off - Top Left */
-    top: 80px;
-    left: 60px;
+.journey-stage:nth-child(7) { /* Sign-off - Top Left (300°) */
+    top: 130px;
+    left: 35px;
 }
 
 /* Connecting line (visual circle path) */
@@ -1035,7 +1034,7 @@ svg.animation line {
     left: 50%;
     transform: translate(-50%, -50%);
     opacity: 0.45;
-    animation: rotateClockwise 20s linear infinite;
+    animation: rotateClockwise 50s linear infinite;
 }
 
 /* Tablet adjustments */
