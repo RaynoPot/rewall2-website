@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A4A4A" stroke-width="3"/>
+  
+  <!-- Calculator/Budget icon -->
+  <!-- Device body -->
+  <rect x="50" y="60" width="100" height="75" rx="4" fill="#5A5A5A" stroke="#2A2A2A" stroke-width="2"/>
+  
+  <!-- Screen -->
+  <rect x="58" y="70" width="84" height="45" fill="#1a1a1a" stroke="#2A2A2A" stroke-width="1" rx="2"/>
+  
+  <!-- Display numbers/values -->
+  <text x="90" y="88" font-family="monospace" font-size="18" font-weight="bold" fill="#4A90A4" text-anchor="middle">$</text>
+  <text x="90" y="108" font-family="monospace" font-size="14" fill="#7CB342" text-anchor="middle">ESTIMATE</text>
+  
+  <!-- Buttons below screen -->
+  <g fill="#4A4A4A" stroke="#2A2A2A" stroke-width="1">
+    <rect x="65" y="122" width="12" height="8" rx="1"/>
+    <rect x="82" y="122" width="12" height="8" rx="1"/>
+    <rect x="99" y="122" width="12" height="8" rx="1"/>
+    <rect x="116" y="122" width="12" height="8" rx="1"/>
+  </g>
+  
+  <!-- Dollar sign accent -->
+  <circle cx="100" cy="150" r="8" fill="#E8B44F" stroke="#2A2A2A" stroke-width="1.5"/>
+  <text x="100" y="154" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2A2A2A" text-anchor="middle">$</text>
+  
+  <!-- Text indicator -->
+  <text x="100" y="170" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2A2A2A" text-anchor="middle" opacity="0.7">ESTIMATE</text>
+</svg>

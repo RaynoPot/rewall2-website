@@ -375,7 +375,7 @@ section.hero h1 {
 }
 
 section.hero .subheadline {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     color: var(--slate);
     margin-bottom: var(--spacing-lg);
     font-weight: 400;
@@ -457,6 +457,13 @@ section.alt-bg {
 .value-card .icon {
     font-size: 3rem;
     margin-bottom: var(--spacing-md);
+}
+
+.value-card .value-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--spacing-md);
+    display: block;
 }
 
 .value-card h3 {
@@ -794,6 +801,306 @@ svg.animation line {
     background-color: var(--teal-accent);
     color: var(--white);
     box-shadow: 0 0 30px rgba(74, 144, 164, 0.4);
+}
+
+/* Service option buttons */
+.service-option-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--soft-blue);
+    color: var(--slate);
+    border: 2px solid var(--teal-accent);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.service-option-btn:hover {
+    background-color: var(--teal-accent);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.2);
+}
+
+.service-option-btn.active {
+    background-color: var(--teal-accent);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+}
+
+/* ===================================
+   JOURNEY CIRCLE - INTERACTIVE DESIGN
+   =================================== */
+
+.journey-circle-container {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto var(--spacing-xxl);
+    height: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.journey-center {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, var(--teal-accent) 0%, #6BA3C0 100%);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 8px 30px rgba(74, 144, 164, 0.3);
+    color: var(--white);
+    text-align: center;
+    padding: var(--spacing-md);
+}
+
+.journey-center h3 {
+    margin: 0 0 var(--spacing-sm);
+    font-size: 1.4rem;
+    color: var(--white);
+}
+
+.journey-center p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.4;
+}
+
+.journey-stage {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 5;
+}
+
+.journey-stage-icon {
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-xs);
+    transition: var(--transition);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.journey-stage-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: var(--transition);
+}
+
+.journey-stage-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--slate);
+    text-align: center;
+    background: var(--white);
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: var(--transition);
+}
+
+.journey-stage:hover .journey-stage-label {
+    background: var(--teal-accent);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.2);
+}
+
+.journey-stage:hover .journey-stage-icon {
+    transform: scale(1.1);
+}
+
+.journey-stage.active .journey-stage-label {
+    background: var(--teal-accent);
+    color: var(--white);
+}
+
+.journey-stage.selected .journey-stage-label {
+    background: var(--teal-accent);
+    color: var(--white);
+    border: 2px solid #2C7A99;
+}
+
+.journey-stage.selected .journey-stage-icon {
+    position: relative;
+}
+
+.journey-stage.selected .journey-stage-icon::after {
+    content: '✓';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 32px;
+    height: 32px;
+    background-color: #7CB342;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-weight: bold;
+    font-size: 18px;
+    border: 3px solid var(--white);
+    box-shadow: 0 2px 8px rgba(124, 179, 66, 0.4);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Positioning each stage in a circle (6 stages) */
+.journey-stage:nth-child(2) { /* Planning - Top */
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.journey-stage:nth-child(3) { /* Design - Top Right */
+    top: 80px;
+    right: 60px;
+}
+
+.journey-stage:nth-child(4) { /* Estimate - Bottom Right */
+    bottom: 80px;
+    right: 60px;
+}
+
+.journey-stage:nth-child(5) { /* Consent - Bottom */
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.journey-stage:nth-child(6) { /* Construction - Bottom Left */
+    bottom: 80px;
+    left: 60px;
+}
+
+.journey-stage:nth-child(7) { /* Sign-off - Top Left */
+    top: 80px;
+    left: 60px;
+}
+
+/* Connecting line (visual circle path) */
+.journey-circle-container::before {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border: 3px dashed var(--border-gray);
+    border-radius: 50%;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+    .journey-circle-container {
+        height: 600px;
+    }
+
+    .journey-stage {
+        width: 120px;
+        height: 120px;
+    }
+
+    .journey-stage-icon {
+        width: 90px;
+        height: 90px;
+    }
+
+    .journey-center {
+        width: 160px;
+        height: 160px;
+    }
+
+    .journey-stage:nth-child(3) {
+        right: 40px;
+    }
+
+    .journey-stage:nth-child(4) {
+        right: 40px;
+    }
+
+    .journey-stage:nth-child(6) {
+        left: 40px;
+    }
+
+    .journey-stage:nth-child(7) {
+        left: 40px;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .journey-circle-container {
+        height: auto;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+        padding: var(--spacing-lg) 0;
+        position: static;
+    }
+
+    .journey-center {
+        grid-column: 1 / -1;
+        position: static;
+        transform: none !important;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto var(--spacing-lg);
+    }
+
+    .journey-stage {
+        position: static !important;
+        transform: none !important;
+        width: auto;
+        height: auto;
+    }
+
+    .journey-stage-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .journey-stage-label {
+        margin-top: var(--spacing-xs);
+    }
+
+    .journey-circle-container::before {
+        display: none;
+    }
 }
 
 /* ===================================

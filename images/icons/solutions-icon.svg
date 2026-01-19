@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A4A4A" stroke-width="3"/>
+  
+  <!-- Circular flow/process wheel -->
+  <!-- Outer ring segments -->
+  <circle cx="100" cy="100" r="65" fill="none" stroke="#4A90A4" stroke-width="2" opacity="0.5"/>
+  
+  <!-- Four segments representing complete circle -->
+  <!-- Segment 1 - Top -->
+  <path d="M 100 35 A 65 65 0 0 1 130 50" fill="none" stroke="#4A90A4" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="117" cy="40" r="4" fill="#4A90A4"/>
+  
+  <!-- Segment 2 - Right -->
+  <path d="M 130 50 A 65 65 0 0 1 150 80" fill="none" stroke="#6BA3C0" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="145" cy="65" r="4" fill="#6BA3C0"/>
+  
+  <!-- Segment 3 - Bottom -->
+  <path d="M 150 80 A 65 65 0 0 1 100 165" fill="none" stroke="#7CB342" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="130" cy="135" r="4" fill="#7CB342"/>
+  
+  <!-- Segment 4 - Left -->
+  <path d="M 100 165 A 65 65 0 0 1 50 50" fill="none" stroke="#E8B44F" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="65" cy="135" r="4" fill="#E8B44F"/>
+  
+  <!-- Center circle -->
+  <circle cx="100" cy="100" r="35" fill="#FFFFFF" stroke="#4A90A4" stroke-width="2"/>
+  
+  <!-- Center checkmark - representing completion/solutions -->
+  <path d="M 85 100 L 95 110 L 115 85" fill="none" stroke="#4A90A4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Inner connecting dots -->
+  <circle cx="100" cy="75" r="2" fill="#4A90A4"/>
+  <circle cx="125" cy="100" r="2" fill="#6BA3C0"/>
+  <circle cx="100" cy="125" r="2" fill="#7CB342"/>
+  <circle cx="75" cy="100" r="2" fill="#E8B44F"/>
+</svg>

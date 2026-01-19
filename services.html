@@ -17,7 +17,7 @@
     <nav class="sidebar">
         <div class="logo">
             <svg viewBox="0 0 150 50" xmlns="http://www.w3.org/2000/svg">
-                <text x="5" y="40" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF">R:Wall</text>
+                <text x="5" y="40" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF" stroke="#4A90A4" stroke-width="2">R:Wall</text>
             </svg>
         </div>
         <ul>
@@ -59,37 +59,86 @@
 
         <!-- Service Circle Diagram -->
         <section class="container">
-            <h2 style="text-align: center; margin-bottom: var(--spacing-xl);">Our Service Model</h2>
-            <p style="text-align: center; max-width: 800px; margin: 0 auto var(--spacing-xl);">
-                ReWall's "Complete the Circle" model gives you flexibility. Engage our full-circle service for end-to-end project delivery, or select specific services based on your needs.
+            <h2 style="text-align: center; margin-bottom: var(--spacing-xl);">Your Complete Journey</h2>
+            <p style="text-align: center; max-width: 800px; margin: 0 auto var(--spacing-lg); font-size: 1.1rem; color: var(--slate);">
+                <strong>Pick One. Pick Many. Pick All.</strong> You're in control.
+            </p>
+            <p style="text-align: center; max-width: 800px; margin: 0 auto var(--spacing-xl); color: var(--slate);">
+                From initial site planning to final sign-off, ReWall guides you through every step. Choose individual services or let us handle the complete journey. Click any stage to learn more.
             </p>
             
-            <div class="circle-diagram">
-                <div class="circle-segment" data-service="project-management">
-                    <div>
-                        <strong>PROJECT<br>MANAGEMENT</strong>
-                    </div>
-                </div>
-                <div class="circle-segment" data-service="engineering" style="top: 50%; left: 50%; margin-left: -60px; margin-top: -60px;">
-                    <div>
-                        <strong>ENGINEERING<br>DESIGN</strong>
-                    </div>
-                </div>
-                <div class="circle-segment" data-service="council" style="top: 50%; right: 0;">
-                    <div>
-                        <strong>COUNCIL<br>SUBMISSIONS</strong>
-                    </div>
-                </div>
-                <div class="circle-segment" data-service="construction" style="bottom: 0; left: 50%; margin-left: -60px;">
-                    <div>
-                        <strong>CONSTRUCTION<br>OVERSIGHT</strong>
-                    </div>
-                </div>
+            <!-- Service Options -->
+            <div style="display: flex; gap: var(--spacing-md); justify-content: center; flex-wrap: wrap; margin-bottom: var(--spacing-lg);">
+                <button class="service-option-btn active" onclick="selectServiceMode('all')" data-mode="all">
+                    ✓ Complete Package
+                </button>
+                <button class="service-option-btn" onclick="selectServiceMode('custom')" data-mode="custom">
+                    ✓ À La Carte
+                </button>
             </div>
             
-            <p style="text-align: center; color: var(--slate); margin-top: var(--spacing-xl);">
-                Click any segment above to learn more
+            <p style="text-align: center; max-width: 700px; margin: 0 auto var(--spacing-xl); font-size: 0.95rem; color: var(--slate); line-height: 1.6;">
+                <strong>Complete Package:</strong> Leave it to us—we'll guide your project through every stage from planning to sign-off.
+                <br><br>
+                <strong>À La Carte:</strong> Click the stages below to select exactly which services you need. Mix and match to fit your timeline and budget.
             </p>
+            
+            <div class="journey-circle-container">
+                <!-- Center info box -->
+                <div class="journey-center">
+                    <div id="service-mode-display" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 8px;">✓ Complete Journey</div>
+                    <h3 id="stage-title">Complete the Circle</h3>
+                    <p id="stage-description" style="font-size: 0.8rem;">Hover over any stage to learn more, or switch to À La Carte mode to select specific stages</p>
+                </div>
+                
+                <!-- Stage 1: Planning -->
+                <div class="journey-stage" data-stage="1" data-title="Site Planning" data-description="We assess your site, measure dimensions, evaluate soil conditions, and identify opportunities. Our team creates an initial scope of work and timeline.">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-planning.svg" alt="Site Planning" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Site Planning</div>
+                </div>
+                
+                <!-- Stage 2: Design -->
+                <div class="journey-stage" data-stage="2" data-title="Engineering Design" data-description="Our Nemean-backed engineers create detailed designs, perform structural calculations, and produce technical drawings. All designs meet local building codes.">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-design.svg" alt="Engineering Design" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Design</div>
+                </div>
+                
+                <!-- Stage 3: Estimate -->
+                <div class="journey-stage" data-stage="3" data-title="Cost Estimate" data-description="Based on the design, we provide a detailed cost estimate including materials, labor, and timeline. We explain every line item so you know what you're paying for.">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-estimate.svg" alt="Cost Estimate" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Estimate</div>
+                </div>
+                
+                <!-- Stage 4: Consent -->
+                <div class="journey-stage" data-stage="4" data-title="Council Consent" data-description="We handle all council submissions, resource consents, and building permits. Our experience ensures smooth approvals and minimal delays.">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-consent.svg" alt="Council Consent" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Consent</div>
+                </div>
+                
+                <!-- Stage 5: Construction -->
+                <div class="journey-stage" data-stage="5" data-title="Construction" data-description="Our trusted construction partners execute the project with quality and safety. We provide oversight, inspections, and regular progress updates throughout.">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-construction.svg" alt="Construction" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Construction</div>
+                </div>
+                
+                <!-- Stage 6: Sign-Off -->
+                <div class="journey-stage" data-stage="6" data-title="Final Sign-Off" data-description="Once complete, we conduct final inspections, obtain sign-offs from authorities, and hand over the project to you with all documentation and warranties.">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-signoff.svg" alt="Final Sign-Off" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Sign-Off</div>
+                </div>
+            </div>
         </section>
 
         <!-- Full-Service Solutions -->

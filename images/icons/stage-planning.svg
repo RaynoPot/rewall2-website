@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A4A4A" stroke-width="3"/>
+  
+  <!-- Map/Location representation -->
+  <!-- Map grid -->
+  <g stroke="#4A90A4" stroke-width="1.5" opacity="0.7">
+    <line x1="55" y1="70" x2="145" y2="70"/>
+    <line x1="55" y1="90" x2="145" y2="90"/>
+    <line x1="55" y1="110" x2="145" y2="110"/>
+    <line x1="55" y1="130" x2="145" y2="130"/>
+    <line x1="70" y1="55" x2="70" y2="140"/>
+    <line x1="100" y1="55" x2="100" y2="140"/>
+    <line x1="130" y1="55" x2="130" y2="140"/>
+  </g>
+  
+  <!-- Pin location marker -->
+  <circle cx="85" cy="85" r="8" fill="#E8B44F" stroke="#2A2A2A" stroke-width="2"/>
+  <circle cx="85" cy="85" r="5" fill="#FFC107" stroke="none"/>
+  
+  <!-- Second location marker -->
+  <circle cx="130" cy="110" r="6" fill="#E8B44F" stroke="#2A2A2A" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- Text indicator -->
+  <text x="100" y="155" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2A2A2A" text-anchor="middle" opacity="0.7">SITE PLAN</text>
+</svg>

@@ -219,8 +219,12 @@ document.addEventListener('DOMContentLoaded', animateOnScroll);
 // CIRCLE DIAGRAM INTERACTION (SERVICES PAGE)
 // ===================================
 
+let currentServiceMode = 'all'; // 'all' or 'custom'
+let selectedStages = new Set([1, 2, 3, 4, 5, 6]); // All selected by default
+
 document.addEventListener('DOMContentLoaded', function() {
     const circleSegments = document.querySelectorAll('.circle-segment');
+    const journeyStages = document.querySelectorAll('.journey-stage');
     
     if (circleSegments.length > 0) {
         circleSegments.forEach(segment => {
@@ -242,7 +246,99 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Journey circle interactive stages
+    if (journeyStages.length > 0) {
+        journeyStages.forEach(stage => {
+            stage.addEventListener('click', function() {
+                // Toggle selection in custom mode
+                if (currentServiceMode === 'custom') {
+                    const stageNum = parseInt(this.getAttribute('data-stage'));
+                    if (selectedStages.has(stageNum)) {
+                        selectedStages.delete(stageNum);
+                    } else {
+                        selectedStages.add(stageNum);
+                    }
+                    this.classList.toggle('selected');
+                }
+                updateJourneyInfo(this);
+            });
+
+            stage.addEventListener('mouseenter', function() {
+                updateJourneyInfo(this);
+            });
+        });
+
+        // Update center info on first load
+        if (journeyStages.length > 0) {
+            updateJourneyInfo(journeyStages[0]);
+        }
+    }
 });
+
+function selectServiceMode(mode) {
+    currentServiceMode = mode;
+    const buttons = document.querySelectorAll('.service-option-btn');
+    const journeyStages = document.querySelectorAll('.journey-stage');
+    const modeDisplay = document.getElementById('service-mode-display');
+    const descEl = document.getElementById('stage-description');
+    
+    // Update button states
+    buttons.forEach(btn => {
+        if (btn.getAttribute('data-mode') === mode) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Reset or maintain selections
+    if (mode === 'all') {
+        // Select all stages
+        selectedStages = new Set([1, 2, 3, 4, 5, 6]);
+        journeyStages.forEach(stage => {
+            stage.classList.add('selected');
+        });
+        if (modeDisplay) modeDisplay.textContent = '✓ Complete Journey';
+        if (descEl) descEl.textContent = 'You\'re getting all stages handled by ReWall. Hover over any stage to see details.';
+    } else {
+        // Custom mode - clear selections
+        selectedStages = new Set();
+        journeyStages.forEach(stage => {
+            stage.classList.remove('selected');
+        });
+        if (modeDisplay) modeDisplay.textContent = '🎯 Pick & Choose';
+        if (descEl) descEl.textContent = 'Click stages below to select the services you need. Green checkmark shows selected stages.';
+    }
+    
+    console.log('Service mode:', mode, 'Selected stages:', Array.from(selectedStages));
+}
+
+function updateJourneyInfo(stageElement) {
+    const title = stageElement.getAttribute('data-title');
+    const description = stageElement.getAttribute('data-description');
+    const stageNum = stageElement.getAttribute('data-stage');
+    
+    // Update center info
+    const titleEl = document.getElementById('stage-title');
+    const descEl = document.getElementById('stage-description');
+    
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = description;
+
+    // Update active state (but only for hover, not click if in custom mode)
+    const allStages = document.querySelectorAll('.journey-stage');
+    allStages.forEach(s => {
+        if (currentServiceMode === 'all') {
+            s.classList.remove('active');
+        }
+    });
+    if (currentServiceMode === 'all') {
+        stageElement.classList.add('active');
+    }
+    
+    console.log('Journey stage:', stageNum, title);
+}
 
 // ===================================
 // CTA BUTTON INTERACTIONS

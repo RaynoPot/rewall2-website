@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A4A4A" stroke-width="3"/>
+  
+  <!-- Blueprint/Technical Drawing -->
+  <!-- Grid background -->
+  <g stroke="#4A90A4" stroke-width="1" opacity="0.3">
+    <line x1="50" y1="80" x2="150" y2="80"/>
+    <line x1="50" y1="95" x2="150" y2="95"/>
+    <line x1="50" y1="110" x2="150" y2="110"/>
+    <line x1="50" y1="125" x2="150" y2="125"/>
+    <line x1="70" y1="60" x2="70" y2="140"/>
+    <line x1="100" y1="60" x2="100" y2="140"/>
+    <line x1="130" y1="60" x2="130" y2="140"/>
+  </g>
+  
+  <!-- Structural element - beam -->
+  <rect x="60" y="85" width="80" height="8" fill="#5A5A5A" stroke="#2A2A2A" stroke-width="2" rx="2"/>
+  
+  <!-- Support columns -->
+  <rect x="70" y="95" width="8" height="35" fill="#6B8E99" stroke="#2A2A2A" stroke-width="1.5"/>
+  <rect x="100" y="95" width="8" height="35" fill="#6B8E99" stroke="#2A2A2A" stroke-width="1.5"/>
+  <rect x="130" y="95" width="8" height="35" fill="#6B8E99" stroke="#2A2A2A" stroke-width="1.5"/>
+  
+  <!-- Foundation -->
+  <rect x="55" y="130" width="90" height="8" fill="#4A7C9E" stroke="#2A2A2A" stroke-width="2" rx="2"/>
+  
+  <!-- Dimension lines and measurements -->
+  <line x1="55" y1="150" x2="145" y2="150" stroke="#4A90A4" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <circle cx="55" cy="150" r="2" fill="#4A90A4"/>
+  <circle cx="145" cy="150" r="2" fill="#4A90A4"/>
+  
+  <!-- Technical details - small circles (bolts/connections) -->
+  <circle cx="75" cy="87" r="2" fill="#E8B44F" stroke="#2A2A2A" stroke-width="0.5"/>
+  <circle cx="104" cy="87" r="2" fill="#E8B44F" stroke="#2A2A2A" stroke-width="0.5"/>
+  <circle cx="133" cy="87" r="2" fill="#E8B44F" stroke="#2A2A2A" stroke-width="0.5"/>
+</svg>

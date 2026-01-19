@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A4A4A" stroke-width="3"/>
+  
+  <!-- Construction/Building site -->
+  <!-- Crane -->
+  <line x1="75" y1="55" x2="75" y2="85" stroke="#5A5A5A" stroke-width="3"/>
+  <line x1="75" y1="60" x2="120" y2="80" stroke="#5A5A5A" stroke-width="2.5"/>
+  <circle cx="120" cy="80" r="3" fill="#E8B44F"/>
+  
+  <!-- Wall construction -->
+  <!-- Foundation -->
+  <rect x="60" y="110" width="80" height="8" fill="#4A7C9E" stroke="#2A2A2A" stroke-width="1.5"/>
+  
+  <!-- Concrete blocks being laid -->
+  <g stroke="#2A2A2A" stroke-width="1.5">
+    <rect x="65" y="95" width="15" height="15" fill="#6B8E99"/>
+    <rect x="85" y="95" width="15" height="15" fill="#6B8E99"/>
+    <rect x="105" y="95" width="15" height="15" fill="#6B8E99"/>
+    
+    <rect x="75" y="82" width="15" height="15" fill="#7A9FB5"/>
+    <rect x="95" y="82" width="15" height="15" fill="#7A9FB5"/>
+  </g>
+  
+  <!-- Equipment - excavator bucket -->
+  <g fill="#5A5A5A" stroke="#2A2A2A" stroke-width="1.5">
+    <rect x="50" y="130" width="20" height="15" rx="2"/>
+  </g>
+  
+  <!-- Safety worker indicator -->
+  <circle cx="130" cy="125" r="4" fill="#E8B44F" stroke="#2A2A2A" stroke-width="1"/>
+  
+  <!-- Text indicator -->
+  <text x="100" y="155" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2A2A2A" text-anchor="middle" opacity="0.7">CONSTRUCTION</text>
+</svg>

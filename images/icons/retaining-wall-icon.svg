@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A4A4A" stroke-width="3"/>
+  
+  <!-- Retaining Wall Structure -->
+  <!-- Left concrete blocks -->
+  <rect x="45" y="65" width="16" height="60" fill="#5A5A5A" stroke="#3A3A3A" stroke-width="1.5"/>
+  <rect x="65" y="65" width="16" height="60" fill="#5A5A5A" stroke="#3A3A3A" stroke-width="1.5"/>
+  <rect x="85" y="65" width="16" height="60" fill="#5A5A5A" stroke="#3A3A3A" stroke-width="1.5"/>
+  
+  <!-- Wood/timber fill pattern -->
+  <rect x="45" y="65" width="56" height="8" fill="#C9A876" stroke="none"/>
+  <line x1="45" y1="75" x2="101" y2="75" stroke="#8B7355" stroke-width="1.5"/>
+  <line x1="45" y1="82" x2="101" y2="82" stroke="#8B7355" stroke-width="1.5"/>
+  <line x1="45" y1="89" x2="101" y2="89" stroke="#8B7355" stroke-width="1.5"/>
+  <line x1="45" y1="96" x2="101" y2="96" stroke="#8B7355" stroke-width="1.5"/>
+  <line x1="45" y1="103" x2="101" y2="103" stroke="#8B7355" stroke-width="1.5"/>
+  <line x1="45" y1="110" x2="101" y2="110" stroke="#8B7355" stroke-width="1.5"/>
+  
+  <!-- Top of wall -->
+  <line x1="45" y1="65" x2="101" y2="65" stroke="#3A3A3A" stroke-width="2"/>
+  
+  <!-- Right soil section -->
+  <path d="M 105 65 L 130 65 L 130 125 L 105 125 Z" fill="#C19A6B" stroke="#8B7355" stroke-width="1.5"/>
+  <!-- Soil dots -->
+  <circle cx="110" cy="75" r="3" fill="#8B7355"/>
+  <circle cx="120" cy="80" r="3" fill="#8B7355"/>
+  <circle cx="115" cy="90" r="3" fill="#8B7355"/>
+  <circle cx="125" cy="95" r="3" fill="#8B7355"/>
+  <circle cx="110" cy="105" r="3" fill="#8B7355"/>
+  <circle cx="122" cy="110" r="3" fill="#8B7355"/>
+  
+  <!-- Ground/grass at base -->
+  <path d="M 40 125 Q 45 115 50 125 Q 55 115 60 125 Q 65 115 70 125 Q 75 115 80 125 Q 85 115 90 125 Q 95 115 100 125 Q 105 115 110 125 Q 115 115 120 125 Q 125 115 130 125 L 130 140 L 40 140 Z" fill="#7CB342" stroke="#558B2F" stroke-width="1.5"/>
+  
+  <!-- Pebbles/rocks on ground -->
+  <circle cx="60" cy="135" r="3" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
+  <circle cx="85" cy="135" r="3" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
+  <circle cx="110" cy="135" r="3" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
+  <circle cx="72" cy="138" r="2.5" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
+  <circle cx="98" cy="138" r="2.5" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
+</svg>
