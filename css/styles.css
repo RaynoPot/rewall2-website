@@ -891,24 +891,29 @@ svg.animation line {
 }
 
 .journey-stage-icon {
-    width: 110px;
-    height: 110px;
+    width: 120px;
+    height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 0;
     transition: var(--transition);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    background: linear-gradient(135deg, #E3F2FD 0%, #B3E5FC 100%);
+    border-radius: 50%;
+    position: relative;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
+    border: 3px solid #89CFF0;
 }
 
 .journey-stage-icon img {
-    width: 100%;
-    height: 100%;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
     transition: var(--transition);
 }
 
 .journey-stage-label {
+    display: none;
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--slate);
@@ -975,6 +980,33 @@ svg.animation line {
     }
 }
 
+@keyframes rotateClockwise {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Animated arrow indicator showing clockwise journey flow */
+.journey-circle-container::before {
+    content: '→';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    color: var(--teal-accent);
+    opacity: 0.15;
+    animation: rotateClockwise 8s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+    font-weight: bold;
+}
+
 /* Positioning each stage in a circle (6 stages) */
 .journey-stage:nth-child(2) { /* Planning - Top */
     top: 0;
@@ -982,9 +1014,10 @@ svg.animation line {
     transform: translateX(-50%);
 }
 
-.journey-stage:nth-child(3) { /* Design - Top Right */
+.journey-stage:nth-child(3) { /* Estimate - Top Right */
     top: 80px;
     right: 60px;
+    /* Ensure consistent styling across all stages */
 }
 
 .journey-stage:nth-child(4) { /* Estimate - Bottom Right */

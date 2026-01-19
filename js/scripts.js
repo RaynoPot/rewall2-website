@@ -307,7 +307,7 @@ function selectServiceMode(mode) {
         journeyStages.forEach(stage => {
             stage.classList.remove('selected');
         });
-        if (modeDisplay) modeDisplay.textContent = '🎯 Pick & Choose';
+        if (modeDisplay) modeDisplay.textContent = '🎯 Mix & Match';
         if (descEl) descEl.textContent = 'Click stages below to select the services you need. Green checkmark shows selected stages.';
     }
     
