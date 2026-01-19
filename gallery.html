@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ReWall Gallery - View our portfolio of completed retaining wall projects from residential to commercial installations.">
+    <meta name="keywords" content="retaining wall projects, portfolio, gallery, completed projects">
+    
+    <meta property="og:title" content="Gallery - ReWall NZ">
+    <meta property="og:description" content="Browse our portfolio of premium retaining wall projects">
+    
+    <title>Gallery - ReWall NZ</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <svg viewBox="0 0 150 50" xmlns="http://www.w3.org/2000/svg">
+                <text x="5" y="40" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF">R:Wall</text>
+            </svg>
+        </div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="blog.html">Blog</a></li>
+        </ul>
+        
+        <div class="divider"></div>
+        
+        <div class="cta-group">
+            <button class="btn" onclick="window.location.href='contact.html'">Request a Quote</button>
+            <button class="btn secondary" onclick="window.location.href='https://databloc.nz'">Plan Your Wall</button>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <ul>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+    </nav>
+
+    <button class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="gallery">
+            <div class="content">
+                <h1>Project Gallery</h1>
+                <p class="subheadline">Premium retaining walls from concept to completion</p>
+            </div>
+        </section>
+
+        <!-- Gallery Grid -->
+        <section class="container">
+            <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-xl); font-size: 1.05rem;">
+                Click any project to view full details
+            </p>
+
+            <div class="gallery-grid grid">
+                <!-- Project 1 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project1.png', 'Cambridge Residential Wall')">
+                    <img src="images/projects/project1.png" alt="Cambridge Residential Wall" loading="lazy">
+                    <div class="project-info">
+                        <h4>Cambridge Residential Wall</h4>
+                        <div class="card-badge">Gravity Wall</div>
+                        <p class="project-description">High-performance retaining solution for residential development in Cambridge's growing market.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project2.png', 'Auckland Commercial Project')">
+                    <img src="images/projects/project2.png" alt="Auckland Commercial Project" loading="lazy">
+                    <div class="project-info">
+                        <h4>Auckland Commercial Project</h4>
+                        <div class="card-badge">MSE Wall</div>
+                        <p class="project-description">Large-scale commercial retaining wall with full engineering certifications and council sign-off.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project3.png', 'Timber Landscape Wall')">
+                    <img src="images/projects/project3.png" alt="Timber Landscape Wall" loading="lazy">
+                    <div class="project-info">
+                        <h4>Timber Landscape Wall</h4>
+                        <div class="card-badge">Timber Wall</div>
+                        <p class="project-description">Aesthetic timber solution for landscape enhancement and soil retention in residential setting.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 4 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project4.png', 'Franklin Terraced Garden')">
+                    <img src="images/projects/project4.png" alt="Franklin Terraced Garden" loading="lazy">
+                    <div class="project-info">
+                        <h4>Franklin Terraced Garden</h4>
+                        <div class="card-badge">Garden Wall</div>
+                        <p class="project-description">Multi-level landscape design with integrated retaining walls for terraced garden effect.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 5 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project5.png', 'Industrial Soil Retention')">
+                    <img src="images/projects/project5.png" alt="Industrial Soil Retention" loading="lazy">
+                    <div class="project-info">
+                        <h4>Industrial Soil Retention</h4>
+                        <div class="card-badge">Concrete Wall</div>
+                        <p class="project-description">Heavy-duty concrete retaining wall for industrial site stabilization and soil management.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 6 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project6.png', 'Waikato Residential Complex')">
+                    <img src="images/projects/project6.png" alt="Waikato Residential Complex" loading="lazy">
+                    <div class="project-info">
+                        <h4>Waikato Residential Complex</h4>
+                        <div class="card-badge">MSE Wall</div>
+                        <p class="project-description">Multi-stage MSE wall installation for residential subdivision in North Waikato.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 7 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project7.png', 'Auckland Waterfront Wall')">
+                    <img src="images/projects/project7.png" alt="Auckland Waterfront Wall" loading="lazy">
+                    <div class="project-info">
+                        <h4>Auckland Waterfront Wall</h4>
+                        <div class="card-badge">Concrete Wall</div>
+                        <p class="project-description">Coastal-resistant concrete retaining wall with specialized marine engineering considerations.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 8 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project8.png', 'Cambridge Farm Terracing')">
+                    <img src="images/projects/project8.png" alt="Cambridge Farm Terracing" loading="lazy">
+                    <div class="project-info">
+                        <h4>Cambridge Farm Terracing</h4>
+                        <div class="card-badge">Gravity Wall</div>
+                        <p class="project-description">Agricultural land stabilization with multi-level gravity retaining walls for farm management.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 9 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project9.png', 'Franklin Estate Development')">
+                    <img src="images/projects/project9.png" alt="Franklin Estate Development" loading="lazy">
+                    <div class="project-info">
+                        <h4>Franklin Estate Development</h4>
+                        <div class="card-badge">Premium Wall</div>
+                        <p class="project-description">High-end residential estate with premium architectural retaining wall design and execution.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+
+                <!-- Project 10 -->
+                <div class="project-card" onclick="openLightbox('images/projects/project10.png', 'Waikato Commercial Park')">
+                    <img src="images/projects/project10.png" alt="Waikato Commercial Park" loading="lazy">
+                    <div class="project-info">
+                        <h4>Waikato Commercial Park</h4>
+                        <div class="card-badge">MSE Wall</div>
+                        <p class="project-description">Large commercial parking area with engineered retaining walls and site stabilization.</p>
+                        <a href="#" class="project-link" onclick="event.stopPropagation();">View Details →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lightbox Modal -->
+        <div id="lightbox" class="lightbox">
+            <div class="lightbox-content">
+                <button class="lightbox-close" onclick="closeLightbox()">×</button>
+                <img id="lightbox-image" src="" alt="">
+                <p id="lightbox-caption" style="color: var(--white); text-align: center; margin-top: var(--spacing-md);">
+                </p>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <section class="alt-bg">
+            <div class="container" style="text-align: center;">
+                <h2>Impressed by Our Work?</h2>
+                <p style="max-width: 600px; margin: var(--spacing-lg) auto;">
+                    Ready to start your retaining wall project? Contact us today for a free consultation and custom quote.
+                </p>
+                <button class="btn" onclick="window.location.href='contact.html'">Request a Quote</button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div>
+                    <h4>About ReWall</h4>
+                    <p>Premium retaining wall solutions with expert engineering, smart digital tools, and trusted construction partners.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="#gallery">Gallery</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="services.html">Full-Service Solutions</a></li>
+                        <li><a href="services.html">Engineering Design</a></li>
+                        <li><a href="services.html">Council Submissions</a></li>
+                        <li><a href="services.html">Construction</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>Email: <a href="mailto:info@databloc.nz">info@databloc.nz</a></li>
+                        <li>Phone: <a href="tel:+64273941127">027 394 1127</a></li>
+                        <li><a href="contact.html">Contact Form</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ReWall NZ. All rights reserved. | <a href="#privacy">Privacy Policy</a></p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="js/scripts.js"></script>
+</body>
+</html>

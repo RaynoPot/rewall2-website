@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact ReWall NZ - Request a quote or ask questions about retaining wall solutions. We serve Cambridge, Auckland, North Waikato, and Franklin.">
+    <meta name="keywords" content="contact rewall, retaining wall quote, contact form">
+    
+    <meta property="og:title" content="Contact - ReWall NZ">
+    <meta property="og:description" content="Get in touch with ReWall NZ for a free consultation">
+    
+    <title>Contact ReWall NZ</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <svg viewBox="0 0 150 50" xmlns="http://www.w3.org/2000/svg">
+                <text x="5" y="40" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF">R:Wall</text>
+            </svg>
+        </div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="blog.html">Blog</a></li>
+        </ul>
+        
+        <div class="divider"></div>
+        
+        <div class="cta-group">
+            <button class="btn" onclick="window.location.href='#contact'">Contact Us</button>
+            <button class="btn secondary" onclick="window.location.href='https://databloc.nz'">Plan Your Wall</button>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <ul>
+            <li><a href="#contact">Contact Form</a></li>
+        </ul>
+    </nav>
+
+    <button class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="contact">
+            <div class="content">
+                <h1>Let's Talk Walls</h1>
+                <p class="subheadline">Get expert advice and a custom quote for your project</p>
+            </div>
+        </section>
+
+        <!-- Contact Content -->
+        <section class="container">
+            <div class="grid grid-2" style="margin-bottom: var(--spacing-xxl);">
+                <!-- Contact Form -->
+                <div>
+                    <h2>Send us a Message</h2>
+                    <p>Fill out the form below and we'll get back to you within 24 hours with next steps and a custom quote.</p>
+                    
+                    <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+                        <input type="hidden" name="form-name" value="contact">
+                        
+                        <!-- Honeypot field -->
+                        <p class="hidden">
+                            <label>Don't fill this out: <input name="bot-field"></label>
+                        </p>
+                        
+                        <label for="name">
+                            Full Name *
+                            <input type="text" id="name" name="name" required>
+                        </label>
+                        
+                        <label for="email">
+                            Email *
+                            <input type="email" id="email" name="email" required>
+                        </label>
+                        
+                        <label for="phone">
+                            Phone Number
+                            <input type="tel" id="phone" name="phone">
+                        </label>
+                        
+                        <label for="company">
+                            Company/Project Name
+                            <input type="text" id="company" name="company">
+                        </label>
+                        
+                        <label for="project-type">
+                            Project Type *
+                            <select id="project-type" name="project-type" required>
+                                <option value="">Select a service...</option>
+                                <option>Full-Service Solution</option>
+                                <option>Engineering Design Only</option>
+                                <option>Council Submission Support</option>
+                                <option>Construction Oversight</option>
+                                <option>Design Consultation</option>
+                                <option>Other</option>
+                            </select>
+                        </label>
+                        
+                        <label for="service-area">
+                            Service Area *
+                            <select id="service-area" name="service-area" required>
+                                <option value="">Select area...</option>
+                                <option>Cambridge</option>
+                                <option>Auckland</option>
+                                <option>North Waikato</option>
+                                <option>Franklin</option>
+                                <option>Other (please specify)</option>
+                            </select>
+                        </label>
+                        
+                        <label for="message">
+                            Message *
+                            <textarea id="message" name="message" required placeholder="Tell us about your project, site conditions, timeline, and any other details..."></textarea>
+                        </label>
+                        
+                        <button type="submit" class="btn">Send Message</button>
+                    </form>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h2>Get In Touch</h2>
+                    
+                    <div class="card" style="margin-bottom: var(--spacing-lg);">
+                        <h3 style="margin-top: 0;">📞 Phone</h3>
+                        <p style="margin: 0;">
+                            <a href="tel:+64273941127" style="font-size: 1.1rem; font-weight: 600;">027 394 1127</a>
+                        </p>
+                        <p style="color: var(--slate); font-size: 0.9rem;">Mon-Fri: 8am-5pm NZST</p>
+                    </div>
+
+                    <div class="card" style="margin-bottom: var(--spacing-lg);">
+                        <h3 style="margin-top: 0;">✉️ Email</h3>
+                        <p style="margin: 0;">
+                            <a href="mailto:info@databloc.nz" style="font-size: 1.1rem; font-weight: 600;">info@databloc.nz</a>
+                        </p>
+                        <p style="color: var(--slate); font-size: 0.9rem;">We aim to respond within 24 hours</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-top: 0;">📍 Service Areas</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--border-gray);">
+                                <strong>Cambridge</strong><br>
+                                <span style="color: var(--slate); font-size: 0.9rem;">Waikato specialist</span>
+                            </li>
+                            <li style="padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--border-gray);">
+                                <strong>Auckland</strong><br>
+                                <span style="color: var(--slate); font-size: 0.9rem;">Metropolitan coverage</span>
+                            </li>
+                            <li style="padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--border-gray);">
+                                <strong>North Waikato</strong><br>
+                                <span style="color: var(--slate); font-size: 0.9rem;">Regional expertise</span>
+                            </li>
+                            <li style="padding: var(--spacing-sm) 0;">
+                                <strong>Franklin</strong><br>
+                                <span style="color: var(--slate); font-size: 0.9rem;">Expanding reach</span>
+                            </li>
+                        </ul>
+                        <p style="color: var(--slate); font-size: 0.85rem; margin-top: var(--spacing-md); margin-bottom: 0;">
+                            <em>Not in our area? Contact us—we work with partners nationwide.</em>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Partner Info -->
+        <section class="alt-bg">
+            <div class="container">
+                <h2 style="text-align: center;">Our Partners</h2>
+                <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-xl);">
+                    ReWall works with trusted partners across the industry. Your inquiry may also involve conversations with:
+                </p>
+                
+                <div class="grid grid-3">
+                    <div class="card">
+                        <h3>🔧 Nemean Engineering</h3>
+                        <p>For engineering design and structural analysis questions.</p>
+                        <a href="https://www.nemean.nz/" target="_blank" rel="noopener">Visit Nemean →</a>
+                    </div>
+                    <div class="card">
+                        <h3>💻 Data Bloc</h3>
+                        <p>For digital planning tools and project visualization.</p>
+                        <a href="https://databloc.nz/" target="_blank" rel="noopener">Visit Data Bloc →</a>
+                    </div>
+                    <div class="card">
+                        <h3>🚜 Fine Way Earthmovers</h3>
+                        <p>For construction planning and scheduling details.</p>
+                        <a href="https://finewayearthmovers.co.nz/" target="_blank" rel="noopener">Visit Fine Way →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="container">
+            <h2 style="text-align: center;">Frequently Asked Questions</h2>
+            
+            <div style="max-width: 800px; margin: 0 auto;">
+                <details style="margin-bottom: var(--spacing-lg); border: 1px solid var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-md);">
+                    <summary style="cursor: pointer; font-weight: 600; color: var(--teal-accent);">
+                        How long does a typical retaining wall project take?
+                    </summary>
+                    <p style="margin-top: var(--spacing-md); color: var(--slate);">
+                        Project timelines vary based on scope and complexity. A simple residential wall may take 6-8 weeks from design to completion, while commercial projects can take 3-6 months depending on council approval requirements and site conditions.
+                    </p>
+                </details>
+
+                <details style="margin-bottom: var(--spacing-lg); border: 1px solid var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-md);">
+                    <summary style="cursor: pointer; font-weight: 600; color: var(--teal-accent);">
+                        Do I need council consent for a retaining wall?
+                    </summary>
+                    <p style="margin-top: var(--spacing-md); color: var(--slate);">
+                        Most retaining walls require resource consent and building consent. The requirements depend on height, location, and local council rules. We handle all compliance and consent documentation as part of our full-service offering.
+                    </p>
+                </details>
+
+                <details style="margin-bottom: var(--spacing-lg); border: 1px solid var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-md);">
+                    <summary style="cursor: pointer; font-weight: 600; color: var(--teal-accent);">
+                        What's the difference between MSE and gravity walls?
+                    </summary>
+                    <p style="margin-top: var(--spacing-md); color: var(--slate);">
+                        Gravity walls rely on their weight to resist soil pressure, while MSE (Mechanically Stabilized Earth) walls use reinforcement layers to improve strength. MSE walls are often more cost-effective for taller structures. We recommend the best solution based on your site conditions.
+                    </p>
+                </details>
+
+                <details style="margin-bottom: var(--spacing-lg); border: 1px solid var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-md);">
+                    <summary style="cursor: pointer; font-weight: 600; color: var(--teal-accent);">
+                        Can I get just engineering design without full-service project management?
+                    </summary>
+                    <p style="margin-top: var(--spacing-md); color: var(--slate);">
+                        Absolutely. Our flexible "à la carte" service model lets you choose exactly what you need. Many builders select engineering design only, then manage construction themselves.
+                    </p>
+                </details>
+
+                <details style="margin-bottom: var(--spacing-lg); border: 1px solid var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-md);">
+                    <summary style="cursor: pointer; font-weight: 600; color: var(--teal-accent);">
+                        How do I get started with a consultation?
+                    </summary>
+                    <p style="margin-top: var(--spacing-md); color: var(--slate);">
+                        Fill out the contact form on this page or call us directly at 027 394 1127. We'll schedule a free initial consultation to assess your project and discuss the best approach.
+                    </p>
+                </details>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div>
+                    <h4>About ReWall</h4>
+                    <p>Premium retaining wall solutions with expert engineering, smart digital tools, and trusted construction partners.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="services.html">Full-Service Solutions</a></li>
+                        <li><a href="services.html">Engineering Design</a></li>
+                        <li><a href="services.html">Council Submissions</a></li>
+                        <li><a href="services.html">Construction</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>Email: <a href="mailto:info@databloc.nz">info@databloc.nz</a></li>
+                        <li>Phone: <a href="tel:+64273941127">027 394 1127</a></li>
+                        <li><a href="#contact">Contact Form</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ReWall NZ. All rights reserved. | <a href="#privacy">Privacy Policy</a></p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="js/scripts.js"></script>
+</body>
+</html>

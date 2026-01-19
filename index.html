@@ -3,13 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ReWall NZ - Premium retaining wall solutions from design to delivery. Complete engineering services for residential, commercial, and industrial projects.">
+    <meta name="keywords" content="retaining walls, engineering, construction, New Zealand, Auckland, Cambridge">
+    
+    <meta property="og:title" content="ReWall NZ - Any wall, anywhere">
+    <meta property="og:description" content="Premium retaining wall solutions from design to delivery">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rewall.nz">
+    
     <title>ReWall NZ - Any wall, anywhere</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <h1>ReWall NZ</h1>
-    <p>Premium retaining wall solutions - Coming Soon!</p>
-    
+    <!-- Navigation Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <svg viewBox="0 0 150 50" xmlns="http://www.w3.org/2000/svg">
+                <text x="5" y="40" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF">R:Wall</text>
+            </svg>
+        </div>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="blog.html">Blog</a></li>
+        </ul>
+        
+        <div class="divider"></div>
+        
+        <div class="cta-group">
+            <button class="btn">Request a Quote</button>
+            <button class="btn secondary">Plan Your Wall</button>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <ul>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hamburger Menu (Mobile) -->
+    <button class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <svg class="hero-animation animation" viewBox="0 0 1200 600" preserveAspectRatio="none">
+                <!-- Random lines that straighten -->
+                <line x1="100" y1="50" x2="100" y2="550" stroke="#1a1a1a" stroke-width="2" style="--rotation: 15deg;"/>
+                <line x1="200" y1="0" x2="220" y2="600" stroke="#1a1a1a" stroke-width="2" style="--rotation: -20deg;"/>
+                <line x1="300" y1="100" x2="280" y2="500" stroke="#1a1a1a" stroke-width="2" style="--rotation: 10deg;"/>
+                <line x1="400" y1="30" x2="400" y2="570" stroke="#1a1a1a" stroke-width="2" style="--rotation: -5deg;"/>
+                <line x1="500" y1="0" x2="500" y2="600" stroke="#1a1a1a" stroke-width="2" style="--rotation: 0deg;"/>
+                <line x1="600" y1="80" x2="580" y2="520" stroke="#1a1a1a" stroke-width="2" style="--rotation: 12deg;"/>
+                <line x1="700" y1="20" x2="700" y2="580" stroke="#1a1a1a" stroke-width="2" style="--rotation: -8deg;"/>
+                <line x1="800" y1="0" x2="820" y2="600" stroke="#1a1a1a" stroke-width="2" style="--rotation: 18deg;"/>
+                <line x1="900" y1="60" x2="880" y2="540" stroke="#1a1a1a" stroke-width="2" style="--rotation: -15deg;"/>
+                <line x1="1000" y1="10" x2="1000" y2="590" stroke="#1a1a1a" stroke-width="2" style="--rotation: 3deg;"/>
+                <line x1="1100" y1="0" x2="1120" y2="600" stroke="#1a1a1a" stroke-width="2" style="--rotation: 22deg;"/>
+            </svg>
+
+            <div class="content">
+                <h1>Re:Wall – any wall, anywhere</h1>
+                <p class="subheadline">Premium retaining wall solutions from design to delivery</p>
+                
+                <div class="cta-container">
+                    <button class="btn" onclick="window.location.href='contact.html'">Request a Quote</button>
+                    <button class="btn secondary" onclick="window.location.href='https://databloc.nz'">Plan Your Wall</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Value Propositions -->
+        <section class="container">
+            <h2 style="text-align: center; margin-bottom: var(--spacing-xl);">Why Choose ReWall</h2>
+            <div class="grid grid-3">
+                <div class="value-card">
+                    <div class="icon">🔧</div>
+                    <h3>Expert Engineering</h3>
+                    <p>Nemean-backed expertise in structural design and engineering analysis for safe, durable walls.</p>
+                </div>
+                <div class="value-card">
+                    <div class="icon">✓</div>
+                    <h3>Complete Solutions</h3>
+                    <p>Full project management from design and council submissions to construction oversight.</p>
+                </div>
+                <div class="value-card">
+                    <div class="icon">💻</div>
+                    <h3>Smart Tools</h3>
+                    <p>Data Bloc digital planning tools for accurate site assessment and project calculations.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Projects -->
+        <section class="alt-bg">
+            <div class="container">
+                <h2 style="text-align: center;">Featured Projects</h2>
+                <div class="grid grid-3">
+                    <div class="project-card">
+                        <img src="images/projects/project1.png" alt="Featured Project 1" loading="lazy">
+                        <div class="project-info">
+                            <h4>Cambridge Residential Wall</h4>
+                            <div class="card-badge">Gravity Wall</div>
+                            <p class="project-description">High-performance retaining solution for residential development.</p>
+                            <a href="gallery.html" class="project-link">View Project →</a>
+                        </div>
+                    </div>
+                    <div class="project-card">
+                        <img src="images/projects/project2.png" alt="Featured Project 2" loading="lazy">
+                        <div class="project-info">
+                            <h4>Auckland Commercial Project</h4>
+                            <div class="card-badge">MSE Wall</div>
+                            <p class="project-description">Large-scale commercial retaining wall with engineering certifications.</p>
+                            <a href="gallery.html" class="project-link">View Project →</a>
+                        </div>
+                    </div>
+                    <div class="project-card">
+                        <img src="images/projects/project3.png" alt="Featured Project 3" loading="lazy">
+                        <div class="project-info">
+                            <h4>Timber Landscape Wall</h4>
+                            <div class="card-badge">Timber Wall</div>
+                            <p class="project-description">Aesthetic timber solution for landscape enhancement and soil retention.</p>
+                            <a href="gallery.html" class="project-link">View Project →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Bar -->
+        <section class="container">
+            <div style="text-align: center; padding: var(--spacing-xl) 0;">
+                <h3 style="margin-bottom: var(--spacing-lg);">Serving New Zealand's North Island</h3>
+                <p style="font-size: 1.1rem; color: var(--slate); margin-bottom: var(--spacing-lg);">
+                    <strong>Service Areas:</strong> Cambridge • Auckland • North Waikato • Franklin
+                </p>
+                <div style="display: flex; gap: var(--spacing-lg); justify-content: center; flex-wrap: wrap; align-items: center;">
+                    <div>
+                        <p style="font-weight: 600; margin: 0;">Engineering Partner</p>
+                        <p style="margin: 0; color: var(--slate);">Nemean</p>
+                    </div>
+                    <div style="width: 1px; height: 40px; background: var(--border-gray);"></div>
+                    <div>
+                        <p style="font-weight: 600; margin: 0;">Technology Partner</p>
+                        <p style="margin: 0; color: var(--slate);">Data Bloc</p>
+                    </div>
+                    <div style="width: 1px; height: 40px; background: var(--border-gray);"></div>
+                    <div>
+                        <p style="font-weight: 600; margin: 0;">Construction Partner</p>
+                        <p style="margin: 0; color: var(--slate);">Fine Way Earthmovers</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div>
+                    <h4>About ReWall</h4>
+                    <p>Premium retaining wall solutions with expert engineering, smart digital tools, and trusted construction partners.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="services.html">Full-Service Solutions</a></li>
+                        <li><a href="services.html">Engineering Design</a></li>
+                        <li><a href="services.html">Council Submissions</a></li>
+                        <li><a href="services.html">Construction</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>Email: <a href="mailto:info@databloc.nz">info@databloc.nz</a></li>
+                        <li>Phone: <a href="tel:+64273941127">027 394 1127</a></li>
+                        <li><a href="contact.html">Contact Form</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ReWall NZ. All rights reserved. | <a href="#privacy">Privacy Policy</a></p>
+            </div>
+        </footer>
+    </main>
+
     <script src="js/scripts.js"></script>
 </body>
 </html>

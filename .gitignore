@@ -1,0 +1,88 @@
+# Git Ignore for ReWall Website
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+*.sublime-project
+*.sublime-workspace
+.netrc
+
+# Node Modules (if using npm/build tools in future)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build & Compiled Files
+dist/
+build/
+*.min.js
+*.min.css
+.cache/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# OS Specific
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Development
+.netlify/
+.vercel/
+node_modules/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Backup Files
+*.bak
+*.backup
+*.orig
+
+# Configuration (Keep local overrides)
+# .netlify/state.json
+
+# IDE Workspace Settings
+.vscode/settings.json
+.vscode/launch.json
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Windows
+desktop.ini
+
+# Any local config files
+local-config.js
+config.local.json
