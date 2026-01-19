@@ -29,7 +29,4 @@
   
   <!-- Safety worker indicator -->
   <circle cx="130" cy="125" r="4" fill="#E8B44F" stroke="#2A2A2A" stroke-width="1"/>
-  
-  <!-- Text indicator -->
-  <text x="100" y="155" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2A2A2A" text-anchor="middle" opacity="0.7">CONSTRUCTION</text>
 </svg>

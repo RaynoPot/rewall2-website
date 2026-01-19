@@ -913,7 +913,6 @@ svg.animation line {
 }
 
 .journey-stage-label {
-    display: none;
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--slate);
@@ -1001,7 +1000,7 @@ svg.animation line {
     font-size: 2.5rem;
     color: var(--teal-accent);
     opacity: 0.15;
-    animation: rotateClockwise 8s linear infinite;
+    animation: rotateClockwise 20s linear infinite;
     pointer-events: none;
     z-index: 1;
     font-weight: bold;

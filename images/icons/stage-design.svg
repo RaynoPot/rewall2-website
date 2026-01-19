@@ -27,7 +27,4 @@
   <line x1="45" y1="130" x2="155" y2="130" stroke="#4A90A4" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.7"/>
   <line x1="45" y1="128" x2="45" y2="132" stroke="#4A90A4" stroke-width="1.5" opacity="0.7"/>
   <line x1="155" y1="128" x2="155" y2="132" stroke="#4A90A4" stroke-width="1.5" opacity="0.7"/>
-  
-  <!-- Text indicator -->
-  <text x="100" y="155" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2A2A2A" text-anchor="middle" opacity="0.7">DESIGN</text>
 </svg>
