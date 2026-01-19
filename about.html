@@ -50,7 +50,10 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="hero" style="min-height: 400px;" id="about">
+        <section class="hero" style="min-height: 400px; position: relative;" id="about">
+            <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 200px; height: 200px; opacity: 0.3;">
+                <img src="images/icons/retaining-wall-icon.svg" alt="Wall Icon" style="width: 100%; height: 100%;">
+            </div>
             <div class="content">
                 <h1>About ReWall</h1>
                 <p class="subheadline">Expert engineering meets practical solutions</p>
@@ -112,22 +115,32 @@
             <h2 style="text-align: center; margin-bottom: var(--spacing-xl);">What Sets Us Apart</h2>
             
             <div class="grid grid-2" style="gap: var(--spacing-lg);">
-                <div class="card" style="border-left: 5px solid var(--teal-accent);">
-                    <h3 style="color: var(--teal-accent); margin-bottom: var(--spacing-md);">Structural Expertise</h3>
-                    <div style="display: grid; gap: var(--spacing-sm);">
-                        <p style="font-size: 0.95rem;">✓ MSE wall systems</p>
-                        <p style="font-size: 0.95rem;">✓ Gravity retaining walls</p>
-                        <p style="font-size: 0.95rem;">✓ Timber & concrete solutions</p>
-                        <p style="font-size: 0.95rem;">✓ Geotechnical analysis</p>
+                <div class="card" style="border-left: 5px solid var(--teal-accent); display: flex; gap: var(--spacing-md);">
+                    <div style="flex-shrink: 0;">
+                        <img src="images/icons/engineering-icon.svg" alt="Engineering" style="width: 60px; height: 60px;">
+                    </div>
+                    <div>
+                        <h3 style="color: var(--teal-accent); margin-top: 0;">Structural Expertise</h3>
+                        <div style="display: grid; gap: var(--spacing-sm);">
+                            <p style="font-size: 0.95rem; margin: 0;">✓ MSE wall systems</p>
+                            <p style="font-size: 0.95rem; margin: 0;">✓ Gravity retaining walls</p>
+                            <p style="font-size: 0.95rem; margin: 0;">✓ Timber & concrete solutions</p>
+                            <p style="font-size: 0.95rem; margin: 0;">✓ Geotechnical analysis</p>
+                        </div>
                     </div>
                 </div>
-                <div class="card" style="border-left: 5px solid var(--teal-accent);">
-                    <h3 style="color: var(--teal-accent); margin-bottom: var(--spacing-md);">Council Excellence</h3>
-                    <div style="display: grid; gap: var(--spacing-sm);">
-                        <p style="font-size: 0.95rem;">✓ Resource consent prep</p>
-                        <p style="font-size: 0.95rem;">✓ Building consent docs</p>
-                        <p style="font-size: 0.95rem;">✓ Authority liaisons</p>
-                        <p style="font-size: 0.95rem;">✓ Compliance certs</p>
+                <div class="card" style="border-left: 5px solid var(--teal-accent); display: flex; gap: var(--spacing-md);">
+                    <div style="flex-shrink: 0;">
+                        <img src="images/icons/tools-icon.svg" alt="Tools" style="width: 60px; height: 60px;">
+                    </div>
+                    <div>
+                        <h3 style="color: var(--teal-accent); margin-top: 0;">Council Excellence</h3>
+                        <div style="display: grid; gap: var(--spacing-sm);">
+                            <p style="font-size: 0.95rem; margin: 0;">✓ Resource consent prep</p>
+                            <p style="font-size: 0.95rem; margin: 0;">✓ Building consent docs</p>
+                            <p style="font-size: 0.95rem; margin: 0;">✓ Authority liaisons</p>
+                            <p style="font-size: 0.95rem; margin: 0;">✓ Compliance certs</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,19 +153,28 @@
                 
                 <div class="grid grid-3" style="gap: var(--spacing-lg);">
                     <div class="card">
-                        <h3 style="color: var(--teal-accent);">🔧 Nemean</h3>
-                        <p><strong>Engineering</strong></p>
-                        <p style="font-size: 0.9rem;">Structural expertise & geotechnical analysis.</p>
+                        <div style="text-align: center; margin-bottom: var(--spacing-md);">
+                            <img src="images/icons/engineering-icon.svg" alt="Engineering" style="width: 70px; height: 70px; margin-bottom: var(--spacing-md);">
+                        </div>
+                        <h3 style="color: var(--teal-accent); text-align: center;">Nemean</h3>
+                        <p style="text-align: center; font-size: 0.9rem;"><strong>Engineering</strong></p>
+                        <p style="font-size: 0.9rem; text-align: center;">Structural expertise & geotechnical analysis.</p>
                     </div>
                     <div class="card">
-                        <h3 style="color: var(--teal-accent);">💻 Data Bloc</h3>
-                        <p><strong>Digital Tools</strong></p>
-                        <p style="font-size: 0.9rem;">Smart planning & precision calculations.</p>
+                        <div style="text-align: center; margin-bottom: var(--spacing-md);">
+                            <img src="images/icons/tools-icon.svg" alt="Tools" style="width: 70px; height: 70px; margin-bottom: var(--spacing-md);">
+                        </div>
+                        <h3 style="color: var(--teal-accent); text-align: center;">Data Bloc</h3>
+                        <p style="text-align: center; font-size: 0.9rem;"><strong>Digital Tools</strong></p>
+                        <p style="font-size: 0.9rem; text-align: center;">Smart planning & precision calculations.</p>
                     </div>
                     <div class="card">
-                        <h3 style="color: var(--teal-accent);">🚜 Fine Way</h3>
-                        <p><strong>Construction</strong></p>
-                        <p style="font-size: 0.9rem;">Quality execution & reliable delivery.</p>
+                        <div style="text-align: center; margin-bottom: var(--spacing-md);">
+                            <img src="images/icons/retaining-wall-icon.svg" alt="Construction" style="width: 70px; height: 70px; margin-bottom: var(--spacing-md);">
+                        </div>
+                        <h3 style="color: var(--teal-accent); text-align: center;">Fine Way</h3>
+                        <p style="text-align: center; font-size: 0.9rem;"><strong>Construction</strong></p>
+                        <p style="font-size: 0.9rem; text-align: center;">Quality execution & reliable delivery.</p>
                     </div>
                 </div>
             </div>

@@ -1,42 +1,54 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <!-- Background Circle -->
-  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A4A4A" stroke-width="3"/>
+  <!-- Circular background -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A5568" stroke-width="3"/>
   
-  <!-- Retaining Wall Structure -->
-  <!-- Left concrete blocks -->
-  <rect x="45" y="65" width="16" height="60" fill="#5A5A5A" stroke="#3A3A3A" stroke-width="1.5"/>
-  <rect x="65" y="65" width="16" height="60" fill="#5A5A5A" stroke="#3A3A3A" stroke-width="1.5"/>
-  <rect x="85" y="65" width="16" height="60" fill="#5A5A5A" stroke="#3A3A3A" stroke-width="1.5"/>
+  <!-- Dashed anchor lines on left -->
+  <line x1="55" y1="65" x2="75" y2="65" stroke="#5A4A3A" stroke-width="2" stroke-dasharray="4,4"/>
+  <line x1="55" y1="85" x2="75" y2="85" stroke="#5A4A3A" stroke-width="2" stroke-dasharray="4,4"/>
+  <line x1="55" y1="105" x2="75" y2="105" stroke="#5A4A3A" stroke-width="2" stroke-dasharray="4,4"/>
+  <line x1="55" y1="125" x2="75" y2="125" stroke="#5A4A3A" stroke-width="2" stroke-dasharray="4,4"/>
   
-  <!-- Wood/timber fill pattern -->
-  <rect x="45" y="65" width="56" height="8" fill="#C9A876" stroke="none"/>
-  <line x1="45" y1="75" x2="101" y2="75" stroke="#8B7355" stroke-width="1.5"/>
-  <line x1="45" y1="82" x2="101" y2="82" stroke="#8B7355" stroke-width="1.5"/>
-  <line x1="45" y1="89" x2="101" y2="89" stroke="#8B7355" stroke-width="1.5"/>
-  <line x1="45" y1="96" x2="101" y2="96" stroke="#8B7355" stroke-width="1.5"/>
-  <line x1="45" y1="103" x2="101" y2="103" stroke="#8B7355" stroke-width="1.5"/>
-  <line x1="45" y1="110" x2="101" y2="110" stroke="#8B7355" stroke-width="1.5"/>
+  <!-- Brick wall structure -->
+  <!-- Bottom row -->
+  <rect x="80" y="115" width="35" height="20" fill="#C9945B" stroke="#5A4A3A" stroke-width="1.5"/>
+  <rect x="117" y="115" width="35" height="20" fill="#D4A574" stroke="#5A4A3A" stroke-width="1.5"/>
   
-  <!-- Top of wall -->
-  <line x1="45" y1="65" x2="101" y2="65" stroke="#3A3A3A" stroke-width="2"/>
+  <!-- Second row -->
+  <rect x="75" y="95" width="35" height="20" fill="#C9945B" stroke="#5A4A3A" stroke-width="1.5"/>
+  <rect x="112" y="95" width="40" height="20" fill="#D4A574" stroke="#5A4A3A" stroke-width="1.5"/>
   
-  <!-- Right soil section -->
-  <path d="M 105 65 L 130 65 L 130 125 L 105 125 Z" fill="#C19A6B" stroke="#8B7355" stroke-width="1.5"/>
-  <!-- Soil dots -->
-  <circle cx="110" cy="75" r="3" fill="#8B7355"/>
-  <circle cx="120" cy="80" r="3" fill="#8B7355"/>
-  <circle cx="115" cy="90" r="3" fill="#8B7355"/>
-  <circle cx="125" cy="95" r="3" fill="#8B7355"/>
-  <circle cx="110" cy="105" r="3" fill="#8B7355"/>
-  <circle cx="122" cy="110" r="3" fill="#8B7355"/>
+  <!-- Third row -->
+  <rect x="80" y="75" width="35" height="20" fill="#C9945B" stroke="#5A4A3A" stroke-width="1.5"/>
+  <rect x="117" y="75" width="35" height="20" fill="#D4A574" stroke="#5A4A3A" stroke-width="1.5"/>
   
-  <!-- Ground/grass at base -->
-  <path d="M 40 125 Q 45 115 50 125 Q 55 115 60 125 Q 65 115 70 125 Q 75 115 80 125 Q 85 115 90 125 Q 95 115 100 125 Q 105 115 110 125 Q 115 115 120 125 Q 125 115 130 125 L 130 140 L 40 140 Z" fill="#7CB342" stroke="#558B2F" stroke-width="1.5"/>
+  <!-- Top row -->
+  <rect x="85" y="55" width="35" height="20" fill="#C9945B" stroke="#5A4A3A" stroke-width="1.5"/>
   
-  <!-- Pebbles/rocks on ground -->
-  <circle cx="60" cy="135" r="3" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
-  <circle cx="85" cy="135" r="3" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
-  <circle cx="110" cy="135" r="3" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
-  <circle cx="72" cy="138" r="2.5" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
-  <circle cx="98" cy="138" r="2.5" fill="#9CCC65" stroke="#7CB342" stroke-width="1"/>
+  <!-- Brick texture dots -->
+  <circle cx="88" cy="62" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="95" cy="60" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="102" cy="63" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="83" cy="82" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="90" cy="80" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="113" cy="82" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="120" cy="80" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="83" cy="102" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="90" cy="100" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="120" cy="102" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="127" cy="100" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="88" cy="122" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="95" cy="120" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  <circle cx="125" cy="122" r="1.5" fill="#8B6F47" opacity="0.4"/>
+  
+  <!-- Concrete/backing on right -->
+  <rect x="152" y="75" width="25" height="60" fill="#D4A574" stroke="#5A4A3A" stroke-width="1.5"/>
+  
+  <!-- Ground/landscaping base -->
+  <path d="M 50 135 Q 75 130 100 132 Q 125 130 150 135 L 150 145 Q 125 140 100 142 Q 75 140 50 145 Z" fill="#7FBA3D" stroke="#5A4A3A" stroke-width="1.5"/>
+  
+  <!-- Ground details (pebbles/stones) -->
+  <circle cx="75" cy="140" r="3.5" fill="#6BA82E" stroke="#5A4A3A" stroke-width="0.5"/>
+  <circle cx="95" cy="142" r="3" fill="#6BA82E" stroke="#5A4A3A" stroke-width="0.5"/>
+  <circle cx="120" cy="141" r="3.5" fill="#6BA82E" stroke="#5A4A3A" stroke-width="0.5"/>
+  <circle cx="135" cy="140" r="2.5" fill="#6BA82E" stroke="#5A4A3A" stroke-width="0.5"/>
 </svg>
