@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A90A4" stroke-width="3"/>
+  
+  <!-- House structure -->
+  <path d="M 100 60 L 140 90 L 140 140 L 60 140 L 60 90 Z" fill="#C9A876" stroke="#4A90A4" stroke-width="2"/>
+  
+  <!-- Roof -->
+  <path d="M 100 55 L 145 90 L 140 90 L 100 60 L 60 90 L 55 90 Z" fill="#8B7355" stroke="#4A90A4" stroke-width="2"/>
+  
+  <!-- Windows -->
+  <rect x="75" y="105" width="15" height="15" fill="#FFFFFF" stroke="#4A90A4" stroke-width="1.5"/>
+  <rect x="110" y="105" width="15" height="15" fill="#FFFFFF" stroke="#4A90A4" stroke-width="1.5"/>
+  
+  <!-- Door -->
+  <rect x="92" y="120" width="16" height="20" fill="#7A5C42" stroke="#4A90A4" stroke-width="1.5"/>
+  
+  <!-- Retaining wall -->
+  <rect x="45" y="145" width="110" height="8" fill="#6A6A6A" stroke="#4A4A4A" stroke-width="1.5"/>
+</svg>

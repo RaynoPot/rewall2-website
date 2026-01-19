@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A90A4" stroke-width="3"/>
+  
+  <!-- Soil layers -->
+  <rect x="40" y="65" width="120" height="20" fill="#8B7355" stroke="#4A90A4" stroke-width="2"/>
+  <rect x="40" y="85" width="120" height="20" fill="#A0826D" stroke="#4A90A4" stroke-width="2"/>
+  <rect x="40" y="105" width="120" height="20" fill="#9B8B7E" stroke="#4A90A4" stroke-width="2"/>
+  <rect x="40" y="125" width="120" height="20" fill="#8B7355" stroke="#4A90A4" stroke-width="2"/>
+  
+  <!-- Soil particles -->
+  <circle cx="55" cy="75" r="2" fill="#6A5544"/>
+  <circle cx="70" cy="72" r="2" fill="#6A5544"/>
+  <circle cx="85" cy="77" r="2" fill="#6A5544"/>
+  <circle cx="60" cy="95" r="2" fill="#8A6A54"/>
+  <circle cx="80" cy="92" r="2" fill="#8A6A54"/>
+  <circle cx="100" cy="97" r="2" fill="#8A6A54"/>
+  <circle cx="65" cy="115" r="2" fill="#7A5A44"/>
+  <circle cx="90" cy="112" r="2" fill="#7A5A44"/>
+  <circle cx="110" cy="117" r="2" fill="#7A5A44"/>
+  
+  <!-- Measurement markers -->
+  <line x1="165" y1="65" x2="175" y2="65" stroke="#4A90A4" stroke-width="2"/>
+  <line x1="165" y1="85" x2="175" y2="85" stroke="#4A90A4" stroke-width="2"/>
+  <line x1="165" y1="105" x2="175" y2="105" stroke="#4A90A4" stroke-width="2"/>
+  <line x1="165" y1="125" x2="175" y2="125" stroke="#4A90A4" stroke-width="2"/>
+  <line x1="170" y1="65" x2="170" y2="145" stroke="#4A90A4" stroke-width="2"/>
+</svg>

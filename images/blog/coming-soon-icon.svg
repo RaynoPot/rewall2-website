@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#89CFF0" stroke="#4A90A4" stroke-width="3"/>
+  
+  <!-- Clock face -->
+  <circle cx="100" cy="100" r="50" fill="#FFFFFF" stroke="#4A90A4" stroke-width="3"/>
+  
+  <!-- Clock numbers -->
+  <text x="100" y="65" text-anchor="middle" font-size="14" fill="#4A90A4" font-weight="bold">12</text>
+  <text x="135" y="107" text-anchor="middle" font-size="14" fill="#4A90A4" font-weight="bold">3</text>
+  <text x="100" y="145" text-anchor="middle" font-size="14" fill="#4A90A4" font-weight="bold">6</text>
+  <text x="65" y="107" text-anchor="middle" font-size="14" fill="#4A90A4" font-weight="bold">9</text>
+  
+  <!-- Clock hands -->
+  <line x1="100" y1="100" x2="100" y2="75" stroke="#2C3E50" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="100" x2="120" y2="110" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Center dot -->
+  <circle cx="100" cy="100" r="4" fill="#4A90A4"/>
+  
+  <!-- Hourglass element -->
+  <path d="M 85 150 L 85 160 L 115 160 L 115 150 L 105 145 L 95 145 Z" fill="#E8F4F8" stroke="#4A90A4" stroke-width="2"/>
+  <path d="M 85 160 L 95 165 L 105 165 L 115 160" fill="#89CFF0" stroke="#4A90A4" stroke-width="1.5"/>
+</svg>
