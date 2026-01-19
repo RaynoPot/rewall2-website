@@ -568,6 +568,11 @@ section.alt-bg .project-card:hover img {
     transform: scale(1.08);
 }
 
+/* Keep icon badges in full color at all times */
+section.alt-bg .project-card div[style*="position: absolute"] img {
+    filter: none !important;
+}
+
 .project-info {
     padding: var(--spacing-lg);
     background-color: var(--white);
