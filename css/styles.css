@@ -694,7 +694,7 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
 
 .blog-card img {
     width: 100%;
-    height: 200px;
+    height: 120px;
     object-fit: cover;
 }
 
