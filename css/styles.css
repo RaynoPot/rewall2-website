@@ -1028,13 +1028,13 @@ svg.animation line {
     position: absolute;
     width: 520px;
     height: 520px;
-    border: 5px solid var(--teal-accent);
+    border: 5px dashed var(--teal-accent);
     border-radius: 50%;
     z-index: 0;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
-    opacity: 0.35;
+    opacity: 0.45;
     animation: rotateClockwise 20s linear infinite;
 }
 
