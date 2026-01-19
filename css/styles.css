@@ -849,8 +849,8 @@ svg.animation line {
 
 .journey-center {
     position: absolute;
-    width: 200px;
-    height: 200px;
+    width: 280px;
+    height: 280px;
     background: linear-gradient(135deg, var(--teal-accent) 0%, #6BA3C0 100%);
     border-radius: 50%;
     display: flex;
@@ -861,20 +861,20 @@ svg.animation line {
     box-shadow: 0 8px 30px rgba(74, 144, 164, 0.3);
     color: var(--white);
     text-align: center;
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
 }
 
 .journey-center h3 {
     margin: 0 0 var(--spacing-sm);
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     color: var(--white);
 }
 
 .journey-center p {
     margin: 0;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.9);
-    line-height: 1.4;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.5;
 }
 
 .journey-stage {
@@ -979,31 +979,19 @@ svg.animation line {
     }
 }
 
-@keyframes rotateClockwise {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* Animated arrow indicator showing clockwise journey flow */
+/* Connecting line (visual circle path) */
 .journey-circle-container::before {
-    content: '→';
+    content: '';
     position: absolute;
-    width: 60px;
-    height: 60px;
+    width: 500px;
+    height: 500px;
+    border: 3px dashed var(--border-gray);
+    border-radius: 50%;
+    z-index: 1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 2.5rem;
-    color: var(--teal-accent);
-    opacity: 0.15;
-    animation: rotateClockwise 20s linear infinite;
-    pointer-events: none;
-    z-index: 1;
-    font-weight: bold;
+    opacity: 0.5;
 }
 
 /* Positioning each stage in a circle (6 stages) */
@@ -1046,13 +1034,13 @@ svg.animation line {
     position: absolute;
     width: 500px;
     height: 500px;
-    border: 3px dashed var(--border-gray);
+    border: 4px solid var(--teal-accent);
     border-radius: 50%;
     z-index: 1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 /* Tablet adjustments */
