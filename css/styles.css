@@ -350,21 +350,23 @@ section {
 }
 
 section.hero {
-    background: linear-gradient(135deg, var(--baby-blue) 0%, rgba(137, 207, 240, 0.8) 100%);
-    padding: var(--spacing-xxl) 0;
+    background: linear-gradient(135deg, #B3E5FC 0%, #81D4FA 50%, #4FC3F7 100%);
+    padding: calc(var(--spacing-xxl) * 1.2) 0;
     position: relative;
     overflow: hidden;
-    min-height: 600px;
+    min-height: 650px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: inset 0 -5px 15px rgba(0, 0, 0, 0.05);
 }
 
 section.hero .content {
     text-align: center;
-    max-width: 800px;
+    max-width: 900px;
     z-index: 2;
     position: relative;
+    padding: var(--spacing-lg) var(--spacing-md);
 }
 
 section.hero h1 {
