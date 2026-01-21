@@ -575,7 +575,7 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     filter: none !important;
 }
 
-/* Partner logos - grayscale effect */
+/* Partner logos - grayscale effect for iframes */
 .partner-logo {
     filter: grayscale(100%);
     transition: all 0.4s ease;
@@ -586,6 +586,10 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     filter: grayscale(0%);
     opacity: 1;
     transform: scale(1.05);
+}
+
+iframe.partner-logo {
+    pointer-events: none;
 }
 
 .project-info {
