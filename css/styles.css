@@ -575,6 +575,19 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     filter: none !important;
 }
 
+/* Partner logos - grayscale effect */
+.partner-logo {
+    filter: grayscale(100%);
+    transition: all 0.4s ease;
+    opacity: 0.7;
+}
+
+.partner-logo:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.05);
+}
+
 .project-info {
     padding: var(--spacing-lg);
     background-color: var(--white);
