@@ -1060,18 +1060,6 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     position: relative;
 }
 
-.stage-checkbox:checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--white);
-    font-size: 20px;
-    font-weight: bold;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
 /* Request Quote Button */
 .btn-request-quote {
     padding: 16px 48px;
