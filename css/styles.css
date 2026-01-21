@@ -1038,26 +1038,18 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     height: 32px;
     cursor: pointer;
     z-index: 10;
+    opacity: 0;
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background: var(--white);
-    border: 3px solid #B0BEC5;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .stage-checkbox:hover {
-    border-color: var(--teal-accent);
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.4);
+    opacity: 0;
 }
 
 .stage-checkbox:checked {
-    background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
-    border-color: #2C7A99;
-    position: relative;
+    opacity: 0;
 }
 
 /* Request Quote Button */
