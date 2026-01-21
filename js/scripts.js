@@ -305,9 +305,15 @@ function selectServiceMode(mode) {
         selectedStages = new Set([1, 2, 3, 4, 5, 6]);
         journeyStages.forEach(stage => {
             stage.classList.add('selected');
+            // Check all checkboxes
+            const checkbox = stage.querySelector('.stage-checkbox-input');
+            if (checkbox) checkbox.checked = true;
         });
         if (modeDisplay) modeDisplay.textContent = '✓ Complete Journey';
         if (descEl) descEl.textContent = 'You\'re getting all stages handled by ReWall. Hover over any stage to see details.';
+        
+        // Enable Request Quote button
+        enableRequestQuoteButton();
         
         // Show popup for Complete Package
         setTimeout(() => {
@@ -318,12 +324,115 @@ function selectServiceMode(mode) {
         selectedStages = new Set();
         journeyStages.forEach(stage => {
             stage.classList.remove('selected');
+            // Uncheck all checkboxes
+            const checkbox = stage.querySelector('.stage-checkbox-input');
+            if (checkbox) checkbox.checked = false;
         });
         if (modeDisplay) modeDisplay.textContent = '🎯 Mix & Match';
-        if (descEl) descEl.textContent = 'Click stages below to select the services you need. Green checkmark shows selected stages.';
+        if (descEl) descEl.textContent = 'Click the checkboxes next to stages to select the services you need. Select at least one service to continue.';
+        
+        // Disable Request Quote button
+        disableRequestQuoteButton();
     }
     
     console.log('Service mode:', mode, 'Selected stages:', Array.from(selectedStages));
+}
+
+function updateStageSelection() {
+    // Get all checked checkboxes
+    const checkedBoxes = document.querySelectorAll('.stage-checkbox-input:checked');
+    selectedStages = new Set();
+    
+    checkedBoxes.forEach(checkbox => {
+        const stage = parseInt(checkbox.getAttribute('data-stage'));
+        selectedStages.add(stage);
+        
+        // Mark the stage as selected
+        const stageElement = document.querySelector(`.journey-stage[data-stage="${stage}"]`);
+        if (stageElement) {
+            stageElement.classList.add('selected');
+        }
+    });
+    
+    // Uncheck unchecked stages
+    document.querySelectorAll('.stage-checkbox-input:not(:checked)').forEach(checkbox => {
+        const stage = parseInt(checkbox.getAttribute('data-stage'));
+        const stageElement = document.querySelector(`.journey-stage[data-stage="${stage}"]`);
+        if (stageElement) {
+            stageElement.classList.remove('selected');
+        }
+    });
+    
+    // Update button state
+    if (selectedStages.size > 0) {
+        enableRequestQuoteButton();
+        updateSelectionMessage();
+    } else {
+        disableRequestQuoteButton();
+        clearSelectionMessage();
+    }
+    
+    console.log('Selected stages:', Array.from(selectedStages));
+}
+
+function enableRequestQuoteButton() {
+    const btn = document.getElementById('request-quote-btn');
+    if (btn) {
+        btn.disabled = false;
+        btn.style.backgroundColor = 'var(--teal-accent)';
+        btn.style.color = 'var(--white)';
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    }
+}
+
+function disableRequestQuoteButton() {
+    const btn = document.getElementById('request-quote-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.style.backgroundColor = 'var(--light-gray)';
+        btn.style.color = '#999';
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+    }
+}
+
+function updateSelectionMessage() {
+    const msgEl = document.getElementById('selection-message');
+    if (msgEl) {
+        const count = selectedStages.size;
+        const total = 6;
+        const percent = Math.round((count / total) * 100);
+        
+        if (count === total) {
+            msgEl.textContent = '✓ All stages selected! Ready to request a quote.';
+            msgEl.style.color = '#7CB342';
+        } else if (count === 1) {
+            msgEl.textContent = `${count} stage selected (${percent}% of full package)`;
+            msgEl.style.color = 'var(--slate)';
+        } else {
+            msgEl.textContent = `${count} stages selected (${percent}% of full package)`;
+            msgEl.style.color = 'var(--slate)';
+        }
+    }
+}
+
+function clearSelectionMessage() {
+    const msgEl = document.getElementById('selection-message');
+    if (msgEl) {
+        msgEl.textContent = 'Select at least one service to enable the quote request button';
+        msgEl.style.color = '#999';
+    }
+}
+
+function handleQuoteRequest() {
+    if (selectedStages.size > 0) {
+        const stageNames = getSelectedStageNames();
+        const summary = stageNames.join(', ');
+        
+        // Show popup with selected services
+        showServicePopup('Your Selected Services', summary);
+    }
 }
 
 function updateJourneyInfo(stageElement) {

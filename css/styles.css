@@ -1569,11 +1569,58 @@ footer a:hover {
     }
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+/* Checkbox styling within journey stages */
+.stage-checkbox-label {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    cursor: pointer;
+}
+
+.stage-checkbox-input {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    accent-color: var(--teal-accent);
+    margin: 0;
+}
+
+.stage-checkbox-input:checked {
+    background-color: var(--teal-accent);
+}
+
+/* Request Quote Button States */
+#request-quote-btn {
+    transition: all 0.3s ease;
+    min-width: 200px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: var(--spacing-sm) var(--spacing-lg);
+}
+
+#request-quote-btn:disabled {
+    background-color: var(--light-gray) !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+    transform: none !important;
+}
+
+#request-quote-btn:not(:disabled) {
+    background-color: var(--teal-accent);
+    color: var(--white);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.2);
+}
+
+#request-quote-btn:not(:disabled):hover {
+    background-color: var(--slate);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(74, 144, 164, 0.3);
+}
+
+#selection-message {
+    transition: all 0.3s ease;
 }
