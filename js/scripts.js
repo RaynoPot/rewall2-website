@@ -225,6 +225,79 @@ let selectedStages = new Set([1, 2, 3, 4, 5, 6]); // All selected by default
 document.addEventListener('DOMContentLoaded', function() {
     const circleSegments = document.querySelectorAll('.circle-segment');
     const journeyStages = document.querySelectorAll('.journey-stage');
+    const stageCheckboxes = document.querySelectorAll('.stage-checkbox');
+    const requestQuoteBtn = document.getElementById('request-quote-btn');
+    
+    // Initialize page with Complete Package selected (all checkboxes checked)
+    if (currentServiceMode === 'all') {
+        stageCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        journeyStages.forEach(stage => {
+            stage.classList.add('selected');
+        });
+        if (requestQuoteBtn) {
+            requestQuoteBtn.classList.remove('disabled');
+            requestQuoteBtn.disabled = false;
+        }
+    }
+    
+    // Function to update Request Quote button state
+    function updateRequestQuoteButton() {
+        const checkedBoxes = document.querySelectorAll('.stage-checkbox:checked');
+        if (requestQuoteBtn) {
+            if (checkedBoxes.length > 0) {
+                requestQuoteBtn.classList.remove('disabled');
+                requestQuoteBtn.disabled = false;
+            } else {
+                requestQuoteBtn.classList.add('disabled');
+                requestQuoteBtn.disabled = true;
+            }
+        }
+    }
+    
+    // Handle checkbox changes
+    if (stageCheckboxes.length > 0) {
+        stageCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function(e) {
+                e.stopPropagation();
+                const stageNum = parseInt(this.getAttribute('data-stage'));
+                const stageElement = this.closest('.journey-stage');
+                
+                if (this.checked) {
+                    selectedStages.add(stageNum);
+                    stageElement.classList.add('selected');
+                } else {
+                    selectedStages.delete(stageNum);
+                    stageElement.classList.remove('selected');
+                }
+                
+                updateRequestQuoteButton();
+                
+                // Update mode if all boxes are checked
+                if (selectedStages.size === 6) {
+                    currentServiceMode = 'all';
+                } else if (selectedStages.size > 0) {
+                    currentServiceMode = 'custom';
+                }
+                
+                console.log('Selected stages:', Array.from(selectedStages));
+            });
+        });
+    }
+    
+    // Request Quote button click handler
+    if (requestQuoteBtn) {
+        requestQuoteBtn.addEventListener('click', function() {
+            if (!this.classList.contains('disabled')) {
+                const selectedCount = selectedStages.size;
+                const stageNames = getSelectedStageNames();
+                alert(`Request Quote - You've selected ${selectedCount} stage(s):\\n${stageNames}\\n\\nYou'll be redirected to the contact form.`);
+                // Optionally redirect to contact page
+                // window.location.href = 'contact.html';
+            }
+        });
+    }
     
     if (circleSegments.length > 0) {
         circleSegments.forEach(segment => {
@@ -250,24 +323,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Journey circle interactive stages
     if (journeyStages.length > 0) {
         journeyStages.forEach(stage => {
-            stage.addEventListener('click', function() {
-                // Toggle selection in custom mode
-                if (currentServiceMode === 'custom') {
-                    const stageNum = parseInt(this.getAttribute('data-stage'));
-                    if (selectedStages.has(stageNum)) {
-                        selectedStages.delete(stageNum);
-                    } else {
-                        selectedStages.add(stageNum);
-                    }
-                    this.classList.toggle('selected');
-                    
-                    // Show popup when stages are selected in Mix & Match mode
-                    if (selectedStages.size > 0) {
-                        const selectedCount = selectedStages.size;
-                        const stageNames = getSelectedStageNames();
-                        showServicePopup(`Mix & Match - ${selectedCount} Stage${selectedCount !== 1 ? 's' : ''}`, stageNames);
-                    }
+            stage.addEventListener('click', function(e) {
+                // Don't toggle if clicking on checkbox
+                if (e.target.classList.contains('stage-checkbox')) {
+                    return;
                 }
+                
+                // Toggle checkbox when clicking on stage
+                const checkbox = this.querySelector('.stage-checkbox');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+                
                 updateJourneyInfo(this);
             });
 
@@ -281,14 +349,19 @@ document.addEventListener('DOMContentLoaded', function() {
             updateJourneyInfo(journeyStages[0]);
         }
     }
+    
+    // Initialize button state
+    updateRequestQuoteButton();
 });
 
 function selectServiceMode(mode) {
     currentServiceMode = mode;
     const buttons = document.querySelectorAll('.service-option-btn');
     const journeyStages = document.querySelectorAll('.journey-stage');
+    const stageCheckboxes = document.querySelectorAll('.stage-checkbox');
     const modeDisplay = document.getElementById('service-mode-display');
     const descEl = document.getElementById('stage-description');
+    const requestQuoteBtn = document.getElementById('request-quote-btn');
     
     // Update button states
     buttons.forEach(btn => {
@@ -301,26 +374,46 @@ function selectServiceMode(mode) {
     
     // Reset or maintain selections
     if (mode === 'all') {
-        // Select all stages
+        // Select all stages and check all checkboxes
         selectedStages = new Set([1, 2, 3, 4, 5, 6]);
         journeyStages.forEach(stage => {
             stage.classList.add('selected');
         });
+        stageCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        
         if (modeDisplay) modeDisplay.textContent = '✓ Complete Journey';
         if (descEl) descEl.textContent = 'You\'re getting all stages handled by ReWall. Hover over any stage to see details.';
+        
+        // Enable Request Quote button
+        if (requestQuoteBtn) {
+            requestQuoteBtn.classList.remove('disabled');
+            requestQuoteBtn.disabled = false;
+        }
         
         // Show popup for Complete Package
         setTimeout(() => {
             showServicePopup('Complete Package - All 6 Stages');
         }, 300);
     } else {
-        // Custom mode - clear selections
+        // Custom mode - clear all selections and uncheck all
         selectedStages = new Set();
         journeyStages.forEach(stage => {
             stage.classList.remove('selected');
         });
+        stageCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
         if (modeDisplay) modeDisplay.textContent = '🎯 Mix & Match';
-        if (descEl) descEl.textContent = 'Click stages below to select the services you need. Green checkmark shows selected stages.';
+        if (descEl) descEl.textContent = 'Click stages or checkboxes to select the services you need. The button will activate once you make a selection.';
+        
+        // Disable Request Quote button
+        if (requestQuoteBtn) {
+            requestQuoteBtn.classList.add('disabled');
+            requestQuoteBtn.disabled = true;
+        }
     }
     
     console.log('Service mode:', mode, 'Selected stages:', Array.from(selectedStages));

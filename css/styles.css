@@ -1029,6 +1029,87 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     }
 }
 
+/* Stage Checkboxes */
+.stage-checkbox {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    z-index: 10;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: var(--white);
+    border: 3px solid #B0BEC5;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.stage-checkbox:hover {
+    border-color: var(--teal-accent);
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.4);
+}
+
+.stage-checkbox:checked {
+    background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
+    border-color: #2C7A99;
+    position: relative;
+}
+
+.stage-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--white);
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Request Quote Button */
+.btn-request-quote {
+    padding: 16px 48px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-request-quote.disabled {
+    background: #B0BEC5;
+    color: #78909C;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-request-quote:not(.disabled) {
+    background: var(--teal-accent);
+    color: var(--white);
+    cursor: pointer;
+}
+
+.btn-request-quote:not(.disabled):hover {
+    background: #2C7A99;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(74, 144, 164, 0.3);
+}
+
+.btn-request-quote:not(.disabled):active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(74, 144, 164, 0.2);
+}
+
 @keyframes rotateClockwise {
     0% {
         transform: translate(-50%, -50%) rotate(0deg);
