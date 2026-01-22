@@ -583,16 +583,23 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     text-decoration: none;
 }
 
-/* Partner logos - brightness effect on hover */
+/* Partner logos */
 .partner-logo {
-    filter: brightness(0.85);
     transition: all 0.4s ease;
-    border-radius: 8px;
 }
 
 .partner-link:hover .partner-logo {
-    filter: brightness(1.15);
-    transform: scale(1.08);
+    filter: brightness(1.1);
+    transform: scale(1.05);
+}
+
+/* Fineway logo - black and white */
+.fineway-bw {
+    filter: grayscale(100%);
+}
+
+.partner-link:hover .fineway-bw {
+    filter: grayscale(100%) brightness(1.1);
 }
 
 .project-info {
