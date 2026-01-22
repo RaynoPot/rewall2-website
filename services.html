@@ -1911,7 +1911,11 @@
                 drawnWalls.forEach(wall => {
                     allBounds.extend(wall.layer.getBounds());
                 });
-                map.fitBounds(allBounds, { padding: [50, 50] });
+                // Use larger padding and limit max zoom to ensure walls are visible with context
+                map.fitBounds(allBounds, { 
+                    padding: [100, 100],
+                    maxZoom: 17  // Prevent over-zooming so the line and surroundings are visible
+                });
                 
                 // Wait for map to update
                 await new Promise(resolve => setTimeout(resolve, 600));
