@@ -11,6 +11,398 @@
     
     <title>Services - ReWall NZ</title>
     <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    
+    <style>
+        /* Quote Builder Styles */
+        .quote-builder {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: var(--spacing-xxl) 0;
+            border-top: 3px solid var(--teal-accent);
+        }
+        
+        .quote-step {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--teal-accent);
+        }
+        
+        .quote-step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--teal-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .step-number.completed {
+            background: #28a745;
+        }
+        
+        .quote-step h3 {
+            margin: 0;
+            color: var(--primary-black);
+        }
+        
+        .quote-step-description {
+            color: var(--slate);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.6;
+        }
+        
+        /* Map Container */
+        #map-container {
+            height: 500px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 2px solid var(--border-gray);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        #site-map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .address-search {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .address-search input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+        }
+        
+        .address-search input:focus {
+            border-color: var(--teal-accent);
+            outline: none;
+        }
+        
+        .address-search button {
+            padding: 12px 24px;
+            background: var(--teal-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .address-search button:hover {
+            background: #3a8a9a;
+        }
+        
+        .map-layer-toggle {
+            display: flex;
+            gap: var(--spacing-xs);
+            background: var(--light-gray);
+            padding: 4px;
+            border-radius: var(--radius-md);
+        }
+        
+        .map-layer-toggle button {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .map-layer-toggle button.active {
+            background: var(--teal-accent);
+            color: white;
+        }
+        
+        .drawing-info {
+            background: #e3f2fd;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+            border-left: 4px solid #2196f3;
+        }
+        
+        .drawing-info h4 {
+            margin: 0 0 var(--spacing-sm) 0;
+            color: #1976d2;
+        }
+        
+        .drawing-info p {
+            margin: 0;
+            color: var(--slate);
+            font-size: 0.95rem;
+        }
+        
+        .drawn-walls-list {
+            margin-top: var(--spacing-md);
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+        }
+        
+        .drawn-walls-list h4 {
+            margin: 0 0 var(--spacing-sm) 0;
+            color: var(--primary-black);
+        }
+        
+        .wall-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm);
+            background: white;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .wall-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .wall-item .wall-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .wall-item .wall-length {
+            font-weight: 600;
+            color: var(--teal-accent);
+        }
+        
+        .wall-item button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .total-length {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--teal-accent);
+            color: white;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Wall Type Selection */
+        .wall-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .wall-type-option {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .wall-type-option:hover {
+            border-color: var(--teal-accent);
+            background: white;
+        }
+        
+        .wall-type-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: var(--spacing-sm);
+            accent-color: var(--teal-accent);
+        }
+        
+        .wall-type-option.selected {
+            border-color: var(--teal-accent);
+            background: #e8f4f5;
+        }
+        
+        .wall-type-option label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .other-input {
+            margin-top: var(--spacing-sm);
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-sm);
+            display: none;
+        }
+        
+        .other-input.visible {
+            display: block;
+        }
+        
+        /* Quote Summary */
+        .quote-summary {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .quote-summary h3 {
+            color: var(--teal-accent);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+        
+        .summary-section {
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .summary-section:last-of-type {
+            border-bottom: none;
+        }
+        
+        .summary-section h4 {
+            color: var(--baby-blue);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .summary-section p, .summary-section ul {
+            margin: 0;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .summary-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .summary-section li {
+            padding: 4px 0;
+        }
+        
+        .submit-quote-btn {
+            width: 100%;
+            padding: 16px 32px;
+            background: var(--teal-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .submit-quote-btn:hover {
+            background: #3a8a9a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 144, 164, 0.4);
+        }
+        
+        .submit-quote-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .optional-badge {
+            display: inline-block;
+            background: #ffc107;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: var(--spacing-sm);
+        }
+        
+        /* Live distance tooltip */
+        .distance-tooltip {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        /* Service Tags */
+        .service-tag {
+            display: inline-block;
+            background: var(--teal-accent);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* Search Marker */
+        .search-marker {
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        /* Leaflet custom styling */
+        .leaflet-draw-toolbar a {
+            background-color: var(--teal-accent) !important;
+        }
+        
+        .leaflet-draw-actions a {
+            background-color: #333 !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation Sidebar -->
@@ -144,9 +536,166 @@
             
             <!-- Request a Quote Button -->
             <div style="text-align: center; margin-top: var(--spacing-xl);">
-                <button id="request-quote-btn" class="btn-request-quote disabled" disabled>
-                    Request a Quote
+                <button id="continue-to-details-btn" class="btn" onclick="scrollToQuoteBuilder()">
+                    Continue to Quote Builder →
                 </button>
+            </div>
+        </section>
+
+        <!-- Quote Builder Section -->
+        <section class="quote-builder" id="quote-builder">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: var(--spacing-xxl);">
+                    <h2>Build Your Quote</h2>
+                    <p style="max-width: 700px; margin: 0 auto; color: var(--slate); font-size: 1.1rem;">
+                        You're almost there! Complete the steps below to get an accurate quote. 
+                        The more details you provide, the more precise your estimate will be.
+                    </p>
+                </div>
+
+                <!-- Step 1: Services Selected (Summary from Circle) -->
+                <div class="quote-step" id="step-services">
+                    <div class="quote-step-header">
+                        <div class="step-number" id="step1-number">1</div>
+                        <h3>Services Selected</h3>
+                    </div>
+                    <p class="quote-step-description">
+                        Your selected services from the journey circle above. 
+                        <a href="#services" style="color: var(--teal-accent);">Go back to modify ↑</a>
+                    </p>
+                    <div id="selected-services-summary" style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm);">
+                        <span style="color: var(--slate); font-style: italic;">No services selected yet. Please select from the circle above.</span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Site Location & Wall Drawing -->
+                <div class="quote-step" id="step-map">
+                    <div class="quote-step-header">
+                        <div class="step-number">2</div>
+                        <h3>Mark Your Retaining Wall Location</h3>
+                        <span class="optional-badge">Optional but Recommended</span>
+                    </div>
+                    <p class="quote-step-description">
+                        🗺️ <strong>Find your property and draw where you need retaining walls.</strong><br>
+                        Search for your address, toggle property boundaries on, then use the drawing tool to mark wall locations. 
+                        This helps us understand your site and provide a more accurate quote. You can draw multiple walls if needed.
+                    </p>
+                    
+                    <div class="map-controls">
+                        <div class="address-search">
+                            <input type="text" id="address-input" placeholder="Enter your New Zealand address...">
+                            <button onclick="searchAddress()">🔍 Search</button>
+                        </div>
+                        <div class="map-layer-toggle">
+                            <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
+                            <button id="satellite-btn" onclick="setMapLayer('satellite')">Satellite</button>
+                        </div>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()" style="width: 18px; height: 18px;">
+                            <span>Property Boundaries</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="contours-toggle" onchange="toggleContours()" style="width: 18px; height: 18px;">
+                            <span>Contours (1m)</span>
+                        </label>
+                    </div>
+                    
+                    <div id="map-container">
+                        <div id="site-map"></div>
+                    </div>
+                    
+                    <div class="drawing-info">
+                        <h4>📏 How to Draw Your Walls</h4>
+                        <p>
+                            <strong>1.</strong> Click the polyline tool (📐) on the left side of the map<br>
+                            <strong>2.</strong> Click on the map to place points along your wall line<br>
+                            <strong>3.</strong> Double-click or click "Finish" to complete the wall<br>
+                            <strong>4.</strong> The distance will be calculated automatically<br>
+                            <strong>5.</strong> Draw additional walls if needed - each will be tracked separately
+                        </p>
+                    </div>
+                    
+                    <div id="drawn-walls-container" class="drawn-walls-list" style="display: none;">
+                        <h4>🧱 Your Marked Walls</h4>
+                        <div id="walls-list"></div>
+                        <div id="total-length-display" class="total-length"></div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Wall Type Selection -->
+                <div class="quote-step" id="step-wall-type">
+                    <div class="quote-step-header">
+                        <div class="step-number">3</div>
+                        <h3>What Type of Retaining Wall?</h3>
+                    </div>
+                    <p class="quote-step-description">
+                        Select the type(s) of retaining wall you're interested in. Not sure? Select multiple options 
+                        and we'll help you choose the best solution for your site. Each type has different cost, 
+                        aesthetic, and structural characteristics.
+                    </p>
+                    
+                    <div class="wall-type-grid">
+                        <div class="wall-type-option" onclick="toggleWallType(this, 'gravity')">
+                            <input type="checkbox" id="wall-gravity" name="wall-type" value="Gravity (Concrete)">
+                            <label for="wall-gravity">Gravity (Concrete)</label>
+                        </div>
+                        <div class="wall-type-option" onclick="toggleWallType(this, 'hybrid')">
+                            <input type="checkbox" id="wall-hybrid" name="wall-type" value="Hybrid">
+                            <label for="wall-hybrid">Hybrid</label>
+                        </div>
+                        <div class="wall-type-option" onclick="toggleWallType(this, 'landscape')">
+                            <input type="checkbox" id="wall-landscape" name="wall-type" value="Landscape">
+                            <label for="wall-landscape">Landscape</label>
+                        </div>
+                        <div class="wall-type-option" onclick="toggleWallType(this, 'mse')">
+                            <input type="checkbox" id="wall-mse" name="wall-type" value="MSE (Mechanically Stabilized Earth)">
+                            <label for="wall-mse">MSE</label>
+                        </div>
+                        <div class="wall-type-option" onclick="toggleWallType(this, 'timber')">
+                            <input type="checkbox" id="wall-timber" name="wall-type" value="Timber">
+                            <label for="wall-timber">Timber</label>
+                        </div>
+                        <div class="wall-type-option" onclick="toggleWallType(this, 'other')">
+                            <input type="checkbox" id="wall-other" name="wall-type" value="Other">
+                            <label for="wall-other">Other</label>
+                        </div>
+                    </div>
+                    <input type="text" id="other-wall-type" class="other-input" placeholder="Please describe the wall type you're looking for...">
+                </div>
+
+                <!-- Quote Summary -->
+                <div class="quote-summary" id="quote-summary">
+                    <h3>📋 Your Quote Request Summary</h3>
+                    
+                    <div class="summary-section">
+                        <h4>Selected Services</h4>
+                        <ul id="summary-services">
+                            <li style="color: rgba(255,255,255,0.6); font-style: italic;">None selected</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h4>Site Location</h4>
+                        <p id="summary-location">Not specified</p>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h4>Wall Measurements</h4>
+                        <p id="summary-walls">No walls drawn</p>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h4>Wall Types</h4>
+                        <p id="summary-wall-types">None selected</p>
+                    </div>
+                    
+                    <button class="submit-quote-btn" id="submit-quote-btn" onclick="submitQuoteRequest()">
+                        🚀 Submit Quote Request
+                    </button>
+                    <p style="text-align: center; margin-top: var(--spacing-md); font-size: 0.9rem; opacity: 0.8;">
+                        We'll get back to you within 24-48 hours with a detailed quote.
+                    </p>
+                </div>
             </div>
         </section>
 
@@ -420,5 +969,492 @@
     </main>
 
     <script src="js/scripts.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    
+    <!-- Quote Builder JavaScript -->
+    <script>
+        // ==========================================
+        // QUOTE BUILDER - Interactive Map & Tools
+        // ==========================================
+        
+        let map;
+        let drawnItems;
+        let drawControl;
+        let currentLayer = 'map';
+        let mapTileLayer;
+        let satelliteTileLayer;
+        let boundaryLayer;
+        let contourLayer;
+        let drawnWalls = [];
+        let wallCounter = 0;
+        let searchMarker;
+        let selectedAddress = '';
+        
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            updateQuoteSummary();
+        });
+        
+        // Scroll to quote builder
+        function scrollToQuoteBuilder() {
+            document.getElementById('quote-builder').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+        
+        // Initialize Leaflet Map
+        function initializeMap() {
+            // Center on New Zealand
+            map = L.map('site-map', {
+                center: [-41.2865, 174.7762], // Wellington, NZ
+                zoom: 6,
+                zoomControl: true
+            });
+            
+            // Map tile layer (OpenStreetMap)
+            mapTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            });
+            
+            // Satellite tile layer (ESRI)
+            satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles © Esri',
+                maxZoom: 19
+            });
+            
+            // Property boundary layer (LINZ NZ Parcels)
+            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=ca2152d1b3db42aaaf38107acba5cf4f/wms', {
+                layers: 'layer-50804', // NZ Primary Parcels
+                format: 'image/png',
+                transparent: true,
+                attribution: '© LINZ CC BY 4.0'
+            });
+            
+            // 1m Contour layer (LINZ NZ Contours)
+            contourLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=ca2152d1b3db42aaaf38107acba5cf4f/wms', {
+                layers: 'layer-50768', // NZ Contours (Topo 1:50k)
+                format: 'image/png',
+                transparent: true,
+                attribution: '© LINZ CC BY 4.0'
+            });
+            
+            // Start with map view
+            mapTileLayer.addTo(map);
+            
+            // Initialize drawing layer
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+            
+            // Add drawing controls
+            drawControl = new L.Control.Draw({
+                edit: {
+                    featureGroup: drawnItems,
+                    remove: true
+                },
+                draw: {
+                    polygon: false,
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false,
+                    marker: false,
+                    polyline: {
+                        shapeOptions: {
+                            color: '#00b894',
+                            weight: 4,
+                            opacity: 0.9
+                        },
+                        metric: true,
+                        showLength: true
+                    }
+                }
+            });
+            map.addControl(drawControl);
+            
+            // Handle draw events
+            map.on('draw:created', function(e) {
+                handleDrawCreated(e);
+            });
+            
+            map.on('draw:deleted', function(e) {
+                handleDrawDeleted(e);
+            });
+            
+            map.on('draw:edited', function(e) {
+                handleDrawEdited(e);
+            });
+            
+            // Add distance tooltip during drawing
+            map.on('draw:drawvertex', function(e) {
+                updateLiveDistance();
+            });
+        }
+        
+        // Handle newly drawn wall
+        function handleDrawCreated(e) {
+            const layer = e.layer;
+            wallCounter++;
+            
+            // Calculate length
+            const latlngs = layer.getLatLngs();
+            const distance = calculateTotalDistance(latlngs);
+            
+            // Store wall data
+            layer.wallId = wallCounter;
+            layer.wallDistance = distance;
+            drawnWalls.push({
+                id: wallCounter,
+                layer: layer,
+                distance: distance,
+                latlngs: latlngs
+            });
+            
+            // Add label
+            layer.bindPopup(`<strong>Wall #${wallCounter}</strong><br>Length: ${formatDistance(distance)}`);
+            
+            // Add to map
+            drawnItems.addLayer(layer);
+            
+            // Update UI
+            updateWallsList();
+            updateQuoteSummary();
+            
+            // Show walls container
+            document.getElementById('drawn-walls-container').style.display = 'block';
+        }
+        
+        // Handle deleted walls
+        function handleDrawDeleted(e) {
+            e.layers.eachLayer(function(layer) {
+                drawnWalls = drawnWalls.filter(w => w.layer !== layer);
+            });
+            updateWallsList();
+            updateQuoteSummary();
+            
+            if (drawnWalls.length === 0) {
+                document.getElementById('drawn-walls-container').style.display = 'none';
+            }
+        }
+        
+        // Handle edited walls
+        function handleDrawEdited(e) {
+            e.layers.eachLayer(function(layer) {
+                const latlngs = layer.getLatLngs();
+                const distance = calculateTotalDistance(latlngs);
+                layer.wallDistance = distance;
+                layer.setPopupContent(`<strong>Wall #${layer.wallId}</strong><br>Length: ${formatDistance(distance)}`);
+                
+                // Update stored data
+                const wall = drawnWalls.find(w => w.layer === layer);
+                if (wall) {
+                    wall.distance = distance;
+                    wall.latlngs = latlngs;
+                }
+            });
+            updateWallsList();
+            updateQuoteSummary();
+        }
+        
+        // Calculate total distance of polyline
+        function calculateTotalDistance(latlngs) {
+            let total = 0;
+            for (let i = 0; i < latlngs.length - 1; i++) {
+                total += latlngs[i].distanceTo(latlngs[i + 1]);
+            }
+            return total;
+        }
+        
+        // Format distance for display
+        function formatDistance(meters) {
+            if (meters >= 1000) {
+                return (meters / 1000).toFixed(2) + ' km';
+            }
+            return meters.toFixed(1) + ' m';
+        }
+        
+        // Update walls list display
+        function updateWallsList() {
+            const container = document.getElementById('walls-list');
+            const totalDisplay = document.getElementById('total-length-display');
+            
+            if (drawnWalls.length === 0) {
+                container.innerHTML = '<p style="color: var(--slate); font-style: italic;">No walls drawn yet</p>';
+                totalDisplay.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            let totalLength = 0;
+            
+            drawnWalls.forEach((wall, index) => {
+                totalLength += wall.distance;
+                html += `
+                    <div class="wall-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--soft-blue); border-radius: 8px; margin-bottom: 8px;">
+                        <span><strong>Wall #${wall.id}</strong></span>
+                        <span style="color: var(--teal-accent); font-weight: 600;">${formatDistance(wall.distance)}</span>
+                        <button onclick="focusOnWall(${wall.id})" style="background: var(--teal-accent); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">View</button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            totalDisplay.innerHTML = `<strong>Total Wall Length:</strong> ${formatDistance(totalLength)}`;
+        }
+        
+        // Focus map on specific wall
+        function focusOnWall(wallId) {
+            const wall = drawnWalls.find(w => w.id === wallId);
+            if (wall) {
+                map.fitBounds(wall.layer.getBounds(), { padding: [50, 50] });
+                wall.layer.openPopup();
+            }
+        }
+        
+        // Address search using Nominatim
+        async function searchAddress() {
+            const input = document.getElementById('address-input');
+            const address = input.value.trim();
+            
+            if (!address) {
+                alert('Please enter an address');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', New Zealand')}&limit=1`);
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    const result = data[0];
+                    const lat = parseFloat(result.lat);
+                    const lon = parseFloat(result.lon);
+                    
+                    // Remove existing marker
+                    if (searchMarker) {
+                        map.removeLayer(searchMarker);
+                    }
+                    
+                    // Add new marker
+                    searchMarker = L.marker([lat, lon], {
+                        icon: L.divIcon({
+                            className: 'search-marker',
+                            html: '📍',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 30]
+                        })
+                    }).addTo(map);
+                    
+                    searchMarker.bindPopup(`<strong>${result.display_name}</strong>`).openPopup();
+                    
+                    // Zoom to location
+                    map.setView([lat, lon], 18);
+                    
+                    // Store address
+                    selectedAddress = result.display_name;
+                    updateQuoteSummary();
+                    
+                } else {
+                    alert('Address not found. Please try a different search term.');
+                }
+            } catch (error) {
+                console.error('Address search error:', error);
+                alert('Error searching for address. Please try again.');
+            }
+        }
+        
+        // Allow Enter key to search
+        document.addEventListener('DOMContentLoaded', function() {
+            const addressInput = document.getElementById('address-input');
+            if (addressInput) {
+                addressInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchAddress();
+                    }
+                });
+            }
+        });
+        
+        // Toggle map layers
+        function setMapLayer(type) {
+            if (type === 'map') {
+                map.removeLayer(satelliteTileLayer);
+                mapTileLayer.addTo(map);
+                document.getElementById('map-btn').classList.add('active');
+                document.getElementById('satellite-btn').classList.remove('active');
+            } else {
+                map.removeLayer(mapTileLayer);
+                satelliteTileLayer.addTo(map);
+                document.getElementById('satellite-btn').classList.add('active');
+                document.getElementById('map-btn').classList.remove('active');
+            }
+            currentLayer = type;
+        }
+        
+        // Toggle property boundaries
+        function toggleBoundaries() {
+            const checkbox = document.getElementById('boundaries-toggle');
+            if (checkbox.checked) {
+                boundaryLayer.addTo(map);
+            } else {
+                map.removeLayer(boundaryLayer);
+            }
+        }
+        
+        // Toggle contour lines
+        function toggleContours() {
+            const checkbox = document.getElementById('contours-toggle');
+            if (checkbox.checked) {
+                contourLayer.addTo(map);
+            } else {
+                map.removeLayer(contourLayer);
+            }
+        }
+        
+        // Wall type selection
+        function toggleWallType(element, type) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            element.classList.toggle('selected', checkbox.checked);
+            
+            // Show/hide "Other" text input
+            if (type === 'other') {
+                const otherInput = document.getElementById('other-wall-type');
+                otherInput.style.display = checkbox.checked ? 'block' : 'none';
+                if (checkbox.checked) {
+                    otherInput.focus();
+                }
+            }
+            
+            updateQuoteSummary();
+        }
+        
+        // Update quote summary
+        function updateQuoteSummary() {
+            // Services
+            const servicesContainer = document.getElementById('summary-services');
+            const selectedServicesSummary = document.getElementById('selected-services-summary');
+            const stages = document.querySelectorAll('.stage-checkbox:checked');
+            const stageNames = {
+                '1': 'Site Planning',
+                '2': 'Engineering Design',
+                '3': 'Cost Estimate',
+                '4': 'Council Consent',
+                '5': 'Construction',
+                '6': 'Final Sign-Off'
+            };
+            
+            if (stages.length > 0) {
+                let servicesHtml = '';
+                let summaryHtml = '';
+                stages.forEach(stage => {
+                    const stageNum = stage.dataset.stage;
+                    const name = stageNames[stageNum] || `Stage ${stageNum}`;
+                    servicesHtml += `<li>${name}</li>`;
+                    summaryHtml += `<span class="service-tag">${name}</span>`;
+                });
+                servicesContainer.innerHTML = servicesHtml;
+                selectedServicesSummary.innerHTML = summaryHtml;
+                
+                // Update step 1 number to show completed
+                const step1Number = document.getElementById('step1-number');
+                if (step1Number) {
+                    step1Number.innerHTML = '✓';
+                    step1Number.style.background = 'var(--teal-accent)';
+                }
+            } else {
+                servicesContainer.innerHTML = '<li style="color: rgba(255,255,255,0.6); font-style: italic;">None selected</li>';
+                selectedServicesSummary.innerHTML = '<span style="color: var(--slate); font-style: italic;">No services selected yet. Please select from the circle above.</span>';
+            }
+            
+            // Location
+            const locationDisplay = document.getElementById('summary-location');
+            if (selectedAddress) {
+                locationDisplay.textContent = selectedAddress;
+            } else {
+                locationDisplay.textContent = 'Not specified';
+            }
+            
+            // Walls
+            const wallsDisplay = document.getElementById('summary-walls');
+            if (drawnWalls.length > 0) {
+                let totalLength = drawnWalls.reduce((sum, w) => sum + w.distance, 0);
+                wallsDisplay.textContent = `${drawnWalls.length} wall(s) marked, Total length: ${formatDistance(totalLength)}`;
+            } else {
+                wallsDisplay.textContent = 'No walls drawn';
+            }
+            
+            // Wall types
+            const wallTypesDisplay = document.getElementById('summary-wall-types');
+            const selectedWallTypes = [];
+            document.querySelectorAll('.wall-type-option input:checked').forEach(input => {
+                selectedWallTypes.push(input.value);
+            });
+            
+            if (document.getElementById('wall-other').checked) {
+                const otherValue = document.getElementById('other-wall-type').value;
+                if (otherValue) {
+                    selectedWallTypes.push(`Other: ${otherValue}`);
+                }
+            }
+            
+            if (selectedWallTypes.length > 0) {
+                wallTypesDisplay.textContent = selectedWallTypes.join(', ');
+            } else {
+                wallTypesDisplay.textContent = 'None selected';
+            }
+        }
+        
+        // Listen for service selection changes
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.stage-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateQuoteSummary);
+            });
+        });
+        
+        // Submit quote request
+        function submitQuoteRequest() {
+            // Gather all data
+            const services = [];
+            document.querySelectorAll('.stage-checkbox:checked').forEach(checkbox => {
+                const stage = checkbox.closest('.journey-stage');
+                services.push(stage.dataset.title);
+            });
+            
+            const wallTypes = [];
+            document.querySelectorAll('.wall-type-option input:checked').forEach(input => {
+                wallTypes.push(input.value);
+            });
+            
+            const otherWallType = document.getElementById('other-wall-type').value;
+            
+            const quoteData = {
+                services: services,
+                location: selectedAddress,
+                walls: drawnWalls.map(w => ({
+                    id: w.id,
+                    length: w.distance,
+                    coordinates: w.latlngs.map(ll => [ll.lat, ll.lng])
+                })),
+                totalWallLength: drawnWalls.reduce((sum, w) => sum + w.distance, 0),
+                wallTypes: wallTypes,
+                otherWallType: otherWallType
+            };
+            
+            // For now, log the data and redirect to contact
+            console.log('Quote Request Data:', quoteData);
+            
+            // Store in sessionStorage for contact page
+            sessionStorage.setItem('quoteRequestData', JSON.stringify(quoteData));
+            
+            // Show confirmation and redirect
+            alert('Thank you! Your quote request has been prepared. You\'ll now be redirected to complete your contact details.');
+            window.location.href = 'contact.html?quote=true';
+        }
+    </script>
 </body>
 </html>
