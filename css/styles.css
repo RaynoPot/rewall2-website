@@ -1309,12 +1309,18 @@ footer {
     color: var(--white);
     padding: var(--spacing-xxl) 0;
     margin-top: var(--spacing-xxl);
+    margin-right: -250px;
+    padding-right: calc(250px + var(--spacing-xl));
+    border-top: 4px solid var(--white);
+    border-right: 4px solid var(--white);
+    position: relative;
 }
 
 footer .container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
+    padding-right: var(--spacing-xl);
 }
 
 .footer-grid {
@@ -1536,6 +1542,12 @@ footer a:hover {
     
     footer {
         margin-right: 0;
+        padding-right: 0;
+        border-right: none;
+    }
+    
+    footer .container {
+        padding-right: var(--spacing-lg);
     }
     
     .footer-bottom {
