@@ -192,6 +192,32 @@ nav.sidebar a:hover::before {
     width: 20px;
 }
 
+/* Active page indicator */
+nav.sidebar a.active {
+    color: var(--teal-accent);
+    padding-left: var(--spacing-sm);
+    font-weight: 600;
+}
+
+nav.sidebar a.active::before {
+    width: 25px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal-accent), var(--baby-blue));
+}
+
+nav.sidebar a.active::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background-color: var(--teal-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--teal-accent);
+}
+
 /* Divider in sidebar */
 nav.sidebar .divider {
     height: 1px;
@@ -359,6 +385,8 @@ section.hero {
     align-items: center;
     justify-content: center;
     box-shadow: inset 0 -5px 15px rgba(0, 0, 0, 0.05);
+    margin-right: -250px;
+    padding-right: 250px;
 }
 
 section.hero .content {
@@ -367,6 +395,7 @@ section.hero .content {
     z-index: 2;
     position: relative;
     padding: var(--spacing-lg) var(--spacing-md);
+    margin-right: 0;
 }
 
 section.hero h1 {
@@ -392,6 +421,8 @@ section.hero .cta-container {
 
 section.alt-bg {
     background-color: var(--soft-blue);
+    margin-right: -250px;
+    padding-right: 250px;
 }
 
 /* Grid layouts */
@@ -1277,6 +1308,7 @@ footer {
     background-color: var(--primary-black);
     color: var(--white);
     padding: var(--spacing-xxl) 0;
+    margin-top: var(--spacing-xxl);
 }
 
 footer .container {
@@ -1490,6 +1522,16 @@ footer a:hover {
     
     .hamburger {
         display: flex;
+    }
+    
+    section.hero {
+        margin-right: 0;
+        padding-right: 0;
+    }
+    
+    section.alt-bg {
+        margin-right: 0;
+        padding-right: 0;
     }
     
     footer {
