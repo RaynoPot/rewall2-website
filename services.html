@@ -903,13 +903,15 @@
                                 <h4>Site Map Preview</h4>
                                 <div id="map-snapshot-container" style="background: rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: var(--spacing-md); min-height: 200px; display: flex; align-items: center; justify-content: center;">
                                     <p id="snapshot-placeholder" style="color: rgba(255,255,255,0.5); text-align: center;">
-                                        Map snapshot will appear here<br>when you mark wall locations
+                                        Map snapshot will appear here<br>when you mark wall locations<br><br>
+                                        <span style="font-size: 0.85rem;">Click "Capture Snapshot" after drawing walls</span>
                                     </p>
                                     <img id="map-snapshot-img" style="max-width: 100%; border-radius: var(--radius-sm); display: none;">
                                 </div>
-                                <button id="capture-map-btn" onclick="captureMapSnapshot()" style="margin-top: var(--spacing-sm); padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius-sm); cursor: pointer; width: 100%; font-size: 0.9rem;">
-                                    📸 Update Map Snapshot
+                                <button id="capture-map-btn" onclick="manualCaptureSnapshot()" style="margin-top: var(--spacing-sm); padding: 10px 16px; background: var(--teal-accent); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; width: 100%; font-size: 0.9rem; font-weight: 600;">
+                                    📸 Capture Map Snapshot
                                 </button>
+                                <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 8px; text-align: center;">Make sure your walls are visible on the map before capturing</p>
                             </div>
                             
                             <div class="summary-section" style="border-bottom: none;">
@@ -1212,6 +1214,9 @@
     
     <!-- html2canvas for map snapshots -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- dom-to-image for better canvas capture -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     
     <!-- Quote Builder JavaScript -->
     <script>
@@ -1746,26 +1751,134 @@
             const snapshotImg = document.getElementById('map-snapshot-img');
             
             try {
-                // Wait for tiles to load
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Wait for map to fully render including drawn items
+                await new Promise(resolve => setTimeout(resolve, 800));
                 
-                const canvas = await html2canvas(mapElement, {
-                    useCORS: true,
-                    allowTaint: true,
-                    scale: 1,
-                    logging: false
-                });
+                // Force a map render refresh
+                map.invalidateSize();
+                await new Promise(resolve => setTimeout(resolve, 300));
                 
-                mapSnapshot = canvas.toDataURL('image/png');
+                // Try dom-to-image first (better with SVG/canvas)
+                try {
+                    mapSnapshot = await domtoimage.toPng(mapElement, {
+                        quality: 1,
+                        bgcolor: '#ffffff',
+                        style: {
+                            'transform': 'none'
+                        },
+                        filter: (node) => {
+                            // Include all nodes except certain controls
+                            if (node.classList) {
+                                // Exclude zoom controls for cleaner snapshot
+                                if (node.classList.contains('leaflet-control-zoom')) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                    });
+                } catch (domError) {
+                    console.log('dom-to-image failed, trying html2canvas:', domError);
+                    
+                    // Fallback to html2canvas with better settings
+                    const canvas = await html2canvas(mapElement, {
+                        useCORS: true,
+                        allowTaint: true,
+                        scale: 2,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        foreignObjectRendering: true,
+                        removeContainer: false
+                    });
+                    
+                    mapSnapshot = canvas.toDataURL('image/png');
+                }
                 
                 // Update preview
                 snapshotImg.src = mapSnapshot;
                 snapshotImg.style.display = 'block';
                 placeholder.style.display = 'none';
                 
+                console.log('Map snapshot captured successfully');
+                
             } catch (error) {
                 console.error('Map snapshot error:', error);
+                
+                // Last resort - try simple canvas approach
+                try {
+                    // Find all canvas elements in the map and merge them
+                    const canvases = mapElement.querySelectorAll('canvas');
+                    if (canvases.length > 0) {
+                        const mergedCanvas = document.createElement('canvas');
+                        mergedCanvas.width = mapElement.offsetWidth;
+                        mergedCanvas.height = mapElement.offsetHeight;
+                        const ctx = mergedCanvas.getContext('2d');
+                        
+                        // White background
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, mergedCanvas.width, mergedCanvas.height);
+                        
+                        // Draw each canvas
+                        canvases.forEach(canvas => {
+                            try {
+                                ctx.drawImage(canvas, 0, 0);
+                            } catch (e) {
+                                console.log('Could not draw canvas:', e);
+                            }
+                        });
+                        
+                        mapSnapshot = mergedCanvas.toDataURL('image/png');
+                        snapshotImg.src = mapSnapshot;
+                        snapshotImg.style.display = 'block';
+                        placeholder.style.display = 'none';
+                    }
+                } catch (fallbackError) {
+                    console.error('Fallback snapshot also failed:', fallbackError);
+                }
             }
+        }
+        
+        // Manual capture with visual feedback
+        async function manualCaptureSnapshot() {
+            const btn = document.getElementById('capture-map-btn');
+            const originalText = btn.innerHTML;
+            
+            // Show capturing state
+            btn.innerHTML = '⏳ Capturing...';
+            btn.disabled = true;
+            
+            // Scroll map into view first
+            document.getElementById('step-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Wait for scroll and ensure map is visible
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Fit bounds to show all walls if any
+            if (drawnWalls.length > 0) {
+                const allBounds = L.latLngBounds([]);
+                drawnWalls.forEach(wall => {
+                    allBounds.extend(wall.layer.getBounds());
+                });
+                if (searchMarker) {
+                    allBounds.extend(searchMarker.getLatLng());
+                }
+                map.fitBounds(allBounds, { padding: [30, 30] });
+                
+                // Wait for map to update
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Capture the snapshot
+            await captureMapSnapshot();
+            
+            // Scroll back to summary
+            document.getElementById('quote-summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Restore button
+            btn.innerHTML = '✓ Snapshot Captured!';
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            btn.innerHTML = '📸 Update Map Snapshot';
+            btn.disabled = false;
         }
         
         // ==========================================
