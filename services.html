@@ -1751,47 +1751,91 @@
             const snapshotImg = document.getElementById('map-snapshot-img');
             
             try {
-                // Wait for map to fully render including drawn items
-                await new Promise(resolve => setTimeout(resolve, 800));
+                // Wait for map to fully render
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Temporarily hide the location marker for cleaner snapshot
+                let markerWasVisible = false;
+                if (searchMarker) {
+                    markerWasVisible = map.hasLayer(searchMarker);
+                    if (markerWasVisible) {
+                        map.removeLayer(searchMarker);
+                    }
+                }
                 
                 // Force a map render refresh
                 map.invalidateSize();
                 await new Promise(resolve => setTimeout(resolve, 300));
                 
-                // Try dom-to-image first (better with SVG/canvas)
-                try {
-                    mapSnapshot = await domtoimage.toPng(mapElement, {
-                        quality: 1,
-                        bgcolor: '#ffffff',
-                        style: {
-                            'transform': 'none'
-                        },
-                        filter: (node) => {
-                            // Include all nodes except certain controls
-                            if (node.classList) {
-                                // Exclude zoom controls for cleaner snapshot
-                                if (node.classList.contains('leaflet-control-zoom')) {
-                                    return false;
+                // Use Leaflet's built-in method to get map as image via canvas
+                // First, get the map container dimensions
+                const mapWidth = mapElement.offsetWidth;
+                const mapHeight = mapElement.offsetHeight;
+                
+                // Create a canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = mapWidth;
+                canvas.height = mapHeight;
+                const ctx = canvas.getContext('2d');
+                
+                // Fill with white background
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, mapWidth, mapHeight);
+                
+                // Get all tile images and draw them
+                const tilePane = mapElement.querySelector('.leaflet-tile-pane');
+                if (tilePane) {
+                    const tileContainers = tilePane.querySelectorAll('.leaflet-tile-container');
+                    for (const container of tileContainers) {
+                        const tiles = container.querySelectorAll('img');
+                        for (const tile of tiles) {
+                            try {
+                                const transform = tile.style.transform;
+                                const match = transform.match(/translate3d\((-?\d+)px,\s*(-?\d+)px/);
+                                if (match) {
+                                    const x = parseInt(match[1]);
+                                    const y = parseInt(match[2]);
+                                    ctx.drawImage(tile, x, y);
                                 }
+                            } catch (e) {
+                                // Skip tiles that can't be drawn
                             }
-                            return true;
                         }
-                    });
-                } catch (domError) {
-                    console.log('dom-to-image failed, trying html2canvas:', domError);
+                    }
+                }
+                
+                // Draw the SVG overlay (where polylines are)
+                const overlayPane = mapElement.querySelector('.leaflet-overlay-pane svg');
+                if (overlayPane) {
+                    const svgData = new XMLSerializer().serializeToString(overlayPane);
+                    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                    const svgUrl = URL.createObjectURL(svgBlob);
                     
-                    // Fallback to html2canvas with better settings
-                    const canvas = await html2canvas(mapElement, {
-                        useCORS: true,
-                        allowTaint: true,
-                        scale: 2,
-                        logging: false,
-                        backgroundColor: '#ffffff',
-                        foreignObjectRendering: true,
-                        removeContainer: false
+                    const svgImg = new Image();
+                    await new Promise((resolve, reject) => {
+                        svgImg.onload = resolve;
+                        svgImg.onerror = reject;
+                        svgImg.src = svgUrl;
                     });
                     
-                    mapSnapshot = canvas.toDataURL('image/png');
+                    // Get SVG position
+                    const svgTransform = overlayPane.style.transform;
+                    let svgX = 0, svgY = 0;
+                    const svgMatch = svgTransform.match(/translate3d\((-?\d+)px,\s*(-?\d+)px/);
+                    if (svgMatch) {
+                        svgX = parseInt(svgMatch[1]);
+                        svgY = parseInt(svgMatch[2]);
+                    }
+                    
+                    ctx.drawImage(svgImg, svgX, svgY);
+                    URL.revokeObjectURL(svgUrl);
+                }
+                
+                mapSnapshot = canvas.toDataURL('image/png');
+                
+                // Restore the marker
+                if (markerWasVisible && searchMarker) {
+                    searchMarker.addTo(map);
                 }
                 
                 // Update preview
@@ -1804,34 +1848,42 @@
             } catch (error) {
                 console.error('Map snapshot error:', error);
                 
-                // Last resort - try simple canvas approach
+                // Restore marker on error
+                if (searchMarker && !map.hasLayer(searchMarker)) {
+                    searchMarker.addTo(map);
+                }
+                
+                // Fallback: try html2canvas
                 try {
-                    // Find all canvas elements in the map and merge them
-                    const canvases = mapElement.querySelectorAll('canvas');
-                    if (canvases.length > 0) {
-                        const mergedCanvas = document.createElement('canvas');
-                        mergedCanvas.width = mapElement.offsetWidth;
-                        mergedCanvas.height = mapElement.offsetHeight;
-                        const ctx = mergedCanvas.getContext('2d');
-                        
-                        // White background
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, mergedCanvas.width, mergedCanvas.height);
-                        
-                        // Draw each canvas
-                        canvases.forEach(canvas => {
-                            try {
-                                ctx.drawImage(canvas, 0, 0);
-                            } catch (e) {
-                                console.log('Could not draw canvas:', e);
-                            }
-                        });
-                        
-                        mapSnapshot = mergedCanvas.toDataURL('image/png');
-                        snapshotImg.src = mapSnapshot;
-                        snapshotImg.style.display = 'block';
-                        placeholder.style.display = 'none';
-                    }
+                    // Temporarily hide marker
+                    const markerEl = mapElement.querySelector('.custom-marker');
+                    if (markerEl) markerEl.style.display = 'none';
+                    
+                    const canvas = await html2canvas(mapElement, {
+                        useCORS: true,
+                        allowTaint: true,
+                        scale: 1,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        ignoreElements: (element) => {
+                            // Ignore markers and controls
+                            return element.classList && (
+                                element.classList.contains('custom-marker') ||
+                                element.classList.contains('leaflet-marker-icon') ||
+                                element.classList.contains('leaflet-control-zoom') ||
+                                element.classList.contains('leaflet-control-draw')
+                            );
+                        }
+                    });
+                    
+                    mapSnapshot = canvas.toDataURL('image/png');
+                    snapshotImg.src = mapSnapshot;
+                    snapshotImg.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    
+                    // Restore marker
+                    if (markerEl) markerEl.style.display = '';
+                    
                 } catch (fallbackError) {
                     console.error('Fallback snapshot also failed:', fallbackError);
                 }
@@ -1851,7 +1903,7 @@
             document.getElementById('step-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
             
             // Wait for scroll and ensure map is visible
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 800));
             
             // Fit bounds to show all walls if any
             if (drawnWalls.length > 0) {
@@ -1859,25 +1911,25 @@
                 drawnWalls.forEach(wall => {
                     allBounds.extend(wall.layer.getBounds());
                 });
-                if (searchMarker) {
-                    allBounds.extend(searchMarker.getLatLng());
-                }
-                map.fitBounds(allBounds, { padding: [30, 30] });
+                map.fitBounds(allBounds, { padding: [50, 50] });
                 
                 // Wait for map to update
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 600));
             }
             
             // Capture the snapshot
             await captureMapSnapshot();
             
             // Scroll back to summary
+            await new Promise(resolve => setTimeout(resolve, 300));
             document.getElementById('quote-summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
             
             // Restore button
             btn.innerHTML = '✓ Snapshot Captured!';
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            btn.style.background = '#28a745';
+            await new Promise(resolve => setTimeout(resolve, 2000));
             btn.innerHTML = '📸 Update Map Snapshot';
+            btn.style.background = '';
             btn.disabled = false;
         }
         
