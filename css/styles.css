@@ -399,6 +399,7 @@ section.alt-bg {
     display: grid;
     gap: var(--spacing-lg);
     margin: var(--spacing-xl) 0;
+    align-items: start;
 }
 
 .grid-2 {
@@ -407,6 +408,7 @@ section.alt-bg {
 
 .grid-3 {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    align-items: stretch;
 }
 
 .grid-4 {
@@ -454,6 +456,10 @@ section.alt-bg {
 .value-card {
     text-align: center;
     padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
 }
 
 .value-card .icon {
@@ -470,11 +476,13 @@ section.alt-bg {
 
 .value-card h3 {
     color: var(--primary-black);
+    text-align: center;
 }
 
 .value-card p {
     font-size: 0.95rem;
     color: var(--slate);
+    text-align: center;
 }
 
 /* ===================================
