@@ -575,21 +575,24 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     filter: none !important;
 }
 
-/* Partner logos - grayscale effect for iframes */
+/* Partner logo links */
+.partner-link {
+    display: inline-block;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Partner logos - brightness effect on hover */
 .partner-logo {
-    filter: grayscale(100%);
+    filter: brightness(0.85);
     transition: all 0.4s ease;
-    opacity: 0.7;
+    border-radius: 8px;
 }
 
-.partner-logo:hover {
-    filter: grayscale(0%);
-    opacity: 1;
-    transform: scale(1.05);
-}
-
-iframe.partner-logo {
-    pointer-events: none;
+.partner-link:hover .partner-logo {
+    filter: brightness(1.15);
+    transform: scale(1.08);
 }
 
 .project-info {
