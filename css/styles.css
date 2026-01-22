@@ -477,6 +477,10 @@ section.alt-bg {
 .value-card h3 {
     color: var(--primary-black);
     text-align: center;
+    min-height: 2.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .value-card p {
