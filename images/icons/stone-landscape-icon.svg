@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="#E8F4F8" stroke="#4A90A4" stroke-width="2"/>
+  
+  <!-- Stacked stones/rocks -->
+  <ellipse cx="30" cy="70" rx="12" ry="8" fill="#8B7355" stroke="#5D4E37" stroke-width="1.5"/>
+  <ellipse cx="50" cy="72" rx="14" ry="7" fill="#9C8B75" stroke="#6B5D4D" stroke-width="1.5"/>
+  <ellipse cx="70" cy="70" rx="11" ry="8" fill="#7A6B55" stroke="#4D4035" stroke-width="1.5"/>
+  
+  <ellipse cx="40" cy="60" rx="13" ry="7" fill="#A89880" stroke="#7A6B55" stroke-width="1.5"/>
+  <ellipse cx="62" cy="62" rx="12" ry="6" fill="#8B7355" stroke="#5D4E37" stroke-width="1.5"/>
+  
+  <ellipse cx="50" cy="52" rx="11" ry="6" fill="#9C8B75" stroke="#6B5D4D" stroke-width="1.5"/>
+  
+  <!-- Plant/grass accent -->
+  <path d="M75 45 Q78 35 80 45" stroke="#4CAF50" stroke-width="2" fill="none"/>
+  <path d="M78 47 Q82 38 85 48" stroke="#4CAF50" stroke-width="2" fill="none"/>
+  <path d="M72 48 Q74 40 76 50" stroke="#66BB6A" stroke-width="2" fill="none"/>
+  
+  <!-- Small plant on left -->
+  <path d="M20 55 Q22 48 24 55" stroke="#66BB6A" stroke-width="1.5" fill="none"/>
+  <path d="M22 56 Q25 50 27 57" stroke="#4CAF50" stroke-width="1.5" fill="none"/>
+</svg>
