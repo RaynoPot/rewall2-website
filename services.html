@@ -967,7 +967,7 @@
                             Please fill in required fields (Name and Email)
                         </div>
                         
-                        <button class="submit-quote-btn" id="submit-quote-btn" onclick="submitQuoteRequest()">
+                        <button type="button" class="submit-quote-btn" id="submit-quote-btn" onclick="submitQuoteRequest()">
                             🚀 Submit Quote Request
                         </button>
                         <p style="text-align: center; margin-top: var(--spacing-md); font-size: 0.9rem; opacity: 0.8;">
@@ -1883,8 +1883,7 @@
                 map.invalidateSize();
                 await new Promise(resolve => setTimeout(resolve, 300));
                 
-                // Use Leaflet's built-in method to get map as image via canvas
-                // First, get the map container dimensions
+                // Get the map container dimensions
                 const mapWidth = mapElement.offsetWidth;
                 const mapHeight = mapElement.offsetHeight;
                 
@@ -1920,31 +1919,40 @@
                     }
                 }
                 
-                // Draw the SVG overlay (where polylines are)
-                const overlayPane = mapElement.querySelector('.leaflet-overlay-pane svg');
-                if (overlayPane) {
-                    const svgData = new XMLSerializer().serializeToString(overlayPane);
-                    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-                    const svgUrl = URL.createObjectURL(svgBlob);
+                // Draw the polylines (walls) directly on canvas
+                if (drawnWalls.length > 0) {
+                    ctx.strokeStyle = '#e74c3c'; // Red color matching the wall lines
+                    ctx.lineWidth = 4;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
                     
-                    const svgImg = new Image();
-                    await new Promise((resolve, reject) => {
-                        svgImg.onload = resolve;
-                        svgImg.onerror = reject;
-                        svgImg.src = svgUrl;
+                    drawnWalls.forEach(wall => {
+                        const latlngs = wall.layer.getLatLngs();
+                        if (latlngs.length > 0) {
+                            ctx.beginPath();
+                            
+                            // Convert first point
+                            const firstPoint = map.latLngToContainerPoint(latlngs[0]);
+                            ctx.moveTo(firstPoint.x, firstPoint.y);
+                            
+                            // Draw lines to remaining points
+                            for (let i = 1; i < latlngs.length; i++) {
+                                const point = map.latLngToContainerPoint(latlngs[i]);
+                                ctx.lineTo(point.x, point.y);
+                            }
+                            
+                            ctx.stroke();
+                            
+                            // Draw points at vertices for visibility
+                            ctx.fillStyle = '#c0392b';
+                            latlngs.forEach(latlng => {
+                                const point = map.latLngToContainerPoint(latlng);
+                                ctx.beginPath();
+                                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                                ctx.fill();
+                            });
+                        }
                     });
-                    
-                    // Get SVG position
-                    const svgTransform = overlayPane.style.transform;
-                    let svgX = 0, svgY = 0;
-                    const svgMatch = svgTransform.match(/translate3d\((-?\d+)px,\s*(-?\d+)px/);
-                    if (svgMatch) {
-                        svgX = parseInt(svgMatch[1]);
-                        svgY = parseInt(svgMatch[2]);
-                    }
-                    
-                    ctx.drawImage(svgImg, svgX, svgY);
-                    URL.revokeObjectURL(svgUrl);
                 }
                 
                 mapSnapshot = canvas.toDataURL('image/png');
@@ -1959,7 +1967,7 @@
                 snapshotImg.style.display = 'block';
                 placeholder.style.display = 'none';
                 
-                console.log('Map snapshot captured successfully');
+                console.log('Map snapshot captured successfully with wall markings');
                 
             } catch (error) {
                 console.error('Map snapshot error:', error);
@@ -2340,16 +2348,20 @@
         // ==========================================
         
         function submitQuoteRequest() {
-            // Validate required fields
-            const name = document.getElementById('client-name')?.value?.trim() || '';
-            const email = document.getElementById('client-email')?.value?.trim() || '';
-            
-            const validationMsg = document.getElementById('validation-message');
-            
-            if (!name || !email) {
-                validationMsg.style.display = 'block';
-                validationMsg.textContent = 'Please fill in your Name and Email address';
-                document.getElementById('step-details').scrollIntoView({ behavior: 'smooth' });
+            console.log('Submit button clicked - starting submitQuoteRequest');
+            try {
+                // Validate required fields
+                const name = document.getElementById('client-name')?.value?.trim() || '';
+                const email = document.getElementById('client-email')?.value?.trim() || '';
+                
+                console.log('Name:', name, 'Email:', email);
+                
+                const validationMsg = document.getElementById('validation-message');
+                
+                if (!name || !email) {
+                    validationMsg.style.display = 'block';
+                    validationMsg.textContent = 'Please fill in your Name and Email address';
+                    document.getElementById('step-details').scrollIntoView({ behavior: 'smooth' });
                 return;
             }
             
@@ -2404,6 +2416,8 @@
                 mapSnapshot: mapSnapshot
             };
             
+            console.log('Quote data prepared:', quoteData);
+            
             // Store in sessionStorage
             sessionStorage.setItem('quoteRequestData', JSON.stringify(quoteData));
             sessionStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
@@ -2411,8 +2425,15 @@
             // Create email content
             const emailBody = generateEmailBody(quoteData);
             
+            console.log('Opening submission modal...');
+            
             // Show success modal and options
             showSubmissionModal(quoteData, emailBody);
+            
+            } catch (error) {
+                console.error('Error in submitQuoteRequest:', error);
+                alert('An error occurred. Please check the console for details.');
+            }
         }
         
         function generateEmailBody(data) {
