@@ -810,10 +810,48 @@
                     <input type="text" id="other-wall-type" class="other-input" placeholder="Please describe the wall type you're looking for...">
                 </div>
 
-                <!-- Step 4: Your Details & Notes -->
-                <div class="quote-step" id="step-details">
+                <!-- Step 4: Geotechnical Report -->
+                <div class="quote-step" id="step-geotech">
                     <div class="quote-step-header">
                         <div class="step-number">4</div>
+                        <h3>Do You Have a Geotechnical Report?</h3>
+                    </div>
+                    <p class="quote-step-description">
+                        🔬 <strong>A geotechnical report helps us understand your soil conditions.</strong><br>
+                        This information is essential for designing a safe, durable retaining wall. If you don't have one, we can arrange this as part of your project.
+                    </p>
+                    
+                    <div class="geotech-options" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                        <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'have-report')">
+                            <input type="radio" name="geotech-status" value="have-report" style="margin-top: 4px;">
+                            <div>
+                                <strong style="color: var(--charcoal);">✅ Yes, I have a geotechnical report</strong>
+                                <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">Great! Please upload it in the documents section below, or send it to us via email.</p>
+                            </div>
+                        </label>
+                        
+                        <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'need-report')">
+                            <input type="radio" name="geotech-status" value="need-report" style="margin-top: 4px;">
+                            <div>
+                                <strong style="color: var(--charcoal);">📋 No, please include geotechnical investigation in the quote</strong>
+                                <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">We'll arrange a site investigation to assess soil conditions and provide recommendations.</p>
+                            </div>
+                        </label>
+                        
+                        <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'not-sure')">
+                            <input type="radio" name="geotech-status" value="not-sure" style="margin-top: 4px;">
+                            <div>
+                                <strong style="color: var(--charcoal);">❓ I'm not sure / Need advice</strong>
+                                <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">No problem! We'll assess your requirements and advise whether a geotech report is needed for your project.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Step 5: Your Details & Notes -->
+                <div class="quote-step" id="step-details">
+                    <div class="quote-step-header">
+                        <div class="step-number">5</div>
                         <h3>Your Details & Project Notes</h3>
                     </div>
                     <p class="quote-step-description">
@@ -883,6 +921,11 @@
                             <div class="summary-section">
                                 <h4>Wall Types</h4>
                                 <p id="summary-wall-types">None selected</p>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h4>Geotechnical Report</h4>
+                                <p id="summary-geotech">Not specified</p>
                             </div>
                             
                             <div class="summary-section">
@@ -2049,6 +2092,28 @@
         }
         
         // ==========================================
+        // GEOTECHNICAL OPTION SELECTION
+        // ==========================================
+        
+        function selectGeotechOption(element, value) {
+            // Remove selected class from all options
+            document.querySelectorAll('.geotech-option').forEach(opt => {
+                opt.style.borderColor = 'var(--border-gray)';
+                opt.style.background = 'white';
+            });
+            
+            // Add selected styling to clicked option
+            element.style.borderColor = 'var(--teal-accent)';
+            element.style.background = 'rgba(74, 144, 164, 0.05)';
+            
+            // Check the radio button
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            updateQuoteSummary();
+        }
+        
+        // ==========================================
         // QUOTE SUMMARY UPDATE
         // ==========================================
         
@@ -2124,6 +2189,20 @@
             }
             
             wallTypesDisplay.textContent = selectedWallTypes.length > 0 ? selectedWallTypes.join(', ') : 'None selected';
+            
+            // Geotechnical Report Status
+            const geotechDisplay = document.getElementById('summary-geotech');
+            const geotechSelection = document.querySelector('input[name="geotech-status"]:checked');
+            if (geotechSelection) {
+                const geotechLabels = {
+                    'have-report': '✅ Has existing report',
+                    'need-report': '📋 Include in quote',
+                    'not-sure': '❓ Needs advice'
+                };
+                geotechDisplay.textContent = geotechLabels[geotechSelection.value] || 'Not specified';
+            } else {
+                geotechDisplay.textContent = 'Not specified';
+            }
             
             // Contact details
             const contactDisplay = document.getElementById('summary-contact');
