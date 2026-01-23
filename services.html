@@ -1866,6 +1866,9 @@
             const placeholder = document.getElementById('snapshot-placeholder');
             const snapshotImg = document.getElementById('map-snapshot-img');
             
+            console.log('Starting map snapshot capture...');
+            console.log('Number of drawn walls:', drawnWalls.length);
+            
             try {
                 // Wait for map to fully render
                 await new Promise(resolve => setTimeout(resolve, 500));
@@ -1879,113 +1882,32 @@
                     }
                 }
                 
+                // Hide drawing controls temporarily
+                const drawControl = mapElement.querySelector('.leaflet-draw');
+                const zoomControl = mapElement.querySelector('.leaflet-control-zoom');
+                if (drawControl) drawControl.style.display = 'none';
+                if (zoomControl) zoomControl.style.display = 'none';
+                
                 // Force a map render refresh
                 map.invalidateSize();
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
-                // Get the map container dimensions
-                const mapWidth = mapElement.offsetWidth;
-                const mapHeight = mapElement.offsetHeight;
+                // Use html2canvas to capture everything including SVG overlays (the drawn walls)
+                const canvas = await html2canvas(mapElement, {
+                    useCORS: true,
+                    allowTaint: true,
+                    scale: 2, // Higher resolution
+                    logging: true, // Enable logging for debugging
+                    backgroundColor: '#ffffff',
+                    foreignObjectRendering: true,
+                    removeContainer: false
+                });
                 
-                // Create a canvas
-                const canvas = document.createElement('canvas');
-                canvas.width = mapWidth;
-                canvas.height = mapHeight;
-                const ctx = canvas.getContext('2d');
+                console.log('html2canvas completed, canvas size:', canvas.width, 'x', canvas.height);
                 
-                // Fill with white background
-                ctx.fillStyle = '#f0f0f0';
-                ctx.fillRect(0, 0, mapWidth, mapHeight);
-                
-                // Get all tile images and draw them
-                const tilePane = mapElement.querySelector('.leaflet-tile-pane');
-                if (tilePane) {
-                    const tileContainers = tilePane.querySelectorAll('.leaflet-tile-container');
-                    for (const container of tileContainers) {
-                        const tiles = container.querySelectorAll('img');
-                        for (const tile of tiles) {
-                            try {
-                                const transform = tile.style.transform;
-                                const match = transform.match(/translate3d\((-?\d+)px,\s*(-?\d+)px/);
-                                if (match) {
-                                    const x = parseInt(match[1]);
-                                    const y = parseInt(match[2]);
-                                    ctx.drawImage(tile, x, y);
-                                }
-                            } catch (e) {
-                                // Skip tiles that can't be drawn
-                            }
-                        }
-                    }
-                }
-                
-                // Draw the polylines (walls) directly on canvas - THICK RED LINES
-                if (drawnWalls.length > 0) {
-                    // Draw a white outline first for contrast
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 10;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    
-                    drawnWalls.forEach(wall => {
-                        const latlngs = wall.layer.getLatLngs();
-                        if (latlngs.length > 0) {
-                            ctx.beginPath();
-                            const firstPoint = map.latLngToContainerPoint(latlngs[0]);
-                            ctx.moveTo(firstPoint.x, firstPoint.y);
-                            for (let i = 1; i < latlngs.length; i++) {
-                                const point = map.latLngToContainerPoint(latlngs[i]);
-                                ctx.lineTo(point.x, point.y);
-                            }
-                            ctx.stroke();
-                        }
-                    });
-                    
-                    // Now draw the red line on top
-                    ctx.strokeStyle = '#e74c3c'; // Bright red
-                    ctx.lineWidth = 6;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    
-                    drawnWalls.forEach(wall => {
-                        const latlngs = wall.layer.getLatLngs();
-                        if (latlngs.length > 0) {
-                            ctx.beginPath();
-                            
-                            // Convert first point
-                            const firstPoint = map.latLngToContainerPoint(latlngs[0]);
-                            ctx.moveTo(firstPoint.x, firstPoint.y);
-                            
-                            // Draw lines to remaining points
-                            for (let i = 1; i < latlngs.length; i++) {
-                                const point = map.latLngToContainerPoint(latlngs[i]);
-                                ctx.lineTo(point.x, point.y);
-                            }
-                            
-                            ctx.stroke();
-                            
-                            // Draw larger points at vertices for visibility
-                            ctx.fillStyle = '#c0392b';
-                            latlngs.forEach(latlng => {
-                                const point = map.latLngToContainerPoint(latlng);
-                                ctx.beginPath();
-                                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
-                                ctx.fill();
-                            });
-                            
-                            // White center on vertices
-                            ctx.fillStyle = '#ffffff';
-                            latlngs.forEach(latlng => {
-                                const point = map.latLngToContainerPoint(latlng);
-                                ctx.beginPath();
-                                ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
-                                ctx.fill();
-                            });
-                        }
-                    });
-                    
-                    console.log('Drew', drawnWalls.length, 'walls on canvas');
-                }
+                // Restore controls
+                if (drawControl) drawControl.style.display = '';
+                if (zoomControl) zoomControl.style.display = '';
                 
                 mapSnapshot = canvas.toDataURL('image/png');
                 
@@ -1999,50 +1921,138 @@
                 snapshotImg.style.display = 'block';
                 placeholder.style.display = 'none';
                 
-                console.log('Map snapshot captured successfully with wall markings');
+                console.log('Map snapshot captured successfully');
                 
             } catch (error) {
                 console.error('Map snapshot error:', error);
+                
+                // Restore controls on error
+                const drawControl = mapElement.querySelector('.leaflet-draw');
+                const zoomControl = mapElement.querySelector('.leaflet-control-zoom');
+                if (drawControl) drawControl.style.display = '';
+                if (zoomControl) zoomControl.style.display = '';
                 
                 // Restore marker on error
                 if (searchMarker && !map.hasLayer(searchMarker)) {
                     searchMarker.addTo(map);
                 }
                 
-                // Fallback: try html2canvas
-                try {
-                    // Temporarily hide marker
-                    const markerEl = mapElement.querySelector('.custom-marker');
-                    if (markerEl) markerEl.style.display = 'none';
-                    
-                    const canvas = await html2canvas(mapElement, {
-                        useCORS: true,
-                        allowTaint: true,
-                        scale: 1,
-                        logging: false,
-                        backgroundColor: '#ffffff',
-                        ignoreElements: (element) => {
-                            // Ignore markers and controls
-                            return element.classList && (
-                                element.classList.contains('custom-marker') ||
-                                element.classList.contains('leaflet-marker-icon') ||
-                                element.classList.contains('leaflet-control-zoom') ||
-                                element.classList.contains('leaflet-control-draw')
-                            );
+                // Manual fallback - draw tiles then walls
+                console.log('Trying manual canvas fallback...');
+                await captureMapSnapshotManual();
+            }
+        }
+        
+        // Manual fallback capture method
+        async function captureMapSnapshotManual() {
+            const mapElement = document.getElementById('site-map');
+            const placeholder = document.getElementById('snapshot-placeholder');
+            const snapshotImg = document.getElementById('map-snapshot-img');
+            
+            try {
+                const mapWidth = mapElement.offsetWidth;
+                const mapHeight = mapElement.offsetHeight;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = mapWidth * 2; // Higher resolution
+                canvas.height = mapHeight * 2;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(2, 2);
+                
+                // Fill with light background
+                ctx.fillStyle = '#e8e8e8';
+                ctx.fillRect(0, 0, mapWidth, mapHeight);
+                
+                // Draw tiles
+                const tilePane = mapElement.querySelector('.leaflet-tile-pane');
+                if (tilePane) {
+                    const tileContainers = tilePane.querySelectorAll('.leaflet-tile-container');
+                    for (const container of tileContainers) {
+                        const tiles = container.querySelectorAll('img');
+                        for (const tile of tiles) {
+                            try {
+                                const transform = tile.style.transform;
+                                const match = transform.match(/translate3d\((-?\d+)px,\s*(-?\d+)px/);
+                                if (match) {
+                                    ctx.drawImage(tile, parseInt(match[1]), parseInt(match[2]));
+                                }
+                            } catch (e) { }
+                        }
+                    }
+                }
+                
+                // Draw walls with VERY visible styling
+                console.log('Drawing', drawnWalls.length, 'walls manually');
+                
+                if (drawnWalls.length > 0) {
+                    drawnWalls.forEach((wall, index) => {
+                        let latlngs = wall.layer.getLatLngs();
+                        
+                        // Handle nested arrays (Leaflet sometimes returns [[points]] for polylines)
+                        if (latlngs.length > 0 && Array.isArray(latlngs[0]) && latlngs[0].lat === undefined) {
+                            latlngs = latlngs[0];
+                        }
+                        
+                        console.log('Wall', index, 'has', latlngs.length, 'points');
+                        
+                        if (latlngs.length >= 2) {
+                            // White outline for contrast
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 12;
+                            ctx.lineCap = 'round';
+                            ctx.lineJoin = 'round';
+                            ctx.beginPath();
+                            
+                            const first = map.latLngToContainerPoint(latlngs[0]);
+                            ctx.moveTo(first.x, first.y);
+                            console.log('First point:', first.x, first.y);
+                            
+                            for (let i = 1; i < latlngs.length; i++) {
+                                const pt = map.latLngToContainerPoint(latlngs[i]);
+                                ctx.lineTo(pt.x, pt.y);
+                            }
+                            ctx.stroke();
+                            
+                            // Red line
+                            ctx.strokeStyle = '#ff0000'; // Pure red
+                            ctx.lineWidth = 8;
+                            ctx.beginPath();
+                            ctx.moveTo(first.x, first.y);
+                            for (let i = 1; i < latlngs.length; i++) {
+                                const pt = map.latLngToContainerPoint(latlngs[i]);
+                                ctx.lineTo(pt.x, pt.y);
+                            }
+                            ctx.stroke();
+                            
+                            // Vertex markers
+                            ctx.fillStyle = '#cc0000';
+                            latlngs.forEach(ll => {
+                                const pt = map.latLngToContainerPoint(ll);
+                                ctx.beginPath();
+                                ctx.arc(pt.x, pt.y, 10, 0, 2 * Math.PI);
+                                ctx.fill();
+                            });
+                            
+                            ctx.fillStyle = '#ffffff';
+                            latlngs.forEach(ll => {
+                                const pt = map.latLngToContainerPoint(ll);
+                                ctx.beginPath();
+                                ctx.arc(pt.x, pt.y, 5, 0, 2 * Math.PI);
+                                ctx.fill();
+                            });
                         }
                     });
-                    
-                    mapSnapshot = canvas.toDataURL('image/png');
-                    snapshotImg.src = mapSnapshot;
-                    snapshotImg.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    
-                    // Restore marker
-                    if (markerEl) markerEl.style.display = '';
-                    
-                } catch (fallbackError) {
-                    console.error('Fallback snapshot also failed:', fallbackError);
                 }
+                
+                mapSnapshot = canvas.toDataURL('image/png');
+                snapshotImg.src = mapSnapshot;
+                snapshotImg.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                console.log('Manual snapshot completed');
+                
+            } catch (error) {
+                console.error('Manual snapshot failed:', error);
             }
         }
         
@@ -2626,58 +2636,138 @@
                 
                 const data = window.currentQuoteData;
                 
-                // Use FormData for file attachments
+                // Build HTML message with embedded map image
+                let htmlMessage = `
+                    <h2 style="color: #2C3E50; border-bottom: 2px solid #1ABC9C; padding-bottom: 10px;">🏗️ New Quote Request</h2>
+                    
+                    <h3 style="color: #1ABC9C;">📋 Client Details</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.client.name}</td></tr>
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="mailto:${data.client.email}">${data.client.email}</a></td></tr>
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.client.phone || 'Not provided'}</td></tr>
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Company:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.client.company || 'Not provided'}</td></tr>
+                    </table>
+                    
+                    <h3 style="color: #1ABC9C;">📍 Project Location</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Address:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.location.address || 'Not specified'}</td></tr>
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Coordinates:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.location.coordinates ? data.location.coordinates.lat.toFixed(6) + ', ' + data.location.coordinates.lon.toFixed(6) : 'Not provided'}</td></tr>
+                    </table>
+                    
+                    <h3 style="color: #1ABC9C;">🧱 Wall Details</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Number of Walls:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.walls.length}</td></tr>
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Total Length:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.totalWallLengthFormatted || 'Not measured'}</td></tr>
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Wall Types:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.wallTypes.length > 0 ? data.wallTypes.join(', ') : 'Not specified'}</td></tr>
+                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Geotechnical:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${document.querySelector('input[name="geotech-status"]:checked')?.value || 'Not specified'}</td></tr>
+                    </table>
+                `;
+                
+                // Add individual wall details
+                if (data.walls.length > 0) {
+                    htmlMessage += '<h4 style="color: #2C3E50;">Individual Walls:</h4><ul style="margin-bottom: 20px;">';
+                    data.walls.forEach(w => {
+                        htmlMessage += '<li style="padding: 5px 0;">Wall #' + w.id + ': ~' + w.lengthFormatted + ' length' + (w.height ? ' × ' + w.heightFormatted + ' high' : '') + '</li>';
+                    });
+                    htmlMessage += '</ul>';
+                }
+                
+                // Add services requested
+                htmlMessage += `
+                    <h3 style="color: #1ABC9C;">🔧 Services Requested</h3>
+                    <p style="margin-bottom: 20px;">${data.services.length > 0 ? data.services.join(', ') : 'Not specified'}</p>
+                `;
+                
+                // Add notes if provided
+                if (data.notes) {
+                    htmlMessage += `
+                        <h3 style="color: #1ABC9C;">📝 Project Notes</h3>
+                        <p style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">${data.notes.replace(/\n/g, '<br>')}</p>
+                    `;
+                }
+                
+                // Add attachments list
+                if (data.attachments && data.attachments.length > 0) {
+                    htmlMessage += `
+                        <h3 style="color: #1ABC9C;">📎 Attachments</h3>
+                        <p style="margin-bottom: 20px;">${data.attachments.map(a => a.name).join(', ')}<br><em>(Files must be requested from client)</em></p>
+                    `;
+                }
+                
+                // Add the map snapshot as embedded image if available
+                if (data.mapSnapshot) {
+                    htmlMessage += `
+                        <h3 style="color: #1ABC9C;">🗺️ Site Map with Wall Markings</h3>
+                        <p style="margin-bottom: 10px;"><strong>Red lines indicate proposed wall locations:</strong></p>
+                        <img src="${data.mapSnapshot}" alt="Site Map with Wall Markings" style="max-width: 100%; height: auto; border: 2px solid #1ABC9C; border-radius: 8px; margin-bottom: 20px;">
+                    `;
+                }
+                
+                htmlMessage += `
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="color: #888; font-size: 12px;">This quote request was submitted via the ReWall website on ${new Date().toLocaleString('en-NZ')}</p>
+                `;
+                
+                // Use FormData to support file attachments
                 const formData = new FormData();
-                
-                // Required Web3Forms fields
                 formData.append('access_key', 'd3c367e4-bb7f-4788-bde6-5c5fe58746a4');
-                formData.append('subject', `🏗️ New Quote Request from ${data.client.name}`);
+                formData.append('subject', `🏗️ New Quote Request from ${data.client.name} - ${data.location.address || 'Address TBC'}`);
                 formData.append('from_name', 'ReWall Website');
-                
-                // Client info
-                formData.append('Client Name', data.client.name);
-                formData.append('Client Email', data.client.email);
-                formData.append('Client Phone', data.client.phone || 'Not provided');
-                formData.append('Client Company', data.client.company || 'Not provided');
-                
-                // Project details
-                formData.append('Services Requested', data.services.length > 0 ? data.services.join(', ') : 'Not specified');
-                formData.append('Site Address', data.location.address || 'Not specified');
-                formData.append('Site Coordinates', data.location.coordinates ? `${data.location.coordinates.lat.toFixed(6)}, ${data.location.coordinates.lon.toFixed(6)}` : 'Not provided');
-                formData.append('Number of Walls', data.walls.length);
-                formData.append('Wall Details', data.walls.length > 0 ? data.walls.map(w => `Wall #${w.id}: ~${w.lengthFormatted} length${w.height ? ' x ' + w.heightFormatted + ' high' : ''}`).join('; ') : 'No walls drawn');
-                formData.append('Total Wall Length (Est.)', data.totalWallLengthFormatted || 'Not measured');
-                formData.append('Wall Types', data.wallTypes.length > 0 ? data.wallTypes.join(', ') : 'Not specified');
-                formData.append('Geotechnical Status', document.querySelector('input[name="geotech-status"]:checked')?.value || 'Not specified');
-                formData.append('Project Notes', data.notes || 'No notes provided');
-                
-                // Full summary as message
-                formData.append('message', window.currentEmailBody);
+                formData.append('replyto', data.client.email);
+                formData.append('message', htmlMessage);
                 
                 // Add map snapshot as attachment if available
                 if (data.mapSnapshot) {
                     try {
-                        const mapBlob = await fetch(data.mapSnapshot).then(r => r.blob());
-                        formData.append('attachment', mapBlob, `Site_Map_${data.client.name.replace(/\s+/g, '_')}.png`);
+                        // Convert base64 to blob
+                        const base64Data = data.mapSnapshot.split(',')[1];
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const mapBlob = new Blob([byteArray], { type: 'image/png' });
+                        formData.append('attachment', mapBlob, 'site-map-with-walls.png');
+                        console.log('Map snapshot attached:', mapBlob.size, 'bytes');
                     } catch (e) {
-                        console.log('Could not attach map snapshot:', e);
+                        console.error('Error attaching map:', e);
                     }
                 }
                 
-                // Add uploaded files as attachments (Web3Forms supports multiple)
+                // Add uploaded files as attachments
                 if (uploadedFiles && uploadedFiles.length > 0) {
-                    for (let i = 0; i < uploadedFiles.length && i < 5; i++) {
-                        formData.append('attachment', uploadedFiles[i], uploadedFiles[i].name);
+                    for (let i = 0; i < uploadedFiles.length; i++) {
+                        try {
+                            const file = uploadedFiles[i];
+                            // Convert base64 to blob
+                            const base64Data = file.data.split(',')[1];
+                            const byteCharacters = atob(base64Data);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let j = 0; j < byteCharacters.length; j++) {
+                                byteNumbers[j] = byteCharacters.charCodeAt(j);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const fileBlob = new Blob([byteArray], { type: file.type });
+                            // Web3Forms supports multiple attachments with same key
+                            formData.append('attachment', fileBlob, file.name);
+                            console.log('File attached:', file.name, fileBlob.size, 'bytes');
+                        } catch (e) {
+                            console.error('Error attaching file:', file.name, e);
+                        }
                     }
                 }
                 
-                // Send via Web3Forms API with FormData (for file support)
+                console.log('Sending to Web3Forms with attachments...');
+                
+                // Send via Web3Forms API with FormData
                 const response = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     body: formData
                 });
                 
                 const result = await response.json();
+                console.log('Web3Forms response:', result);
                 
                 if (result.success) {
                     // Show success message
