@@ -1810,17 +1810,43 @@
             
             drawnWalls.forEach((wall) => {
                 totalLength += wall.distance;
+                const currentHeight = wall.height || '';
                 html += `
-                    <div class="wall-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #e74c3c;">
-                        <span><strong>Wall #${wall.id}</strong></span>
-                        <span style="color: var(--teal-accent); font-weight: 600; font-size: 1.1rem;">~${formatDistance(wall.distance)} <span style="font-size: 0.75rem; color: var(--slate);">(est.)</span></span>
-                        <button onclick="focusOnWall(${wall.id})" style="background: var(--teal-accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">📍 View</button>
+                    <div class="wall-item" style="background: white; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #e74c3c; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px;">
+                            <span><strong>Wall #${wall.id}</strong></span>
+                            <span style="color: var(--teal-accent); font-weight: 600; font-size: 1.1rem;">~${formatDistance(wall.distance)} <span style="font-size: 0.75rem; color: var(--slate);">(est.)</span></span>
+                            <button onclick="focusOnWall(${wall.id})" style="background: var(--teal-accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">📍 View</button>
+                        </div>
+                        <div style="padding: 8px 12px 12px; background: var(--light-gray); border-top: 1px solid var(--border-gray);">
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem;">
+                                <span style="color: var(--slate);">📏 Est. Height:</span>
+                                <input type="number" 
+                                    id="wall-height-${wall.id}" 
+                                    value="${currentHeight}" 
+                                    placeholder="e.g. 1.5" 
+                                    min="0.1" 
+                                    max="20" 
+                                    step="0.1"
+                                    onchange="updateWallHeight(${wall.id}, this.value)"
+                                    style="width: 70px; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: 4px; font-size: 0.9rem; text-align: center;">
+                                <span style="color: var(--slate);">metres</span>
+                            </label>
+                        </div>
                     </div>
                 `;
             });
             
             container.innerHTML = html;
             totalDisplay.innerHTML = `<strong>Est. Total Length:</strong> ~${formatDistance(totalLength)}<br><span style="font-size: 0.8rem; opacity: 0.9;">*Approximate only - actual measurements may vary</span>`;
+        }
+        
+        function updateWallHeight(wallId, height) {
+            const wall = drawnWalls.find(w => w.id === wallId);
+            if (wall) {
+                wall.height = parseFloat(height) || null;
+                updateQuoteSummary();
+            }
         }
         
         function focusOnWall(wallId) {
@@ -2214,7 +2240,11 @@
             const wallsDisplay = document.getElementById('summary-walls');
             if (drawnWalls.length > 0) {
                 let totalLength = drawnWalls.reduce((sum, w) => sum + w.distance, 0);
-                wallsDisplay.innerHTML = `${drawnWalls.length} wall(s) marked<br><strong>Est. Total: ~${formatDistance(totalLength)}</strong><br><span style="font-size: 0.8rem; opacity: 0.7;">*Approximate measurement</span>`;
+                let wallDetails = drawnWalls.map(w => {
+                    const heightStr = w.height ? ` × ${w.height}m high` : '';
+                    return `Wall #${w.id}: ~${formatDistance(w.distance)}${heightStr}`;
+                }).join('<br>');
+                wallsDisplay.innerHTML = `${drawnWalls.length} wall(s) marked:<br><span style="font-size: 0.9rem;">${wallDetails}</span><br><strong style="margin-top: 8px; display: inline-block;">Est. Total Length: ~${formatDistance(totalLength)}</strong><br><span style="font-size: 0.8rem; opacity: 0.7;">*Approximate measurements</span>`;
             } else {
                 wallsDisplay.textContent = 'No walls drawn';
             }
@@ -2361,6 +2391,8 @@
                     id: w.id,
                     length: w.distance,
                     lengthFormatted: formatDistance(w.distance),
+                    height: w.height || null,
+                    heightFormatted: w.height ? `${w.height}m` : 'Not specified',
                     coordinates: w.latlngs
                 })),
                 totalWallLength: drawnWalls.reduce((sum, w) => sum + w.distance, 0),
@@ -2410,7 +2442,10 @@
             
             body += `WALL MEASUREMENTS (ESTIMATED)*:\n`;
             if (data.walls.length > 0) {
-                data.walls.forEach(w => body += `• Wall #${w.id}: ~${w.lengthFormatted} (approx.)\n`);
+                data.walls.forEach(w => {
+                    const heightInfo = w.height ? ` x ${w.heightFormatted} high` : ' (height not specified)';
+                    body += `• Wall #${w.id}: ~${w.lengthFormatted} length${heightInfo}\n`;
+                });
                 body += `EST. TOTAL LENGTH: ~${data.totalWallLengthFormatted}\n`;
                 body += `*Note: These are approximate measurements based on map drawings and should not be relied upon for final calculations.\n`;
             } else {
@@ -2539,39 +2574,55 @@
                 
                 const data = window.currentQuoteData;
                 
-                // Prepare form data for Web3Forms
-                const formData = {
-                    access_key: 'd3c367e4-bb7f-4788-bde6-5c5fe58746a4',
-                    subject: `🏗️ New Quote Request from ${data.client.name}`,
-                    from_name: 'ReWall Website',
-                    to: 'Rewallsolutions@gmail.com',
-                    // Client info
-                    'Client Name': data.client.name,
-                    'Client Email': data.client.email,
-                    'Client Phone': data.client.phone || 'Not provided',
-                    'Client Company': data.client.company || 'Not provided',
-                    // Project details
-                    'Services Requested': data.services.length > 0 ? data.services.join(', ') : 'Not specified',
-                    'Site Address': data.location.address || 'Not specified',
-                    'Site Coordinates': data.location.coordinates ? `${data.location.coordinates.lat.toFixed(6)}, ${data.location.coordinates.lon.toFixed(6)}` : 'Not provided',
-                    'Number of Walls': data.walls.length,
-                    'Total Wall Length (Est.)': data.totalWallLengthFormatted || 'Not measured',
-                    'Wall Types': data.wallTypes.length > 0 ? data.wallTypes.join(', ') : 'Not specified',
-                    'Geotechnical Status': document.querySelector('input[name="geotech-status"]:checked')?.value || 'Not specified',
-                    'Project Notes': data.notes || 'No notes provided',
-                    'Attachments': data.attachments.length > 0 ? data.attachments.map(a => a.name).join(', ') : 'None',
-                    // Full summary
-                    message: window.currentEmailBody
-                };
+                // Use FormData for file attachments
+                const formData = new FormData();
                 
-                // Send via Web3Forms API (secure, no password needed)
+                // Required Web3Forms fields
+                formData.append('access_key', 'd3c367e4-bb7f-4788-bde6-5c5fe58746a4');
+                formData.append('subject', `🏗️ New Quote Request from ${data.client.name}`);
+                formData.append('from_name', 'ReWall Website');
+                
+                // Client info
+                formData.append('Client Name', data.client.name);
+                formData.append('Client Email', data.client.email);
+                formData.append('Client Phone', data.client.phone || 'Not provided');
+                formData.append('Client Company', data.client.company || 'Not provided');
+                
+                // Project details
+                formData.append('Services Requested', data.services.length > 0 ? data.services.join(', ') : 'Not specified');
+                formData.append('Site Address', data.location.address || 'Not specified');
+                formData.append('Site Coordinates', data.location.coordinates ? `${data.location.coordinates.lat.toFixed(6)}, ${data.location.coordinates.lon.toFixed(6)}` : 'Not provided');
+                formData.append('Number of Walls', data.walls.length);
+                formData.append('Wall Details', data.walls.length > 0 ? data.walls.map(w => `Wall #${w.id}: ~${w.lengthFormatted} length${w.height ? ' x ' + w.heightFormatted + ' high' : ''}`).join('; ') : 'No walls drawn');
+                formData.append('Total Wall Length (Est.)', data.totalWallLengthFormatted || 'Not measured');
+                formData.append('Wall Types', data.wallTypes.length > 0 ? data.wallTypes.join(', ') : 'Not specified');
+                formData.append('Geotechnical Status', document.querySelector('input[name="geotech-status"]:checked')?.value || 'Not specified');
+                formData.append('Project Notes', data.notes || 'No notes provided');
+                
+                // Full summary as message
+                formData.append('message', window.currentEmailBody);
+                
+                // Add map snapshot as attachment if available
+                if (data.mapSnapshot) {
+                    try {
+                        const mapBlob = await fetch(data.mapSnapshot).then(r => r.blob());
+                        formData.append('attachment', mapBlob, `Site_Map_${data.client.name.replace(/\s+/g, '_')}.png`);
+                    } catch (e) {
+                        console.log('Could not attach map snapshot:', e);
+                    }
+                }
+                
+                // Add uploaded files as attachments (Web3Forms supports multiple)
+                if (uploadedFiles && uploadedFiles.length > 0) {
+                    for (let i = 0; i < uploadedFiles.length && i < 5; i++) {
+                        formData.append('attachment', uploadedFiles[i], uploadedFiles[i].name);
+                    }
+                }
+                
+                // Send via Web3Forms API with FormData (for file support)
                 const response = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData
                 });
                 
                 const result = await response.json();
