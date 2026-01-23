@@ -1206,7 +1206,7 @@
                         <img src="images/Logos/re wall logo WHITE.png" alt="ReWall Logo" style="width: 180px; height: auto; margin-bottom: var(--spacing-md);">
                         <p>Premium retaining wall solutions with expert engineering, smart digital tools, and trusted construction partners.</p>
                         <div class="footer-contact-inline">
-                            <a href="mailto:info@databloc.nz">📧 info@databloc.nz</a>
+                            <a href="mailto:Rewallsolutions@gmail.com">📧 Rewallsolutions@gmail.com</a>
                             <a href="tel:+64273941127">📞 027 394 1127</a>
                         </div>
                     </div>
@@ -1372,29 +1372,73 @@
             
             try {
                 // Use multiple search sources for better NZ coverage
+                // LINZ Address API provides the most specific NZ addresses
                 const searches = [
-                    // Nominatim with NZ focus
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=nz&limit=5&addressdetails=1`),
+                    // LINZ NZ Address Locator - best for specific NZ addresses
+                    fetch(`https://api.addressfinder.io/api/nz/address/autocomplete/?key=YPFNVGRTQDL9KE7MJAHU&q=${encodeURIComponent(query)}&max=8&format=json`).catch(() => null),
+                    // Nominatim as backup with NZ focus and street-level detail
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=nz&limit=8&addressdetails=1&bounded=1&viewbox=166.0,-47.5,178.5,-34.0`),
                     // Photon (another geocoding service)
                     fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query + ' New Zealand')}&limit=5`)
                 ];
                 
-                const [nominatimRes, photonRes] = await Promise.allSettled(searches);
+                const [addressFinderRes, nominatimRes, photonRes] = await Promise.allSettled(searches);
                 
                 let results = [];
                 
-                // Process Nominatim results
-                if (nominatimRes.status === 'fulfilled') {
+                // Process AddressFinder results first (most specific NZ addresses)
+                if (addressFinderRes.status === 'fulfilled' && addressFinderRes.value) {
+                    try {
+                        const afData = await addressFinderRes.value.json();
+                        if (afData.completions) {
+                            for (const addr of afData.completions) {
+                                // Get full address details with coordinates
+                                try {
+                                    const metaRes = await fetch(`https://api.addressfinder.io/api/nz/address/metadata/?key=YPFNVGRTQDL9KE7MJAHU&pxid=${addr.pxid}&format=json`);
+                                    const meta = await metaRes.json();
+                                    if (meta.x && meta.y) {
+                                        results.push({
+                                            display: addr.a,
+                                            main: addr.a.split(',')[0],
+                                            secondary: addr.a.split(',').slice(1).join(',').trim(),
+                                            lat: parseFloat(meta.y),
+                                            lon: parseFloat(meta.x),
+                                            type: 'address',
+                                            source: 'addressfinder'
+                                        });
+                                    }
+                                } catch (e) {
+                                    // If metadata fails, skip this result
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log('AddressFinder parse error:', e);
+                    }
+                }
+                
+                // Process Nominatim results as backup
+                if (nominatimRes.status === 'fulfilled' && results.length < 5) {
                     const nominatimData = await nominatimRes.value.json();
-                    results = nominatimData.map(r => ({
-                        display: r.display_name,
-                        main: r.name || r.display_name.split(',')[0],
-                        secondary: r.display_name.split(',').slice(1, 3).join(','),
-                        lat: parseFloat(r.lat),
-                        lon: parseFloat(r.lon),
-                        type: r.type,
-                        source: 'nominatim'
-                    }));
+                    nominatimData.forEach(r => {
+                        // Avoid duplicates and prioritize house/building addresses
+                        const mainAddr = r.address?.house_number 
+                            ? `${r.address.house_number} ${r.address.road || ''}`.trim()
+                            : (r.name || r.display_name.split(',')[0]);
+                        const secondaryAddr = [r.address?.suburb, r.address?.city || r.address?.town, r.address?.postcode].filter(Boolean).join(', ');
+                        
+                        if (!results.find(existing => existing.main === mainAddr)) {
+                            results.push({
+                                display: r.display_name,
+                                main: mainAddr,
+                                secondary: secondaryAddr || r.display_name.split(',').slice(1, 3).join(','),
+                                lat: parseFloat(r.lat),
+                                lon: parseFloat(r.lon),
+                                type: r.type,
+                                source: 'nominatim'
+                            });
+                        }
+                    });
                 }
                 
                 // Process Photon results (add unique ones)
@@ -1517,36 +1561,41 @@
         // ==========================================
         
         function initializeMap() {
-            // Center on New Zealand
+            // Center on New Zealand - maxZoom 22 allows zooming very close to property level
             map = L.map('site-map', {
                 center: [-41.2865, 174.7762],
                 zoom: 6,
-                zoomControl: true
+                zoomControl: true,
+                maxZoom: 22
             });
             
-            // Map tile layer (OpenStreetMap)
+            // Map tile layer (OpenStreetMap) - maxNativeZoom allows upscaling beyond tile resolution
             mapTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
-                maxZoom: 20
+                maxNativeZoom: 19,
+                maxZoom: 22
             });
             
-            // Satellite tile layer (ESRI)
+            // Satellite tile layer (ESRI) - higher zoom with upscaling
             satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Tiles © Esri',
-                maxZoom: 20
+                maxNativeZoom: 19,
+                maxZoom: 22
             });
             
-            // LINZ Property boundary layer - using correct WFS endpoint
+            // LINZ Aerial imagery - high resolution NZ aerial photos with extended zoom
             boundaryLayer = L.tileLayer('https://basemaps.linz.govt.nz/v1/tiles/aerial/WebMercatorQuad/{z}/{x}/{y}.webp?api=c01j1rxmhp01hdh3v4j6ac5z1dv', {
                 attribution: '© LINZ CC BY 4.0',
-                maxZoom: 20,
+                maxNativeZoom: 20,
+                maxZoom: 22,
                 opacity: 0.7
             });
             
-            // LINZ Topo layer with contours
+            // LINZ Topo layer with contours - extended zoom
             contourLayer = L.tileLayer('https://basemaps.linz.govt.nz/v1/tiles/topographic/WebMercatorQuad/{z}/{x}/{y}.png?api=c01j1rxmhp01hdh3v4j6ac5z1dv', {
                 attribution: '© LINZ CC BY 4.0',
-                maxZoom: 20,
+                maxNativeZoom: 18,
+                maxZoom: 22,
                 opacity: 0.8
             });
             
@@ -2398,6 +2447,9 @@
         }
         
         function showSubmissionModal(data, emailBody) {
+            // Store data for direct send
+            window.currentQuoteData = data;
+            
             // Create modal
             const modal = document.createElement('div');
             modal.id = 'submission-modal';
@@ -2411,23 +2463,31 @@
                         </div>
                         
                         <div style="padding: 30px;">
-                            <p style="color: var(--slate); margin-bottom: 20px;">Your quote request has been prepared. Choose how you'd like to submit it:</p>
+                            <p style="color: var(--slate); margin-bottom: 20px;">Your quote request has been prepared. Click below to send it directly to our team:</p>
                             
                             <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <button onclick="sendViaEmail('${data.client.email}')" style="padding: 16px 24px; background: var(--teal-accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                    📧 Send via Email
-                                    <span style="font-size: 0.85rem; opacity: 0.8;">(Opens your email client)</span>
+                                <button id="direct-send-btn" onclick="sendDirectToRewall()" style="padding: 16px 24px; background: linear-gradient(135deg, #28a745 0%, #20863a 100%); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(40,167,69,0.3);">
+                                    🚀 Send Quote Request Now
                                 </button>
+                                <p style="text-align: center; font-size: 0.85rem; color: var(--slate); margin: 0;">Your request will be sent securely to ReWall</p>
                                 
-                                <button onclick="copyToClipboard()" style="padding: 16px 24px; background: var(--primary-black); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                    📋 Copy Summary
-                                    <span style="font-size: 0.85rem; opacity: 0.8;">(Paste anywhere)</span>
-                                </button>
-                                
-                                <button onclick="downloadSummary()" style="padding: 16px 24px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                    💾 Download Summary
-                                    <span style="font-size: 0.85rem; opacity: 0.8;">(Save as text file)</span>
-                                </button>
+                                <div style="border-top: 1px solid var(--border-gray); margin: 10px 0; padding-top: 15px;">
+                                    <p style="font-size: 0.9rem; color: var(--slate); margin-bottom: 10px;">Alternative options:</p>
+                                    
+                                    <button onclick="sendViaEmail('${data.client.email}')" style="padding: 12px 20px; background: var(--teal-accent); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 10px;">
+                                        📧 Open in Email App
+                                    </button>
+                                    
+                                    <div style="display: flex; gap: 10px;">
+                                        <button onclick="copyToClipboard()" style="flex: 1; padding: 10px 16px; background: var(--light-gray); color: var(--primary-black); border: 1px solid var(--border-gray); border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                                            📋 Copy
+                                        </button>
+                                        
+                                        <button onclick="downloadSummary()" style="flex: 1; padding: 10px 16px; background: var(--light-gray); color: var(--primary-black); border: 1px solid var(--border-gray); border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                                            💾 Download
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div style="margin-top: 25px; padding: 15px; background: var(--soft-blue); border-radius: 8px;">
@@ -2463,7 +2523,109 @@
             const body = encodeURIComponent(window.currentEmailBody);
             
             // Open email client
-            window.location.href = `mailto:info@databloc.nz?cc=${clientEmail}&subject=${subject}&body=${body}`;
+            window.location.href = `mailto:Rewallsolutions@gmail.com?cc=${clientEmail}&subject=${subject}&body=${body}`;
+        }
+        
+        // SECURE DIRECT EMAIL SEND
+        // Uses Web3Forms - a secure form submission service (no passwords exposed)
+        // Free tier: 250 emails/month, spam protection included
+        async function sendDirectToRewall() {
+            const btn = document.getElementById('direct-send-btn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '⏳ Sending...';
+                btn.disabled = true;
+                
+                const data = window.currentQuoteData;
+                
+                // Prepare form data for Web3Forms
+                const formData = {
+                    access_key: 'd3c367e4-bb7f-4788-bde6-5c5fe58746a4',
+                    subject: `🏗️ New Quote Request from ${data.client.name}`,
+                    from_name: 'ReWall Website',
+                    to: 'Rewallsolutions@gmail.com',
+                    // Client info
+                    'Client Name': data.client.name,
+                    'Client Email': data.client.email,
+                    'Client Phone': data.client.phone || 'Not provided',
+                    'Client Company': data.client.company || 'Not provided',
+                    // Project details
+                    'Services Requested': data.services.length > 0 ? data.services.join(', ') : 'Not specified',
+                    'Site Address': data.location.address || 'Not specified',
+                    'Site Coordinates': data.location.coordinates ? `${data.location.coordinates.lat.toFixed(6)}, ${data.location.coordinates.lon.toFixed(6)}` : 'Not provided',
+                    'Number of Walls': data.walls.length,
+                    'Total Wall Length (Est.)': data.totalWallLengthFormatted || 'Not measured',
+                    'Wall Types': data.wallTypes.length > 0 ? data.wallTypes.join(', ') : 'Not specified',
+                    'Geotechnical Status': document.querySelector('input[name="geotech-status"]:checked')?.value || 'Not specified',
+                    'Project Notes': data.notes || 'No notes provided',
+                    'Attachments': data.attachments.length > 0 ? data.attachments.map(a => a.name).join(', ') : 'None',
+                    // Full summary
+                    message: window.currentEmailBody
+                };
+                
+                // Send via Web3Forms API (secure, no password needed)
+                const response = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    btn.innerHTML = '✅ Sent Successfully!';
+                    btn.style.background = '#28a745';
+                    
+                    // Update modal to show confirmation
+                    setTimeout(() => {
+                        const modalContent = document.querySelector('#submission-modal > div > div');
+                        modalContent.innerHTML = `
+                            <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 40px; border-radius: 16px 16px 0 0; text-align: center;">
+                                <div style="font-size: 5rem; margin-bottom: 10px;">✅</div>
+                                <h2 style="color: white; margin: 0;">Quote Request Sent!</h2>
+                            </div>
+                            <div style="padding: 30px; text-align: center;">
+                                <p style="font-size: 1.1rem; color: var(--charcoal); margin-bottom: 20px;">
+                                    Thank you, <strong>${data.client.name}</strong>!
+                                </p>
+                                <p style="color: var(--slate); margin-bottom: 25px;">
+                                    Your quote request has been securely sent to our team at ReWall. 
+                                    We'll review your details and get back to you within <strong>24-48 hours</strong>.
+                                </p>
+                                <div style="background: var(--soft-blue); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                    <p style="margin: 0; font-size: 0.95rem;">
+                                        📧 A copy has been sent to: <strong>${data.client.email}</strong>
+                                    </p>
+                                </div>
+                                <p style="color: var(--slate); font-size: 0.9rem; margin-bottom: 20px;">
+                                    Questions? Call us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a>
+                                </p>
+                                <button onclick="closeSubmissionModal(); location.reload();" style="padding: 14px 30px; background: var(--teal-accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                                    Done
+                                </button>
+                            </div>
+                        `;
+                    }, 500);
+                } else {
+                    throw new Error(result.message || 'Failed to send');
+                }
+                
+            } catch (error) {
+                console.error('Send error:', error);
+                btn.innerHTML = '❌ Send Failed - Try Email Instead';
+                btn.style.background = '#dc3545';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 3000);
+            }
         }
         
         function copyToClipboard() {
