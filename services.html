@@ -1919,10 +1919,31 @@
                     }
                 }
                 
-                // Draw the polylines (walls) directly on canvas
+                // Draw the polylines (walls) directly on canvas - THICK RED LINES
                 if (drawnWalls.length > 0) {
-                    ctx.strokeStyle = '#e74c3c'; // Red color matching the wall lines
-                    ctx.lineWidth = 4;
+                    // Draw a white outline first for contrast
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 10;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    
+                    drawnWalls.forEach(wall => {
+                        const latlngs = wall.layer.getLatLngs();
+                        if (latlngs.length > 0) {
+                            ctx.beginPath();
+                            const firstPoint = map.latLngToContainerPoint(latlngs[0]);
+                            ctx.moveTo(firstPoint.x, firstPoint.y);
+                            for (let i = 1; i < latlngs.length; i++) {
+                                const point = map.latLngToContainerPoint(latlngs[i]);
+                                ctx.lineTo(point.x, point.y);
+                            }
+                            ctx.stroke();
+                        }
+                    });
+                    
+                    // Now draw the red line on top
+                    ctx.strokeStyle = '#e74c3c'; // Bright red
+                    ctx.lineWidth = 6;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
                     
@@ -1943,16 +1964,27 @@
                             
                             ctx.stroke();
                             
-                            // Draw points at vertices for visibility
+                            // Draw larger points at vertices for visibility
                             ctx.fillStyle = '#c0392b';
                             latlngs.forEach(latlng => {
                                 const point = map.latLngToContainerPoint(latlng);
                                 ctx.beginPath();
-                                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                                ctx.fill();
+                            });
+                            
+                            // White center on vertices
+                            ctx.fillStyle = '#ffffff';
+                            latlngs.forEach(latlng => {
+                                const point = map.latLngToContainerPoint(latlng);
+                                ctx.beginPath();
+                                ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
                                 ctx.fill();
                             });
                         }
                     });
+                    
+                    console.log('Drew', drawnWalls.length, 'walls on canvas');
                 }
                 
                 mapSnapshot = canvas.toDataURL('image/png');
@@ -2029,20 +2061,24 @@
             // Wait for scroll and ensure map is visible
             await new Promise(resolve => setTimeout(resolve, 800));
             
-            // Fit bounds to show all walls if any
+            // Fit bounds to show all walls if any - ZOOM IN TIGHT
             if (drawnWalls.length > 0) {
                 const allBounds = L.latLngBounds([]);
                 drawnWalls.forEach(wall => {
                     allBounds.extend(wall.layer.getBounds());
                 });
-                // Use larger padding and limit max zoom to ensure walls are visible with context
+                // Zoom in tight with small padding to focus on walls
                 map.fitBounds(allBounds, { 
-                    padding: [100, 100],
-                    maxZoom: 17  // Prevent over-zooming so the line and surroundings are visible
+                    padding: [50, 50],
+                    maxZoom: 20  // Allow closer zoom for detail
                 });
                 
-                // Wait for map to update
-                await new Promise(resolve => setTimeout(resolve, 600));
+                // Wait for map tiles to load after zoom
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Force another refresh
+                map.invalidateSize();
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
             
             // Capture the snapshot
@@ -2349,19 +2385,19 @@
         
         function submitQuoteRequest() {
             console.log('Submit button clicked - starting submitQuoteRequest');
-            try {
-                // Validate required fields
-                const name = document.getElementById('client-name')?.value?.trim() || '';
-                const email = document.getElementById('client-email')?.value?.trim() || '';
-                
-                console.log('Name:', name, 'Email:', email);
-                
-                const validationMsg = document.getElementById('validation-message');
-                
-                if (!name || !email) {
-                    validationMsg.style.display = 'block';
-                    validationMsg.textContent = 'Please fill in your Name and Email address';
-                    document.getElementById('step-details').scrollIntoView({ behavior: 'smooth' });
+            
+            // Validate required fields
+            const name = document.getElementById('client-name')?.value?.trim() || '';
+            const email = document.getElementById('client-email')?.value?.trim() || '';
+            
+            console.log('Name:', name, 'Email:', email);
+            
+            const validationMsg = document.getElementById('validation-message');
+            
+            if (!name || !email) {
+                validationMsg.style.display = 'block';
+                validationMsg.textContent = 'Please fill in your Name and Email address';
+                document.getElementById('step-details').scrollIntoView({ behavior: 'smooth' });
                 return;
             }
             
@@ -2429,11 +2465,6 @@
             
             // Show success modal and options
             showSubmissionModal(quoteData, emailBody);
-            
-            } catch (error) {
-                console.error('Error in submitQuoteRequest:', error);
-                alert('An error occurred. Please check the console for details.');
-            }
         }
         
         function generateEmailBody(data) {
