@@ -1865,39 +1865,24 @@
             const placeholder = document.getElementById('snapshot-placeholder');
             const snapshotImg = document.getElementById('map-snapshot-img');
             
-            console.log('Capturing map snapshot...');
+            console.log('Capturing map snapshot with satellite background...');
             
-            // Simple canvas drawing - just walls on green background
             const canvas = document.createElement('canvas');
             canvas.width = 600;
             canvas.height = 400;
             const ctx = canvas.getContext('2d');
             
-            // Green background
-            ctx.fillStyle = '#3d6b3d';
-            ctx.fillRect(0, 0, 600, 400);
+            // Get current map bounds and center
+            const bounds = map.getBounds();
+            const center = map.getCenter();
+            const zoom = map.getZoom();
             
-            // Grid pattern
-            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-            ctx.lineWidth = 1;
-            for (let x = 0; x < 600; x += 30) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, 400);
-                ctx.stroke();
-            }
-            for (let y = 0; y < 400; y += 30) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(600, y);
-                ctx.stroke();
-            }
+            // Calculate bounds for walls or use map bounds
+            let minLat, maxLat, minLng, maxLng;
             
-            // Draw walls
             if (drawnWalls.length > 0) {
-                // Get bounds of all walls
-                let minLat = Infinity, maxLat = -Infinity;
-                let minLng = Infinity, maxLng = -Infinity;
+                minLat = Infinity; maxLat = -Infinity;
+                minLng = Infinity; maxLng = -Infinity;
                 
                 drawnWalls.forEach(wall => {
                     let latlngs = wall.layer.getLatLngs();
@@ -1913,16 +1898,67 @@
                 });
                 
                 // Add padding
-                const latPad = (maxLat - minLat) * 0.3 || 0.001;
-                const lngPad = (maxLng - minLng) * 0.3 || 0.001;
+                const latPad = (maxLat - minLat) * 0.4 || 0.0005;
+                const lngPad = (maxLng - minLng) * 0.4 || 0.0005;
                 minLat -= latPad; maxLat += latPad;
                 minLng -= lngPad; maxLng += lngPad;
+            } else {
+                minLat = bounds.getSouth();
+                maxLat = bounds.getNorth();
+                minLng = bounds.getWest();
+                maxLng = bounds.getEast();
+            }
+            
+            const centerLat = (minLat + maxLat) / 2;
+            const centerLng = (minLng + maxLng) / 2;
+            
+            // Try to load satellite image from ESRI static map API
+            const staticMapUrl = `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${minLng},${minLat},${maxLng},${maxLat}&bboxSR=4326&imageSR=4326&size=600,400&format=png&f=image`;
+            
+            try {
+                // Load satellite background
+                const bgImage = new Image();
+                bgImage.crossOrigin = 'anonymous';
                 
-                // Scale function
-                const scaleX = (lng) => ((lng - minLng) / (maxLng - minLng)) * 540 + 30;
-                const scaleY = (lat) => 370 - ((lat - minLat) / (maxLat - minLat)) * 340;
+                await new Promise((resolve, reject) => {
+                    bgImage.onload = resolve;
+                    bgImage.onerror = reject;
+                    bgImage.src = staticMapUrl;
+                });
                 
-                // Draw each wall
+                // Draw satellite background
+                ctx.drawImage(bgImage, 0, 0, 600, 400);
+                console.log('Satellite background loaded');
+                
+            } catch (error) {
+                console.log('Satellite image failed, using green background:', error);
+                // Fallback to green background
+                ctx.fillStyle = '#3d6b3d';
+                ctx.fillRect(0, 0, 600, 400);
+                
+                // Grid pattern
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1;
+                for (let x = 0; x < 600; x += 30) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, 400);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < 400; y += 30) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(600, y);
+                    ctx.stroke();
+                }
+            }
+            
+            // Scale functions for drawing walls
+            const scaleX = (lng) => ((lng - minLng) / (maxLng - minLng)) * 600;
+            const scaleY = (lat) => 400 - ((lat - minLat) / (maxLat - minLat)) * 400;
+            
+            // Draw walls on top of background
+            if (drawnWalls.length > 0) {
                 drawnWalls.forEach((wall, idx) => {
                     let latlngs = wall.layer.getLatLngs();
                     if (latlngs[0] && Array.isArray(latlngs[0]) && !latlngs[0].lat) {
@@ -1930,10 +1966,11 @@
                     }
                     
                     if (latlngs.length >= 2) {
-                        // White outline
+                        // White outline for visibility
                         ctx.strokeStyle = '#ffffff';
                         ctx.lineWidth = 8;
                         ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
                         ctx.beginPath();
                         ctx.moveTo(scaleX(latlngs[0].lng), scaleY(latlngs[0].lat));
                         for (let i = 1; i < latlngs.length; i++) {
@@ -1941,7 +1978,7 @@
                         }
                         ctx.stroke();
                         
-                        // Red line
+                        // Red wall line
                         ctx.strokeStyle = '#FF0000';
                         ctx.lineWidth = 4;
                         ctx.beginPath();
@@ -1953,44 +1990,60 @@
                         
                         // Dots at vertices
                         latlngs.forEach(ll => {
+                            ctx.fillStyle = '#ffffff';
+                            ctx.beginPath();
+                            ctx.arc(scaleX(ll.lng), scaleY(ll.lat), 8, 0, Math.PI * 2);
+                            ctx.fill();
                             ctx.fillStyle = '#FF0000';
                             ctx.beginPath();
-                            ctx.arc(scaleX(ll.lng), scaleY(ll.lat), 6, 0, Math.PI * 2);
+                            ctx.arc(scaleX(ll.lng), scaleY(ll.lat), 5, 0, Math.PI * 2);
                             ctx.fill();
                         });
                         
-                        // Label
-                        const midPt = latlngs[Math.floor(latlngs.length / 2)];
-                        ctx.fillStyle = '#ffffff';
+                        // Label with background
+                        const midIdx = Math.floor(latlngs.length / 2);
+                        const midPt = latlngs[midIdx];
+                        const labelX = scaleX(midPt.lng);
+                        const labelY = scaleY(midPt.lat) - 20;
+                        const label = 'Wall #' + (idx + 1);
+                        
                         ctx.font = 'bold 14px Arial';
+                        const textWidth = ctx.measureText(label).width;
+                        
+                        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                        ctx.fillRect(labelX - textWidth/2 - 6, labelY - 12, textWidth + 12, 20);
+                        
+                        ctx.fillStyle = '#ffffff';
                         ctx.textAlign = 'center';
-                        ctx.fillText('Wall #' + (idx + 1), scaleX(midPt.lng), scaleY(midPt.lat) - 15);
+                        ctx.fillText(label, labelX, labelY + 2);
                     }
                 });
             }
             
-            // Legend
-            ctx.fillStyle = 'rgba(0,0,0,0.7)';
-            ctx.fillRect(10, 10, 140, 25);
+            // Legend box
+            ctx.fillStyle = 'rgba(0,0,0,0.75)';
+            ctx.fillRect(10, 10, 150, 30);
             ctx.strokeStyle = '#FF0000';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
             ctx.beginPath();
-            ctx.moveTo(20, 22);
-            ctx.lineTo(50, 22);
+            ctx.moveTo(20, 25);
+            ctx.lineTo(55, 25);
             ctx.stroke();
-            ctx.fillStyle = '#fff';
-            ctx.font = '12px Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'left';
-            ctx.fillText('= Wall location', 58, 26);
+            ctx.fillText('= Wall location', 65, 29);
             
-            // Address
+            // Address bar at bottom
             const addr = document.getElementById('address-search')?.value || '';
             if (addr) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(10, 370, 580, 25);
-                ctx.fillStyle = '#fff';
-                ctx.font = '11px Arial';
-                ctx.fillText('📍 ' + addr.substring(0, 80), 15, 386);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.fillRect(0, 365, 600, 35);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('📍 ' + addr.substring(0, 70), 10, 387);
             }
             
             // Save snapshot
@@ -1999,7 +2052,7 @@
             snapshotImg.style.display = 'block';
             placeholder.style.display = 'none';
             
-            console.log('Snapshot done');
+            console.log('Snapshot complete with satellite background');
         }
         
         // Manual capture with visual feedback
