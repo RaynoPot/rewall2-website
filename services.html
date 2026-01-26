@@ -1286,11 +1286,55 @@
         
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if returning from FormSubmit submission
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('submitted') === 'true') {
+                showSuccessMessage();
+                // Clear the URL parameter
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
             initializeMap();
             initializeAddressSearch();
             initializeFileUpload();
             updateQuoteSummary();
         });
+        
+        // Show success message after form submission
+        function showSuccessMessage() {
+            const modal = document.createElement('div');
+            modal.id = 'success-modal';
+            modal.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                    <div style="background: white; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                        <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
+                            <h2 style="color: white; margin: 0;">Quote Request Sent!</h2>
+                        </div>
+                        <div style="padding: 30px; text-align: center;">
+                            <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;">
+                                <strong>Your quote request has been sent to ReWall!</strong>
+                            </p>
+                            <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #28a745; text-align: left;">
+                                <p style="margin: 0 0 10px; color: #155724; font-weight: 600;">📧 What happens next:</p>
+                                <ul style="margin: 0; padding-left: 20px; color: #155724;">
+                                    <li>You'll receive a confirmation email shortly</li>
+                                    <li>Our team will review your project details</li>
+                                    <li>We'll contact you within 1-2 business days</li>
+                                </ul>
+                            </div>
+                            <p style="color: var(--slate); margin-bottom: 20px;">
+                                Questions? Call us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a>
+                            </p>
+                            <button onclick="document.getElementById('success-modal').remove();" style="padding: 14px 30px; background: var(--teal-accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
         
         // Scroll to quote builder
         function scrollToQuoteBuilder() {
@@ -2451,6 +2495,18 @@
                 wallTypes.push(input.value);
             });
             
+            // Get geotechnical report status
+            const geotechRadio = document.querySelector('input[name="geotech-status"]:checked');
+            let geotechStatus = 'Not specified';
+            if (geotechRadio) {
+                const geotechValues = {
+                    'have-report': 'Yes, I have a geotechnical report',
+                    'need-report': 'No, please include geotechnical investigation in the quote',
+                    'not-sure': 'Not sure - please advise'
+                };
+                geotechStatus = geotechValues[geotechRadio.value] || geotechRadio.value;
+            }
+            
             const quoteData = {
                 timestamp: new Date().toISOString(),
                 client: {
@@ -2472,10 +2528,12 @@
                     heightFormatted: w.height ? `${w.height}m` : 'Not specified',
                     coordinates: w.latlngs
                 })),
+                numberOfWalls: drawnWalls.length,
                 totalWallLength: drawnWalls.reduce((sum, w) => sum + w.distance, 0),
                 totalWallLengthFormatted: formatDistance(drawnWalls.reduce((sum, w) => sum + w.distance, 0)),
                 wallTypes: wallTypes,
                 otherWallType: document.getElementById('other-wall-type')?.value || '',
+                geotech: geotechStatus,
                 notes: document.getElementById('client-notes')?.value || '',
                 attachments: uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })),
                 mapSnapshot: mapSnapshot
@@ -2643,174 +2701,148 @@
             return new Blob([u8arr], { type: mime });
         }
         
-        // Main send function using FormSubmit.co
+        // Main send function using FormSubmit.co with hidden form for reliable attachment support
         async function sendWithAttachments() {
             const btn = document.getElementById('direct-send-btn');
             const data = window.currentQuoteData;
             
-            btn.innerHTML = '⏳ Sending to ReWall...';
+            btn.innerHTML = '⏳ Preparing submission...';
             btn.disabled = true;
             
             try {
-                // Create FormData for FormSubmit
-                const formData = new FormData();
+                // Create a hidden form for submission (more reliable for attachments)
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'https://formsubmit.co/Rewallsolutions@gmail.com';
+                form.enctype = 'multipart/form-data';
+                form.style.display = 'none';
+                
+                // Helper to add hidden field
+                const addField = (name, value) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                };
                 
                 // FormSubmit configuration
-                formData.append('_subject', 'ReWall Quote Request - ' + (data.location.address || 'New Project'));
-                formData.append('_captcha', 'false');
-                formData.append('_template', 'table');
-                formData.append('_cc', data.client.email);
+                addField('_subject', 'ReWall Quote Request - ' + (data.location.address || 'New Project'));
+                addField('_captcha', 'false');
+                addField('_template', 'table');
+                addField('_cc', data.client.email);
+                addField('_next', window.location.href.split('?')[0] + '?submitted=true');
                 
                 // Client details
-                formData.append('Client Name', data.client.name);
-                formData.append('Client Email', data.client.email);
-                formData.append('Client Phone', data.client.phone || 'Not provided');
-                formData.append('Company/Project', data.client.company || 'Not specified');
+                addField('Client Name', data.client.name);
+                addField('Client Email', data.client.email);
+                addField('Client Phone', data.client.phone || 'Not provided');
+                addField('Company/Project', data.client.company || 'Not specified');
                 
                 // Location
-                formData.append('Site Address', data.location.address || 'Not specified');
-                if (data.location.coords) {
-                    formData.append('Coordinates', `${data.location.coords.lat}, ${data.location.coords.lng}`);
+                addField('Site Address', data.location.address || 'Not specified');
+                if (data.location.coordinates) {
+                    addField('Coordinates', `${data.location.coordinates.lat}, ${data.location.coordinates.lon || data.location.coordinates.lng}`);
                 }
                 
                 // Services
-                formData.append('Selected Services', data.services.join(', ') || 'None selected');
+                addField('Selected Services', data.services.join(', ') || 'None selected');
                 
                 // Wall details
+                addField('Number of Walls', data.numberOfWalls || 0);
                 if (data.walls && data.walls.length > 0) {
-                    let wallDetails = data.walls.map((w, i) => 
-                        `Wall ${i+1}: ${w.length}m long` + (w.height ? `, ${w.height}m high` : '')
+                    let wallDetails = data.walls.map((w) => 
+                        `Wall ${w.id}: ${w.lengthFormatted} long` + (w.height ? `, ${w.height}m high` : '')
                     ).join(' | ');
-                    formData.append('Wall Measurements', wallDetails);
-                    formData.append('Total Wall Length', data.totalLength + 'm');
+                    addField('Wall Measurements', wallDetails);
+                    addField('Total Wall Length', data.totalWallLengthFormatted || 'Not measured');
                 } else {
-                    formData.append('Wall Measurements', 'No walls drawn on map');
+                    addField('Wall Measurements', 'No walls drawn on map');
+                    addField('Total Wall Length', 'N/A');
                 }
                 
                 // Wall types
-                formData.append('Wall Types', data.wallTypes.join(', ') || 'Not specified');
+                addField('Wall Types', data.wallTypes.join(', ') || 'Not specified');
+                if (data.otherWallType) {
+                    addField('Other Wall Type Details', data.otherWallType);
+                }
                 
                 // Geotechnical
-                formData.append('Geotechnical Report', data.geotech || 'Not specified');
+                addField('Geotechnical Report', data.geotech || 'Not specified');
                 
                 // Notes
-                formData.append('Project Notes', data.notes || 'None');
+                addField('Project Notes', data.notes || 'None');
                 
-                // Add map snapshot as attachment
+                // Create file input for attachments
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = 'attachment';
+                fileInput.multiple = true;
+                form.appendChild(fileInput);
+                
+                // Create a DataTransfer to programmatically set files
+                const dt = new DataTransfer();
+                
+                // Add map snapshot as file
                 if (data.mapSnapshot) {
-                    btn.innerHTML = '⏳ Attaching map...';
+                    btn.innerHTML = '⏳ Preparing map image...';
                     const mapBlob = dataURLtoBlob(data.mapSnapshot);
                     const mapFile = new File([mapBlob], 'ReWall-Site-Map.png', { type: 'image/png' });
-                    formData.append('attachment', mapFile);
+                    dt.items.add(mapFile);
                 }
                 
-                // Add uploaded files as attachments
+                // Add uploaded files
                 if (uploadedFiles && uploadedFiles.length > 0) {
                     for (let i = 0; i < uploadedFiles.length; i++) {
-                        btn.innerHTML = `⏳ Attaching file ${i + 1}/${uploadedFiles.length}...`;
+                        btn.innerHTML = `⏳ Preparing file ${i + 1}/${uploadedFiles.length}...`;
                         if (uploadedFiles[i].file) {
-                            formData.append('attachment', uploadedFiles[i].file);
+                            dt.items.add(uploadedFiles[i].file);
                         }
                     }
                 }
                 
-                btn.innerHTML = '⏳ Sending email...';
+                // Set the files to the input
+                fileInput.files = dt.files;
                 
-                // Send via FormSubmit
-                const response = await fetch('https://formsubmit.co/ajax/Rewallsolutions@gmail.com', {
-                    method: 'POST',
-                    body: formData
-                });
+                btn.innerHTML = '⏳ Sending to ReWall...';
                 
-                const result = await response.json();
+                // Append form to body and submit
+                document.body.appendChild(form);
                 
-                if (result.success === 'true' || result.success === true || response.ok) {
-                    // Success!
-                    btn.innerHTML = '✅ Sent Successfully!';
-                    btn.style.background = '#28a745';
-                    
-                    // Show success modal
-                    setTimeout(() => {
-                        const modalContent = document.querySelector('#submission-modal > div > div');
-                        if (modalContent) {
-                            modalContent.innerHTML = `
-                                <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
-                                    <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
-                                    <h2 style="color: white; margin: 0;">Quote Request Sent!</h2>
-                                </div>
-                                <div style="padding: 30px; text-align: center;">
-                                    <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;">
-                                        <strong>Your quote request has been sent to ReWall!</strong>
-                                    </p>
-                                    <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #28a745; text-align: left;">
-                                        <p style="margin: 0 0 10px; color: #155724; font-weight: 600;">📧 What happens next:</p>
-                                        <ul style="margin: 0; padding-left: 20px; color: #155724;">
-                                            <li>You'll receive a confirmation email shortly</li>
-                                            <li>Our team will review your project details</li>
-                                            <li>We'll contact you within 1-2 business days</li>
-                                        </ul>
-                                    </div>
-                                    <p style="color: var(--slate); margin-bottom: 20px;">
-                                        Questions? Call us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a>
-                                    </p>
-                                    <button onclick="closeSubmissionModal(); location.reload();" style="padding: 14px 30px; background: var(--teal-accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
-                                        Done
-                                    </button>
-                                </div>
-                            `;
-                        }
-                    }, 500);
-                    
-                } else {
-                    throw new Error(result.message || 'Form submission failed');
+                // Show submitting message
+                const modalContent = document.querySelector('#submission-modal > div > div');
+                if (modalContent) {
+                    modalContent.innerHTML = `
+                        <div style="background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 10px;">📤</div>
+                            <h2 style="color: white; margin: 0;">Sending...</h2>
+                        </div>
+                        <div style="padding: 30px; text-align: center;">
+                            <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;">
+                                <strong>Submitting your quote request with ${dt.files.length} attachment(s)...</strong>
+                            </p>
+                            <div style="display: flex; justify-content: center; margin: 20px 0;">
+                                <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--teal-accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            </div>
+                            <p style="color: var(--slate);">Please wait, do not close this page...</p>
+                            <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+                        </div>
+                    `;
                 }
+                
+                // Submit the form
+                form.submit();
                 
             } catch (error) {
-                console.error('FormSubmit Error:', error);
-                btn.innerHTML = '❌ Send Failed';
+                console.error('Submission Error:', error);
+                btn.innerHTML = '❌ Error';
                 btn.style.background = '#dc3545';
                 
-                // Show error with fallback options
                 setTimeout(() => {
-                    const modalContent = document.querySelector('#submission-modal > div > div');
-                    if (modalContent) {
-                        modalContent.innerHTML = `
-                            <div style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
-                                <div style="font-size: 4rem; margin-bottom: 10px;">⚠️</div>
-                                <h2 style="color: white; margin: 0;">Send Failed</h2>
-                            </div>
-                            <div style="padding: 30px;">
-                                <p style="color: var(--slate); margin-bottom: 20px;">
-                                    There was a problem sending your quote request. Don't worry - you have options:
-                                </p>
-                                
-                                <div style="display: flex; flex-direction: column; gap: 12px;">
-                                    <button onclick="sendWithAttachments()" style="padding: 14px 24px; background: var(--teal-accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
-                                        🔄 Try Again
-                                    </button>
-                                    
-                                    <button onclick="sendViaEmail()" style="padding: 14px 24px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
-                                        📧 Open in Email App Instead
-                                    </button>
-                                    
-                                    <button onclick="downloadAll()" style="padding: 14px 24px; background: var(--light-gray); color: var(--primary-black); border: 1px solid var(--border-gray); border-radius: 8px; font-size: 1rem; cursor: pointer;">
-                                        💾 Download Files & Email Manually
-                                    </button>
-                                </div>
-                                
-                                <div style="margin-top: 20px; padding: 15px; background: var(--soft-blue); border-radius: 8px;">
-                                    <p style="margin: 0; font-size: 0.9rem; color: var(--slate);">
-                                        <strong>📞 Or call us directly:</strong><br>
-                                        <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600; font-size: 1.1rem;">027 394 1127</a>
-                                    </p>
-                                </div>
-                                
-                                <button onclick="closeSubmissionModal()" style="margin-top: 15px; padding: 12px 24px; background: var(--light-gray); color: var(--primary-black); border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 100%;">
-                                    ← Back to Quote Builder
-                                </button>
-                            </div>
-                        `;
-                    }
+                    alert('There was an error preparing your submission. Please try the "Download All" option instead.');
+                    btn.innerHTML = '🚀 Send Quote Request Now';
+                    btn.style.background = '';
+                    btn.disabled = false;
                 }, 500);
             }
         }
