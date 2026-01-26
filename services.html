@@ -2773,36 +2773,49 @@
                 // Notes
                 addField('Project Notes', data.notes || 'None');
                 
-                // Create file input for attachments
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.name = 'attachment';
-                fileInput.multiple = true;
-                form.appendChild(fileInput);
+                // Add attachments as separate file inputs (FormSubmit requires this for multiple files)
+                let attachmentCount = 0;
                 
-                // Create a DataTransfer to programmatically set files
-                const dt = new DataTransfer();
-                
-                // Add map snapshot as file
+                // Add map snapshot as first attachment
                 if (data.mapSnapshot) {
                     btn.innerHTML = '⏳ Preparing map image...';
                     const mapBlob = dataURLtoBlob(data.mapSnapshot);
                     const mapFile = new File([mapBlob], 'ReWall-Site-Map.png', { type: 'image/png' });
-                    dt.items.add(mapFile);
+                    
+                    // Create separate file input for map
+                    const mapInput = document.createElement('input');
+                    mapInput.type = 'file';
+                    mapInput.name = 'attachment';
+                    mapInput.style.display = 'none';
+                    form.appendChild(mapInput);
+                    
+                    // Use DataTransfer to set the file
+                    const mapDt = new DataTransfer();
+                    mapDt.items.add(mapFile);
+                    mapInput.files = mapDt.files;
+                    attachmentCount++;
                 }
                 
-                // Add uploaded files
+                // Add uploaded files as separate inputs
                 if (uploadedFiles && uploadedFiles.length > 0) {
                     for (let i = 0; i < uploadedFiles.length; i++) {
                         btn.innerHTML = `⏳ Preparing file ${i + 1}/${uploadedFiles.length}...`;
                         if (uploadedFiles[i].file) {
-                            dt.items.add(uploadedFiles[i].file);
+                            // Create separate file input for each uploaded file
+                            const fileInput = document.createElement('input');
+                            fileInput.type = 'file';
+                            fileInput.name = 'attachment';
+                            fileInput.style.display = 'none';
+                            form.appendChild(fileInput);
+                            
+                            // Use DataTransfer to set the file
+                            const fileDt = new DataTransfer();
+                            fileDt.items.add(uploadedFiles[i].file);
+                            fileInput.files = fileDt.files;
+                            attachmentCount++;
                         }
                     }
                 }
-                
-                // Set the files to the input
-                fileInput.files = dt.files;
                 
                 btn.innerHTML = '⏳ Sending to ReWall...';
                 
@@ -2819,7 +2832,7 @@
                         </div>
                         <div style="padding: 30px; text-align: center;">
                             <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;">
-                                <strong>Submitting your quote request with ${dt.files.length} attachment(s)...</strong>
+                                <strong>Submitting your quote request with ${attachmentCount} attachment(s)...</strong>
                             </p>
                             <div style="display: flex; justify-content: center; margin: 20px 0;">
                                 <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--teal-accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
