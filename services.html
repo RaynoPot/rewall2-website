@@ -2773,49 +2773,38 @@
                 // Notes
                 addField('Project Notes', data.notes || 'None');
                 
-                // Add attachments as separate file inputs (FormSubmit requires this for multiple files)
+                // Add map snapshot as base64 attachment (FormSubmit accepts this format)
                 let attachmentCount = 0;
-                
-                // Add map snapshot as first attachment
                 if (data.mapSnapshot) {
                     btn.innerHTML = '⏳ Preparing map image...';
-                    const mapBlob = dataURLtoBlob(data.mapSnapshot);
-                    const mapFile = new File([mapBlob], 'ReWall-Site-Map.png', { type: 'image/png' });
-                    
-                    // Create separate file input for map
-                    const mapInput = document.createElement('input');
-                    mapInput.type = 'file';
-                    mapInput.name = 'attachment';
-                    mapInput.style.display = 'none';
-                    form.appendChild(mapInput);
-                    
-                    // Use DataTransfer to set the file
-                    const mapDt = new DataTransfer();
-                    mapDt.items.add(mapFile);
-                    mapInput.files = mapDt.files;
+                    // Add as hidden field with special naming for FormSubmit attachment
+                    addField('_attachment[ReWall-Site-Map.png]', data.mapSnapshot);
                     attachmentCount++;
+                    console.log('Map snapshot added to form');
                 }
                 
-                // Add uploaded files as separate inputs
+                // Add uploaded files - need to convert to base64 for FormSubmit
                 if (uploadedFiles && uploadedFiles.length > 0) {
                     for (let i = 0; i < uploadedFiles.length; i++) {
                         btn.innerHTML = `⏳ Preparing file ${i + 1}/${uploadedFiles.length}...`;
                         if (uploadedFiles[i].file) {
-                            // Create separate file input for each uploaded file
-                            const fileInput = document.createElement('input');
-                            fileInput.type = 'file';
-                            fileInput.name = 'attachment';
-                            fileInput.style.display = 'none';
-                            form.appendChild(fileInput);
-                            
-                            // Use DataTransfer to set the file
-                            const fileDt = new DataTransfer();
-                            fileDt.items.add(uploadedFiles[i].file);
-                            fileInput.files = fileDt.files;
-                            attachmentCount++;
+                            // Read file as base64
+                            const reader = new FileReader();
+                            await new Promise((resolve) => {
+                                reader.onload = function(e) {
+                                    const base64Data = e.target.result;
+                                    addField(`_attachment[${uploadedFiles[i].name}]`, base64Data);
+                                    attachmentCount++;
+                                    console.log(`File ${uploadedFiles[i].name} added to form`);
+                                    resolve();
+                                };
+                                reader.readAsDataURL(uploadedFiles[i].file);
+                            });
                         }
                     }
                 }
+                
+                console.log(`Total attachments: ${attachmentCount}`);
                 
                 btn.innerHTML = '⏳ Sending to ReWall...';
                 
