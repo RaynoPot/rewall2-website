@@ -1753,29 +1753,23 @@
             });
             
             // LINZ Property Boundaries - NZ Property Titles (cadastral parcels)
-            console.log('Initializing LINZ Property Boundaries...');
-            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms?', {
+            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
                 layers: 'layer-50804',
                 format: 'image/png',
                 transparent: true,
                 attribution: '© LINZ CC BY 4.0',
                 maxZoom: 22,
-                minZoom: 14,
-                opacity: 0.9,
-                version: '1.3.0'
+                opacity: 0.7
             });
             
-            // LINZ Contour Lines - NZ 8m DEM Contours (2012-2016)
-            console.log('Initializing LINZ Contours...');
-            contourLayer = L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms?', {
-                layers: 'layer-50448',
+            // LINZ Contour Lines - Topo50 Contours
+            contourLayer = L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
+                layers: 'layer-50768',
                 format: 'image/png',
                 transparent: true,
                 attribution: '© LINZ CC BY 4.0',
                 maxZoom: 22,
-                minZoom: 13,
-                opacity: 0.8,
-                version: '1.3.0'
+                opacity: 0.6
             });
             
             // Start with map view
@@ -1881,16 +1875,6 @@
             
             if (checkbox.checked) {
                 try {
-                    console.log('Adding property boundaries layer...');
-                    console.log('Current map zoom:', map.getZoom());
-                    console.log('Current map center:', map.getCenter());
-                    
-                    if (map.getZoom() < 14) {
-                        alert('Please zoom in closer (zoom level 14+) to see property boundaries.');
-                        checkbox.checked = false;
-                        return;
-                    }
-                    
                     boundaryLayer.addTo(map);
                     // Keep boundaries above base layer but below drawn items
                     boundaryLayer.bringToFront();
@@ -1898,27 +1882,13 @@
                         drawnItems.bringToFront();
                     }
                     label.classList.add('active');
-                    console.log('✓ Property boundaries layer added successfully');
-                    
-                    // Add load event listener
-                    boundaryLayer.on('loading', function() {
-                        console.log('Loading boundaries tiles...');
-                    });
-                    boundaryLayer.on('load', function() {
-                        console.log('✓ Boundaries tiles loaded');
-                    });
-                    boundaryLayer.on('tileerror', function(error) {
-                        console.error('Boundary tile error:', error);
-                    });
                 } catch (error) {
                     console.error('Error adding boundaries:', error);
                     checkbox.checked = false;
-                    alert('Unable to load property boundaries. Error: ' + error.message);
                 }
             } else {
                 map.removeLayer(boundaryLayer);
                 label.classList.remove('active');
-                console.log('Property boundaries removed');
             }
         }
         
@@ -1929,16 +1899,6 @@
             
             if (checkbox.checked) {
                 try {
-                    console.log('Adding contours layer...');
-                    console.log('Current map zoom:', map.getZoom());
-                    console.log('Current map center:', map.getCenter());
-                    
-                    if (map.getZoom() < 13) {
-                        alert('Please zoom in closer (zoom level 13+) to see contour lines.');
-                        checkbox.checked = false;
-                        return;
-                    }
-                    
                     contourLayer.addTo(map);
                     // Keep contours above base layer but below boundaries and drawn items
                     if (document.getElementById('boundaries-toggle').checked) {
@@ -1948,30 +1908,9 @@
                         drawnItems.bringToFront();
                     }
                     label.classList.add('active');
-                    console.log('✓ Contours layer added successfully');
-                    
-                    // Add load event listeners
-                    contourLayer.on('loading', function() {
-                        console.log('Loading contour tiles...');
-                    });
-                    contourLayer.on('load', function() {
-                        console.log('✓ Contour tiles loaded');
-                    });
-                    contourLayer.on('tileerror', function(error) {
-                        console.error('Contour tile error:', error);
-                    });
                 } catch (error) {
                     console.error('Error adding contours:', error);
                     checkbox.checked = false;
-                    alert('Unable to load contour lines. Error: ' + error.message);
-                }
-            } else {
-                map.removeLayer(contourLayer);
-                label.classList.remove('active');
-                console.log('Contours removed');
-            }
-        }
-                    alert('Unable to load contour lines. Error: ' + error.message);
                 }
             } else {
                 map.removeLayer(contourLayer);
