@@ -77,11 +77,99 @@
             overflow: hidden;
             border: 2px solid var(--border-gray);
             margin-bottom: var(--spacing-md);
+            position: relative;
         }
         
         #site-map {
             height: 100%;
             width: 100%;
+        }
+        
+        /* Drawing Tool Enhancement - Pulsing Animation */
+        .leaflet-draw-toolbar {
+            animation: drawToolPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes drawToolPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(74, 144, 164, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(74, 144, 164, 0);
+            }
+        }
+        
+        /* Floating Tooltip Prompt for Drawing Tool */
+        .draw-prompt-tooltip {
+            position: absolute;
+            left: 70px;
+            top: 10px;
+            background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 20px rgba(74, 144, 164, 0.4);
+            z-index: 1000;
+            animation: tooltipBounce 2s ease-in-out infinite;
+            pointer-events: none;
+            max-width: 250px;
+        }
+        
+        .draw-prompt-tooltip::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #4A90A4;
+        }
+        
+        .draw-prompt-tooltip .prompt-icon {
+            display: inline-block;
+            margin-right: 6px;
+            animation: pointFinger 1s ease-in-out infinite;
+        }
+        
+        @keyframes tooltipBounce {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(8px);
+            }
+        }
+        
+        @keyframes pointFinger {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+        
+        /* Hide tooltip when drawing starts */
+        .draw-prompt-tooltip.hidden {
+            display: none;
+        }
+        
+        /* Enhanced draw button styling */
+        .leaflet-draw-draw-polyline {
+            background-color: #4A90A4 !important;
+            border: 2px solid white !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .leaflet-draw-draw-polyline:hover {
+            background-color: #2C7A99 !important;
+            transform: scale(1.1);
         }
         
         .map-controls {
@@ -152,7 +240,7 @@
             border-radius: 0 0 var(--radius-md) var(--radius-md);
             max-height: 300px;
             overflow-y: auto;
-            z-index: 1000;
+            z-index: 2000;
             display: none;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
@@ -741,7 +829,7 @@
                             <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()">
                             <span>🏠 Property Boundaries</span>
                         </label>
-                        <label class="layer-toggle-item" id="contours-label">
+                        <label class="layer-toggle-item" id="contours-label" style="display: none;">
                             <input type="checkbox" id="contours-toggle" onchange="toggleContours()">
                             <span>📈 Contours</span>
                         </label>
@@ -749,12 +837,16 @@
                     
                     <div id="map-container">
                         <div id="site-map"></div>
+                        <div class="draw-prompt-tooltip" id="draw-tooltip">
+                            <span class="prompt-icon">👆</span>
+                            Click the drawing tool to mark your wall location!
+                        </div>
                     </div>
                     
                     <div class="drawing-info">
                         <h4>📏 How to Draw Your Walls</h4>
                         <p>
-                            <strong>1.</strong> Click the polyline tool (📐) on the left side of the map<br>
+                            <strong>1.</strong> Click the <span style="background: #4A90A4; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600;">📐 Draw a polyline</span> tool on the left side of the map<br>
                             <strong>2.</strong> Click on the map to place points along your wall line<br>
                             <strong>3.</strong> Double-click or click "Finish" to complete the wall<br>
                             <strong>4.</strong> The distance will be calculated automatically<br>
@@ -1629,12 +1721,14 @@
                 maxZoom: 22
             });
             
-            // LINZ Aerial imagery - high resolution NZ aerial photos with extended zoom
-            boundaryLayer = L.tileLayer('https://basemaps.linz.govt.nz/v1/tiles/aerial/WebMercatorQuad/{z}/{x}/{y}.webp?api=c01j1rxmhp01hdh3v4j6ac5z1dv', {
+            // LINZ Property Boundaries - cadastral parcels
+            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=c01j1rxmhp01hdh3v4j6ac5z1dv/wfs', {
+                layers: 'layer-50804',
+                format: 'image/png',
+                transparent: true,
                 attribution: '© LINZ CC BY 4.0',
-                maxNativeZoom: 20,
                 maxZoom: 22,
-                opacity: 0.7
+                opacity: 0.8
             });
             
             // LINZ Topo layer with contours - extended zoom
@@ -1679,6 +1773,32 @@
                 }
             });
             map.addControl(drawControl);
+            
+            // Enhanced drawing tool interactions
+            const drawTooltip = document.getElementById('draw-tooltip');
+            let tooltipHidden = false;
+            
+            // Hide tooltip when user starts drawing
+            map.on('draw:drawstart', function() {
+                if (!tooltipHidden) {
+                    drawTooltip.classList.add('hidden');
+                    tooltipHidden = true;
+                }
+            });
+            
+            // Show encouraging message when first wall is drawn
+            let firstWallDrawn = false;
+            map.on('draw:created', function(e) {
+                if (!firstWallDrawn) {
+                    firstWallDrawn = true;
+                    // Show success message briefly
+                    const successMsg = document.createElement('div');
+                    successMsg.style.cssText = 'position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #28a745; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 20px rgba(40,167,69,0.4); z-index: 1001; animation: slideDown 0.3s ease;';
+                    successMsg.textContent = '✅ Great! Wall marked successfully!';
+                    document.getElementById('map-container').appendChild(successMsg);
+                    setTimeout(() => successMsg.remove(), 3000);
+                }
+            });
             
             // Handle draw events
             map.on('draw:created', handleDrawCreated);
