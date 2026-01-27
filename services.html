@@ -1744,26 +1744,43 @@
             });
             
             // LINZ Property Boundaries - NZ Property Titles (cadastral parcels)
-            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
+            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
                 layers: 'layer-50804',
                 format: 'image/png',
                 transparent: true,
                 attribution: '© LINZ CC BY 4.0',
                 maxZoom: 22,
-                opacity: 0.7,
-                version: '1.1.1'
+                opacity: 0.8,
+                version: '1.3.0',
+                zIndex: 500
             });
             
-            // LINZ Contour Lines - Topo50 Contours
-            contourLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
-                layers: 'layer-50768',
-                format: 'image/png',
-                transparent: true,
-                attribution: '© LINZ CC BY 4.0',
-                maxZoom: 22,
-                opacity: 0.6,
-                version: '1.1.1'
-            });
+            // LINZ Contour Lines - Multiple layers for better coverage
+            // Using NZ Contours (Topo, 1:50k) for broader view and 1m DEM for detailed areas
+            contourLayer = L.layerGroup([
+                // 1m DEM Contours - High resolution for urban/detailed areas
+                L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
+                    layers: 'layer-50448',
+                    format: 'image/png',
+                    transparent: true,
+                    attribution: '© LINZ CC BY 4.0',
+                    maxZoom: 22,
+                    opacity: 0.7,
+                    version: '1.3.0',
+                    zIndex: 400
+                }),
+                // Topo50 Contours - Broader coverage
+                L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
+                    layers: 'layer-50768',
+                    format: 'image/png',
+                    transparent: true,
+                    attribution: '© LINZ CC BY 4.0',
+                    maxZoom: 22,
+                    opacity: 0.6,
+                    version: '1.3.0',
+                    zIndex: 390
+                })
+            ]);
             
             // Start with map view
             mapTileLayer.addTo(map);

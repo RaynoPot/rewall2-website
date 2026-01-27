@@ -63,13 +63,12 @@
                     <h2>Send us a Message</h2>
                     <p>Fill out the form below and we'll get back to you within 24 hours with next steps and a custom quote.</p>
                     
-                    <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
-                        <input type="hidden" name="form-name" value="contact">
-                        
-                        <!-- Honeypot field -->
-                        <p class="hidden">
-                            <label>Don't fill this out: <input name="bot-field"></label>
-                        </p>
+                    <form action="https://formsubmit.co/Rewallsolutions@gmail.com" method="POST">
+                        <!-- FormSubmit Configuration -->
+                        <input type="hidden" name="_subject" value="New Contact Form Submission - ReWall NZ">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_template" value="table">
+                        <input type="text" name="_honey" style="display:none">
                         
                         <label for="name">
                             Full Name *
