@@ -63,12 +63,13 @@
                     <h2>Send us a Message</h2>
                     <p>Fill out the form below and we'll get back to you within 24 hours with next steps and a custom quote.</p>
                     
-                    <form action="https://formsubmit.co/Rewallsolutions@gmail.com" method="POST">
+                    <form action="https://formsubmit.co/rewallsolutions@gmail.com" method="POST">
                         <!-- FormSubmit Configuration -->
                         <input type="hidden" name="_subject" value="New Contact Form Submission - ReWall NZ">
-                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_next" value="https://rewall.netlify.app/contact.html?success=true">
+                        <input type="hidden" name="_captcha" value="true">
                         <input type="hidden" name="_template" value="table">
-                        <input type="text" name="_honey" style="display:none">
+                        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
                         
                         <label for="name">
                             Full Name *
@@ -297,5 +298,24 @@
     </main>
 
     <script src="js/scripts.js"></script>
+    <script>
+        // Show success message if form was submitted successfully
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            const successBanner = document.createElement('div');
+            successBanner.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #28a745; color: white; padding: 20px 40px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 20px rgba(40,167,69,0.5); z-index: 10000; animation: slideDown 0.3s ease;';
+            successBanner.innerHTML = '✅ Message sent successfully! We\'ll get back to you within 24 hours.';
+            document.body.appendChild(successBanner);
+            
+            // Remove the success parameter from URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Remove banner after 5 seconds
+            setTimeout(() => {
+                successBanner.style.animation = 'slideUp 0.3s ease';
+                setTimeout(() => successBanner.remove(), 300);
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
