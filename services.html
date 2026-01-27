@@ -308,7 +308,7 @@
             color: white;
         }
         
-        /* Layer toggles */
+        /* Layer toggles - Enhanced styling */
         .layer-toggles {
             display: flex;
             gap: var(--spacing-md);
@@ -320,25 +320,47 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            padding: 8px 12px;
-            background: var(--light-gray);
-            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            background: white;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
             transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         .layer-toggle-item:hover {
             background: var(--soft-blue);
+            border-color: var(--teal-accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(74, 144, 164, 0.15);
         }
         
         .layer-toggle-item.active {
-            background: var(--teal-accent);
+            background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%);
             color: white;
+            border-color: var(--teal-accent);
+            box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+        }
+        
+        .layer-toggle-item.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74, 144, 164, 0.4);
         }
         
         .layer-toggle-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             accent-color: var(--teal-accent);
+            cursor: pointer;
+        }
+        
+        .layer-toggle-item.active input[type="checkbox"] {
+            accent-color: white;
+        }
+        
+        .layer-toggle-item span {
+            user-select: none;
         }
         
         .drawing-info {
@@ -825,11 +847,11 @@
                     </div>
                     
                     <div class="layer-toggles" style="margin-bottom: var(--spacing-md);">
-                        <label class="layer-toggle-item" id="boundaries-label">
+                        <label class="layer-toggle-item" id="boundaries-label" title="Show/hide NZ property boundary lines">
                             <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()">
                             <span>🏠 Property Boundaries</span>
                         </label>
-                        <label class="layer-toggle-item" id="contours-label" style="display: none;">
+                        <label class="layer-toggle-item" id="contours-label" title="Show/hide topographic contour lines">
                             <input type="checkbox" id="contours-toggle" onchange="toggleContours()">
                             <span>📈 Contours</span>
                         </label>
@@ -1721,22 +1743,26 @@
                 maxZoom: 22
             });
             
-            // LINZ Property Boundaries - cadastral parcels
-            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=c01j1rxmhp01hdh3v4j6ac5z1dv/wfs', {
+            // LINZ Property Boundaries - NZ Property Titles (cadastral parcels)
+            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
                 layers: 'layer-50804',
                 format: 'image/png',
                 transparent: true,
                 attribution: '© LINZ CC BY 4.0',
                 maxZoom: 22,
-                opacity: 0.8
+                opacity: 0.7,
+                version: '1.1.1'
             });
             
-            // LINZ Topo layer with contours - extended zoom
-            contourLayer = L.tileLayer('https://basemaps.linz.govt.nz/v1/tiles/topographic/WebMercatorQuad/{z}/{x}/{y}.png?api=c01j1rxmhp01hdh3v4j6ac5z1dv', {
+            // LINZ Contour Lines - Topo50 Contours
+            contourLayer = L.tileLayer.wms('https://data.linz.govt.nz/services;key=c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
+                layers: 'layer-50768',
+                format: 'image/png',
+                transparent: true,
                 attribution: '© LINZ CC BY 4.0',
-                maxNativeZoom: 18,
                 maxZoom: 22,
-                opacity: 0.8
+                opacity: 0.6,
+                version: '1.1.1'
             });
             
             // Start with map view
@@ -1827,34 +1853,55 @@
             currentLayer = type;
         }
         
-        // Toggle property boundaries (using LINZ aerial as reference)
+        // Toggle property boundaries with enhanced feedback
         function toggleBoundaries() {
             const checkbox = document.getElementById('boundaries-toggle');
             const label = document.getElementById('boundaries-label');
             
             if (checkbox.checked) {
-                boundaryLayer.addTo(map);
-                boundaryLayer.bringToBack();
-                label.classList.add('active');
+                try {
+                    boundaryLayer.addTo(map);
+                    // Keep boundaries above base layer but below drawn items
+                    boundaryLayer.bringToFront();
+                    if (drawnItems) {
+                        drawnItems.bringToFront();
+                    }
+                    label.classList.add('active');
+                    console.log('Property boundaries layer added');
+                } catch (error) {
+                    console.error('Error adding boundaries:', error);
+                    checkbox.checked = false;
+                    alert('Unable to load property boundaries. Please try again.');
+                }
             } else {
                 map.removeLayer(boundaryLayer);
                 label.classList.remove('active');
             }
         }
         
-        // Toggle contour lines
+        // Toggle contour lines with enhanced feedback
         function toggleContours() {
             const checkbox = document.getElementById('contours-toggle');
             const label = document.getElementById('contours-label');
             
             if (checkbox.checked) {
-                contourLayer.addTo(map);
-                // Keep contours behind drawn items but above base
-                contourLayer.bringToBack();
-                if (document.getElementById('boundaries-toggle').checked) {
-                    boundaryLayer.bringToBack();
+                try {
+                    contourLayer.addTo(map);
+                    // Keep contours above base layer but below boundaries and drawn items
+                    contourLayer.bringToFront();
+                    if (document.getElementById('boundaries-toggle').checked) {
+                        boundaryLayer.bringToFront();
+                    }
+                    if (drawnItems) {
+                        drawnItems.bringToFront();
+                    }
+                    label.classList.add('active');
+                    console.log('Contours layer added');
+                } catch (error) {
+                    console.error('Error adding contours:', error);
+                    checkbox.checked = false;
+                    alert('Unable to load contour lines. Please try again.');
                 }
-                label.classList.add('active');
             } else {
                 map.removeLayer(contourLayer);
                 label.classList.remove('active');
