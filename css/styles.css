@@ -1204,7 +1204,23 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
 .journey-stage:nth-child(4) { /* Estimate - Bottom Right (120°) */
     bottom: 130px;
     right: 35px;
-    }
+}
+
+/* Highlight the Estimate stage with special styling */
+.journey-stage:nth-child(4) .journey-stage-label {
+    background: var(--teal-accent);
+    color: var(--white);
+    padding: 12px 24px;
+    font-size: 1rem;
+    box-shadow: 0 4px 16px rgba(74, 144, 164, 0.4);
+    border: 2px solid var(--teal-accent);
+}
+
+.journey-stage:nth-child(4):hover .journey-stage-label {
+    background: #2C7A99;
+    border-color: #2C7A99;
+    box-shadow: 0 6px 20px rgba(74, 144, 164, 0.5);
+}
 
 .journey-stage:nth-child(5) { /* Consent - Bottom (180°) */
     bottom: 0;
