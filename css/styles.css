@@ -1204,7 +1204,6 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
 .journey-stage:nth-child(4) { /* Estimate - Bottom Right (120°) */
     bottom: 130px;
     right: 35px;
-    }
 
 .journey-stage:nth-child(5) { /* Consent - Bottom (180°) */
     bottom: 0;
