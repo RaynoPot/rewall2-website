@@ -103,7 +103,7 @@
         .draw-prompt-tooltip {
             position: absolute;
             left: 70px;
-            top: 100px;
+            top: 55px;
             background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
             color: white;
             padding: 12px 20px;
@@ -548,21 +548,21 @@
             overflow: hidden;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 3px solid transparent;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 2px solid #e8eef2;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
             position: relative;
         }
         
         .wall-type-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(74, 144, 164, 0.15);
+            box-shadow: 0 12px 32px rgba(74, 144, 164, 0.12);
             border-color: var(--teal-accent);
         }
         
         .wall-type-card.selected {
             border-color: var(--teal-accent);
-            background: #e8f4f8;
-            box-shadow: 0 8px 24px rgba(74, 144, 164, 0.25);
+            background: linear-gradient(180deg, #f0f9fb 0%, #ffffff 100%);
+            box-shadow: 0 8px 24px rgba(74, 144, 164, 0.2);
         }
         
         .wall-type-card.selected::after {
@@ -570,8 +570,8 @@
             position: absolute;
             top: 10px;
             right: 12px;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             background: var(--teal-accent);
             color: white;
             border-radius: 50%;
@@ -579,17 +579,49 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1rem;
             box-shadow: 0 2px 8px rgba(74, 144, 164, 0.4);
         }
         
         .wall-card-image {
-            height: 140px;
+            height: 160px;
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            background: linear-gradient(180deg, #f8fafb 0%, #eef3f6 100%);
+            position: relative;
+        }
+        
+        .wall-card-image .icon-circle {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 3px solid #e8eef2;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .wall-type-card:hover .icon-circle {
+            border-color: var(--teal-accent);
+            box-shadow: 0 6px 24px rgba(74, 144, 164, 0.15);
+            transform: scale(1.05);
+        }
+        
+        .wall-type-card.selected .icon-circle {
+            border-color: var(--teal-accent);
+            box-shadow: 0 6px 24px rgba(74, 144, 164, 0.2);
+        }
+        
+        .wall-card-image .icon-circle img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
         }
         
         .wall-card-content {
@@ -1098,8 +1130,10 @@
                     <div class="wall-type-grid">
                         <!-- Gravity Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'gravity')">
-                            <div class="wall-card-image" style="background: linear-gradient(135deg, #8B7355 0%, #A0826D 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Concrete Animation.jfif" alt="Gravity (Concrete)" style="width: 140px; height: 140px; object-fit: contain;">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/Concrete Animation.jfif" alt="Gravity (Concrete)">
+                                </div>
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-gravity" class="wall-card-title">Gravity (Concrete)</label>
@@ -1115,8 +1149,10 @@
 
                         <!-- MSE Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'mse')">
-                            <div class="wall-card-image" style="background: linear-gradient(135deg, #4A90A4 0%, #2C5F7F 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Concrete Animation.jfif" alt="MSE" style="width: 140px; height: 140px; object-fit: contain;">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/Concrete Animation.jfif" alt="MSE">
+                                </div>
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-mse" class="wall-card-title">MSE (Mechanically Stabilized Earth)</label>
@@ -1132,8 +1168,10 @@
 
                         <!-- Timber Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'timber')">
-                            <div class="wall-card-image" style="background: linear-gradient(135deg, #8B6F47 0%, #A0826D 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Timber Animation.jfif" alt="Timber" style="width: 140px; height: 140px; object-fit: contain;">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/Timber Animation.jfif" alt="Timber">
+                                </div>
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-timber" class="wall-card-title">Timber</label>
@@ -1149,8 +1187,10 @@
 
                         <!-- Landscape Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'landscape')">
-                            <div class="wall-card-image" style="background: linear-gradient(135deg, #D4A574 0%, #E8C4A0 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/icons/stone-landscape-icon.svg" alt="Landscape/Stone" style="width: 140px; height: 140px; object-fit: contain;">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/icons/stone-landscape-icon.svg" alt="Landscape/Stone">
+                                </div>
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-landscape" class="wall-card-title">Landscape/Stone</label>
@@ -1166,8 +1206,10 @@
 
                         <!-- Hybrid Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'hybrid')">
-                            <div class="wall-card-image" style="background: linear-gradient(135deg, #6B5B4C 0%, #8B7B6C 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Steel and Timber Animation.jfif" alt="Hybrid" style="width: 140px; height: 140px; object-fit: contain;">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/Steel and Timber Animation.jfif" alt="Hybrid">
+                                </div>
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-hybrid" class="wall-card-title">Hybrid</label>
@@ -1183,22 +1225,14 @@
 
                         <!-- Other -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'other')">
-                            <div class="wall-card-image" style="background: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 100%); display: flex; align-items: center; justify-content: center;">
-                                <svg width="140" height="140" viewBox="0 0 140 140" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
-                                    <!-- Lightbulb body -->
-                                    <circle cx="70" cy="50" r="28" fill="#FFD700" stroke="#FFC700" stroke-width="2"/>
-                                    <!-- Lightbulb screw base -->
-                                    <rect x="58" y="76" width="24" height="10" fill="#C0C0C0" rx="2"/>
-                                    <!-- Lightbulb socket lines -->
-                                    <line x1="56" y1="86" x2="48" y2="94" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round"/>
-                                    <line x1="84" y1="86" x2="92" y2="94" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round"/>
-                                    <!-- Light rays -->
-                                    <circle cx="70" cy="50" r="35" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
-                                    <line x1="20" y1="50" x2="32" y2="50" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
-                                    <line x1="108" y1="50" x2="120" y2="50" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
-                                    <line x1="32" y1="18" x2="42" y2="28" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
-                                    <line x1="98" y1="28" x2="108" y2="18" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
-                                </svg>
+                            <div class="wall-card-image">
+                                <div class="icon-circle" style="background: linear-gradient(135deg, #f0f4f8 0%, #e8eef2 100%);">
+                                    <svg width="70" height="70" viewBox="0 0 70 70">
+                                        <!-- Question mark with modern styling -->
+                                        <circle cx="35" cy="35" r="30" fill="none" stroke="#4A90A4" stroke-width="2" stroke-dasharray="4 2" opacity="0.4"/>
+                                        <text x="35" y="45" text-anchor="middle" font-size="36" font-weight="600" fill="#4A90A4">?</text>
+                                    </svg>
+                                </div>
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-other" class="wall-card-title">Other/Not Sure</label>
@@ -2034,17 +2068,29 @@
                 maxZoom: 22
             });
             
-            // LINZ NZ Parcel Boundaries Wireframe using WMTS (more reliable)
-            // Layer 50772 = NZ Primary Land Parcels (wireframe/outlines)
+            // LINZ NZ Parcel Boundaries using WMS
+            // Layer 50772 = NZ Primary Parcels (wireframe boundaries)
             const linzApiKey = 'c01j1rxmhp01hdh3v4j6ac5z1dv';
-            boundaryLayer = L.tileLayer(
-                `https://tiles-a.data-cdn.linz.govt.nz/services;key=${linzApiKey}/tiles/v4/set=4769/EPSG:3857/{z}/{x}/{y}.png`,
+            boundaryLayer = L.tileLayer.wms(
+                `https://data.linz.govt.nz/services;key=${linzApiKey}/wms`,
                 {
+                    layers: 'layer-50772',
+                    format: 'image/png',
+                    transparent: true,
                     attribution: '© LINZ CC BY 4.0',
                     maxZoom: 22,
-                    opacity: 1
+                    version: '1.1.1',
+                    styles: ''
                 }
             );
+            
+            // Add load event listeners for debugging
+            boundaryLayer.on('load', function() {
+                console.log('LINZ boundary tiles loaded successfully');
+            });
+            boundaryLayer.on('tileerror', function(e) {
+                console.error('LINZ tile error:', e.tile, e.error);
+            });
             
             // Start with map view
             mapTileLayer.addTo(map);
@@ -2150,6 +2196,7 @@
             if (checkbox.checked) {
                 try {
                     console.log('Adding LINZ boundary layer to map...');
+                    console.log('Boundary layer URL:', boundaryLayer._url || boundaryLayer._wmsUrl);
                     boundaryLayer.addTo(map);
                     // Keep boundaries above base layer but below drawn items
                     boundaryLayer.bringToFront();
@@ -2158,11 +2205,6 @@
                     }
                     label.classList.add('active');
                     console.log('Boundary layer added successfully');
-                    
-                    // Add error listener for tile loading issues
-                    boundaryLayer.on('tileerror', function(error) {
-                        console.error('Tile load error:', error);
-                    });
                 } catch (error) {
                     console.error('Error adding boundaries:', error);
                     checkbox.checked = false;
