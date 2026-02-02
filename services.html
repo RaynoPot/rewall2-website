@@ -2034,15 +2034,17 @@
                 maxZoom: 22
             });
             
-            // LINZ Property Boundaries - NZ Property Titles (cadastral parcels)
-            boundaryLayer = L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
-                layers: 'layer-50806',
-                format: 'image/png',
-                transparent: true,
-                attribution: '© LINZ CC BY 4.0',
-                maxZoom: 22,
-                opacity: 0.7
-            });
+            // LINZ NZ Parcel Boundaries Wireframe using WMTS (more reliable)
+            // Layer 50772 = NZ Primary Land Parcels (wireframe/outlines)
+            const linzApiKey = 'c01j1rxmhp01hdh3v4j6ac5z1dv';
+            boundaryLayer = L.tileLayer(
+                `https://tiles-a.data-cdn.linz.govt.nz/services;key=${linzApiKey}/tiles/v4/set=4769/EPSG:3857/{z}/{x}/{y}.png`,
+                {
+                    attribution: '© LINZ CC BY 4.0',
+                    maxZoom: 22,
+                    opacity: 1
+                }
+            );
             
             // Start with map view
             mapTileLayer.addTo(map);
@@ -2147,6 +2149,7 @@
             
             if (checkbox.checked) {
                 try {
+                    console.log('Adding LINZ boundary layer to map...');
                     boundaryLayer.addTo(map);
                     // Keep boundaries above base layer but below drawn items
                     boundaryLayer.bringToFront();
@@ -2154,6 +2157,12 @@
                         drawnItems.bringToFront();
                     }
                     label.classList.add('active');
+                    console.log('Boundary layer added successfully');
+                    
+                    // Add error listener for tile loading issues
+                    boundaryLayer.on('tileerror', function(error) {
+                        console.error('Tile load error:', error);
+                    });
                 } catch (error) {
                     console.error('Error adding boundaries:', error);
                     checkbox.checked = false;
