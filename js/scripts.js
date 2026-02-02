@@ -3,6 +3,38 @@
 // Animations, interactions, and functionality
 // ===================================
 
+// Design Portal Modal Functions
+function openDesignPortal() {
+    const modal = document.getElementById('design-portal-modal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeDesignPortal() {
+    const modal = document.getElementById('design-portal-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('design-portal-modal');
+    if (modal && event.target === modal) {
+        closeDesignPortal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeDesignPortal();
+    }
+});
+
 // Mobile Hamburger Menu Toggle
 document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.getElementById('hamburger');
@@ -28,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(event) {
         if (sidebar && hamburger) {
             const isClickInsideSidebar = sidebar.contains(event.target);
+
             const isClickOnHamburger = hamburger.contains(event.target);
             
             if (!isClickInsideSidebar && !isClickOnHamburger && sidebar.classList.contains('active')) {

@@ -907,8 +907,8 @@
         <div class="divider"></div>
         
         <div class="cta-group">
-            <button class="btn" onclick="window.location.href='contact.html'">Request a Quote</button>
-            <button class="btn secondary" onclick="window.location.href='https://databloc.nz'">Plan Your Wall</button>
+            <button class="btn" onclick="window.location.href='services.html#journey-wheel'">Plan & Quote</button>
+            <button class="btn secondary" onclick="openDesignPortal()">Design</button>
         </div>
         
         <div class="divider"></div>
@@ -1617,7 +1617,7 @@
                     Complete the next step by requesting a quote from our team. We'll review your selections and provide a detailed proposal.
                 </p>
                 <div style="display: flex; gap: var(--spacing-md); justify-content: center;">
-                    <button class="btn" onclick="window.location.href='services.html#journey-wheel'">Request a Quote</button>
+                    <button class="btn" onclick="window.location.href='services.html#journey-wheel'">Plan & Quote</button>
                     <button class="btn secondary" onclick="closeServicePopup()">Continue Browsing</button>
                 </div>
             </div>
@@ -1675,8 +1675,8 @@
                             <h4>Get In Touch</h4>
                             <ul>
                                 <li><a href="contact.html">Contact Form</a></li>
-                                <li><a href="contact.html">Request a Quote</a></li>
-                                <li><a href="services.html#journey-wheel">Plan Your Wall</a></li>
+                                <li><a href="services.html#journey-wheel">Plan & Quote</a></li>
+                                <li><a href="#" onclick="openDesignPortal(); return false;">Design Portal</a></li>
                             </ul>
                         </div>
                     </div>
@@ -1686,6 +1686,43 @@
                 <p>&copy; 2026 ReWall NZ. All rights reserved. | <a href="#privacy">Privacy Policy</a></p>
             </div>
         </footer>
+
+        <!-- Design Portal Modal -->
+        <div class="design-portal-modal" id="design-portal-modal">
+            <div class="design-portal-content">
+                <button class="design-portal-close" onclick="closeDesignPortal()">&times;</button>
+                <div class="design-portal-header">
+                    <h2>🔐 Design Portal</h2>
+                    <p>Professional wall design tools for clients</p>
+                </div>
+                <div class="design-portal-body">
+                    <span class="coming-soon-badge">🚀 Coming Soon</span>
+                    <h3>We're Building Something Amazing</h3>
+                    <p class="portal-message">Our interactive Design Portal is currently under development. Soon you'll be able to visualize your retaining wall, explore materials, and collaborate with our engineers in real-time.</p>
+                    
+                    <div class="design-portal-features">
+                        <h4>What's Coming:</h4>
+                        <ul>
+                            <li>3D wall visualization</li>
+                            <li>Material & finish explorer</li>
+                            <li>Real-time cost estimates</li>
+                            <li>Direct engineer collaboration</li>
+                            <li>Project timeline tracking</li>
+                        </ul>
+                    </div>
+                    
+                    <p class="portal-message" style="margin-bottom: var(--spacing-sm); font-weight: 600;">Get notified when we launch:</p>
+                    <form class="design-portal-notify" action="https://formsubmit.co/rewallsolutions@gmail.com" method="POST">
+                        <input type="hidden" name="_subject" value="Design Portal - Early Access Request">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                        <button type="submit">Notify Me</button>
+                    </form>
+                    
+                    <p class="design-portal-alt">Ready to start now? <a href="services.html#journey-wheel">Get a quote today →</a></p>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script src="js/scripts.js"></script>
