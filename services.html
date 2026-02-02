@@ -1099,7 +1099,7 @@
                         <!-- Gravity Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'gravity')">
                             <div class="wall-card-image" style="background: linear-gradient(135deg, #8B7355 0%, #A0826D 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Concrete Animation.jfif" alt="Gravity (Concrete)" style="width: 80px; height: 80px; object-fit: contain;">
+                                <img src="images/Concrete Animation.jfif" alt="Gravity (Concrete)" style="width: 140px; height: 140px; object-fit: contain;">
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-gravity" class="wall-card-title">Gravity (Concrete)</label>
@@ -1116,7 +1116,7 @@
                         <!-- MSE Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'mse')">
                             <div class="wall-card-image" style="background: linear-gradient(135deg, #4A90A4 0%, #2C5F7F 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Concrete Animation.jfif" alt="MSE" style="width: 80px; height: 80px; object-fit: contain;">
+                                <img src="images/Concrete Animation.jfif" alt="MSE" style="width: 140px; height: 140px; object-fit: contain;">
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-mse" class="wall-card-title">MSE (Mechanically Stabilized Earth)</label>
@@ -1133,7 +1133,7 @@
                         <!-- Timber Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'timber')">
                             <div class="wall-card-image" style="background: linear-gradient(135deg, #8B6F47 0%, #A0826D 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Timber Animation.jfif" alt="Timber" style="width: 80px; height: 80px; object-fit: contain;">
+                                <img src="images/Timber Animation.jfif" alt="Timber" style="width: 140px; height: 140px; object-fit: contain;">
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-timber" class="wall-card-title">Timber</label>
@@ -1150,7 +1150,7 @@
                         <!-- Landscape Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'landscape')">
                             <div class="wall-card-image" style="background: linear-gradient(135deg, #D4A574 0%, #E8C4A0 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/icons/stone-landscape-icon.svg" alt="Landscape/Stone" style="width: 80px; height: 80px; object-fit: contain;">
+                                <img src="images/icons/stone-landscape-icon.svg" alt="Landscape/Stone" style="width: 140px; height: 140px; object-fit: contain;">
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-landscape" class="wall-card-title">Landscape/Stone</label>
@@ -1167,7 +1167,7 @@
                         <!-- Hybrid Wall -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'hybrid')">
                             <div class="wall-card-image" style="background: linear-gradient(135deg, #6B5B4C 0%, #8B7B6C 100%); display: flex; align-items: center; justify-content: center;">
-                                <img src="images/Steel and Timber Animation.jfif" alt="Hybrid" style="width: 80px; height: 80px; object-fit: contain;">
+                                <img src="images/Steel and Timber Animation.jfif" alt="Hybrid" style="width: 140px; height: 140px; object-fit: contain;">
                             </div>
                             <div class="wall-card-content">
                                 <label for="wall-hybrid" class="wall-card-title">Hybrid</label>
@@ -1183,7 +1183,23 @@
 
                         <!-- Other -->
                         <div class="wall-type-card" onclick="toggleWallType(this, 'other')">
-                            <div class="wall-card-image" style="background: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">❓</div>
+                            <div class="wall-card-image" style="background: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 100%); display: flex; align-items: center; justify-content: center;">
+                                <svg width="140" height="140" viewBox="0 0 140 140" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                                    <!-- Lightbulb body -->
+                                    <circle cx="70" cy="50" r="28" fill="#FFD700" stroke="#FFC700" stroke-width="2"/>
+                                    <!-- Lightbulb screw base -->
+                                    <rect x="58" y="76" width="24" height="10" fill="#C0C0C0" rx="2"/>
+                                    <!-- Lightbulb socket lines -->
+                                    <line x1="56" y1="86" x2="48" y2="94" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="84" y1="86" x2="92" y2="94" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round"/>
+                                    <!-- Light rays -->
+                                    <circle cx="70" cy="50" r="35" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                                    <line x1="20" y1="50" x2="32" y2="50" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                                    <line x1="108" y1="50" x2="120" y2="50" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                                    <line x1="32" y1="18" x2="42" y2="28" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                                    <line x1="98" y1="28" x2="108" y2="18" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
                             <div class="wall-card-content">
                                 <label for="wall-other" class="wall-card-title">Other/Not Sure</label>
                                 <input type="checkbox" id="wall-other" name="wall-type" value="Other" class="wall-checkbox">
