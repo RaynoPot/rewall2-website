@@ -77,6 +77,48 @@ document.addEventListener('click', function(event) {
 });
 
 // ===================================
+// BLOG MODAL FUNCTIONALITY
+// ===================================
+
+function openBlogPost(postId) {
+    const modal = document.getElementById(postId + '-modal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+        window.scrollTo(0, 0); // Scroll to top of page
+    }
+}
+
+function closeBlogPost(postId) {
+    const modal = document.getElementById(postId + '-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto'; // Re-enable scroll
+    }
+}
+
+// Close blog modal when clicking outside the content
+document.addEventListener('click', function(event) {
+    // Check if click is on any blog modal background
+    if (event.target.classList && event.target.classList.contains('blog-modal')) {
+        const postId = event.target.id.replace('-modal', '');
+        closeBlogPost(postId);
+    }
+});
+
+// Close blog modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        // Find and close any active blog modal
+        const activeModals = document.querySelectorAll('.blog-modal.active');
+        activeModals.forEach(modal => {
+            const postId = modal.id.replace('-modal', '');
+            closeBlogPost(postId);
+        });
+    }
+});
+
+// ===================================
 // SVG ANIMATION - HERO SECTION
 // ===================================
 

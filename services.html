@@ -393,24 +393,37 @@
         
         .drawn-walls-list {
             margin-top: var(--spacing-md);
-            background: var(--light-gray);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-md);
+            background: linear-gradient(135deg, var(--soft-blue) 0%, rgba(232, 244, 248, 0.5) 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            border: 2px solid rgba(74, 144, 164, 0.15);
         }
         
         .drawn-walls-list h4 {
-            margin: 0 0 var(--spacing-sm) 0;
+            margin: 0 0 var(--spacing-md) 0;
             color: var(--primary-black);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .wall-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: var(--spacing-sm);
+            padding: var(--spacing-md);
             background: white;
-            border-radius: var(--radius-sm);
-            margin-bottom: var(--spacing-xs);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            border-left: 5px solid var(--teal-accent);
+            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .wall-item:hover {
+            box-shadow: 0 4px 16px rgba(74, 144, 164, 0.2);
+            transform: translateX(4px);
         }
         
         .wall-item:last-child {
@@ -420,24 +433,94 @@
         .wall-item .wall-info {
             display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
+            gap: var(--spacing-md);
+            flex: 1;
+        }
+        
+        .wall-item .wall-label {
+            font-weight: 700;
+            color: var(--primary-black);
+            min-width: 60px;
         }
         
         .wall-item .wall-length {
             font-weight: 600;
             color: var(--teal-accent);
+            font-size: 1.1rem;
         }
         
         .wall-item button {
-            background: #dc3545;
+            background: var(--teal-accent);
             color: white;
             border: none;
-            padding: 4px 12px;
+            padding: 8px 16px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-left: var(--spacing-md);
         }
         
+        .wall-item button:hover {
+            background: #2C5F7F;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+        }
+        
+        .total-length {
+            background: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+            border-top: 3px solid var(--teal-accent);
+            font-weight: 600;
+            color: var(--primary-black);
+            line-height: 1.6;
+        }
+        
+        .walls-info-note {
+            background: rgba(74, 144, 164, 0.1);
+            border-left: 4px solid var(--teal-accent);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+            font-size: 0.9rem;
+            color: var(--slate);
+        }
+        
+        .walls-info-note strong {
+            color: var(--primary-black);
+        }
+        
+        .height-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--light-gray);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            margin-top: var(--spacing-sm);
+        }
+        
+        .height-input-group input {
+            flex: 1;
+            max-width: 80px;
+            padding: 6px 8px;
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .height-input-group input:focus {
+            outline: none;
+            border-color: var(--teal-accent);
+            box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
+        }
+        
+
         .total-length {
             margin-top: var(--spacing-md);
             padding: var(--spacing-md);
@@ -449,13 +532,108 @@
             font-weight: 600;
         }
         
-        /* Wall Type Selection */
+        /* Wall Type Selection - Enhanced Card Design */
         .wall-type-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--spacing-md);
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
         }
         
+        .wall-type-card {
+            display: flex;
+            flex-direction: column;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        
+        .wall-type-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(74, 144, 164, 0.15);
+            border-color: var(--teal-accent);
+        }
+        
+        .wall-type-card.selected {
+            border-color: var(--teal-accent);
+            background: #e8f4f8;
+            box-shadow: 0 8px 24px rgba(74, 144, 164, 0.25);
+        }
+        
+        .wall-type-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            background: var(--teal-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.4);
+        }
+        
+        .wall-card-image {
+            height: 140px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .wall-card-content {
+            padding: var(--spacing-lg);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .wall-card-title {
+            font-weight: 700;
+            color: var(--primary-black);
+            margin-bottom: var(--spacing-md);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: block;
+        }
+        
+        .wall-checkbox {
+            display: none;
+        }
+        
+        .wall-pros-cons {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--slate);
+            line-height: 1.6;
+        }
+        
+        .wall-pros-cons li {
+            margin-bottom: 6px;
+            padding-left: 0;
+        }
+        
+        .wall-pros-cons strong {
+            color: var(--teal-accent);
+            margin-right: 4px;
+            min-width: 20px;
+            display: inline-block;
+        }
+        
+        /* Original wall-type-option for backward compatibility */
         .wall-type-option {
             display: flex;
             align-items: center;
@@ -490,14 +668,28 @@
         }
         
         .other-input {
-            margin-top: var(--spacing-sm);
+            margin-top: var(--spacing-md);
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border-gray);
-            border-radius: var(--radius-sm);
+            padding: 12px;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
             display: none;
+            font-size: 1rem;
+            font-family: var(--font-primary);
+            transition: all 0.3s ease;
         }
         
+        .other-input:focus {
+            outline: none;
+            border-color: var(--teal-accent);
+            box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .wall-type-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         .other-input.visible {
             display: block;
         }
@@ -749,7 +941,7 @@
                 </div>
                 
                 <!-- Stage 2: Design -->
-                <div class="journey-stage" data-stage="2" data-title="Engineering Design" data-description="Our Nemean-backed engineers create detailed designs, perform structural calculations, and produce technical drawings. All designs meet local building codes.">
+                <div class="journey-stage" data-stage="2" data-title="Engineering Design" data-description="Our Nemean-backed engineers create detailed designs, perform structural calculations, and produce technical drawings. All designs meet NZ Building Code requirements and local council standards.">
                     <input type="checkbox" class="stage-checkbox" id="stage-2" data-stage="2">
                     <div class="journey-stage-icon">
                         <img src="images/icons/stage-design.svg" alt="Engineering Design" loading="lazy">
@@ -758,7 +950,7 @@
                 </div>
                 
                 <!-- Stage 3: Estimate -->
-                <div class="journey-stage" data-stage="3" data-title="Cost Estimate" data-description="Based on the design, we provide a detailed cost estimate including materials, labor, and timeline. We explain every line item so you know what you're paying for.">
+                <div class="journey-stage" data-stage="3" data-title="Cost Estimate" data-description="Based on the design, we provide a detailed cost estimate covering materials, labor, project management, contingencies, and all costs involved. We break down every item so you understand exactly what you're paying for and why.">
                     <input type="checkbox" class="stage-checkbox" id="stage-3" data-stage="3">
                     <div class="journey-stage-icon">
                         <img src="images/icons/stage-estimate.svg" alt="Cost Estimate" loading="lazy">
@@ -767,7 +959,7 @@
                 </div>
                 
                 <!-- Stage 4: Consent -->
-                <div class="journey-stage" data-stage="4" data-title="Council Consent" data-description="Not sure if you need consent? Share your address and wall dimensions and we'll check requirements for your area. We handle all submissions, resource consents, and building permits.">
+                <div class="journey-stage" data-stage="4" data-title="Council Consent" data-description="Wall height, location, and design complexity determine consent requirements. Building consent is typically required for walls over 1.2m in most NZ councils. We verify requirements for your area, handle all resource and building consent submissions, and manage council communications throughout the approval process.">
                     <input type="checkbox" class="stage-checkbox" id="stage-4" data-stage="4">
                     <div class="journey-stage-icon">
                         <img src="images/icons/stage-consent.svg" alt="Council Consent" loading="lazy">
@@ -776,7 +968,7 @@
                 </div>
                 
                 <!-- Stage 5: Construction -->
-                <div class="journey-stage" data-stage="5" data-title="Construction" data-description="Our trusted construction partners execute the project with quality and safety. We provide oversight, inspections, and regular progress updates throughout.">
+                <div class="journey-stage" data-stage="5" data-title="Construction" data-description="Our trusted construction partners execute the project with quality and safety. We provide oversight, site inspections, and regular progress updates throughout. Final inspections depend on the proposed design and council requirements for your area.">
                     <input type="checkbox" class="stage-checkbox" id="stage-5" data-stage="5">
                     <div class="journey-stage-icon">
                         <img src="images/icons/stage-construction.svg" alt="Construction" loading="lazy">
@@ -785,7 +977,7 @@
                 </div>
                 
                 <!-- Stage 6: Sign-Off -->
-                <div class="journey-stage" data-stage="6" data-title="Final Sign-Off" data-description="Once complete, we conduct final inspections, obtain sign-offs from authorities, and hand over the project to you with all documentation and warranties.">
+                <div class="journey-stage" data-stage="6" data-title="Final Sign-Off" data-description="Once construction is complete, we conduct final quality inspections, obtain sign-offs from authorities and engineers, and hand over the project to you with all documentation, warranties, and compliance certificates.">
                     <input type="checkbox" class="stage-checkbox" id="stage-6" data-stage="6">
                     <div class="journey-stage-icon">
                         <img src="images/icons/stage-signoff.svg" alt="Final Sign-Off" loading="lazy">
@@ -860,10 +1052,6 @@
                             <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()">
                             <span>🏠 Property Boundaries</span>
                         </label>
-                        <label class="layer-toggle-item" id="contours-label" title="Show/hide topographic contour lines">
-                            <input type="checkbox" id="contours-toggle" onchange="toggleContours()">
-                            <span>📈 Contours</span>
-                        </label>
                     </div>
                     
                     <div id="map-container">
@@ -889,6 +1077,10 @@
                         <h4>🧱 Your Marked Walls</h4>
                         <div id="walls-list"></div>
                         <div id="total-length-display" class="total-length"></div>
+                        <div class="walls-info-note">
+                            <strong>📍 Service Areas:</strong> We operate across Auckland and the North Waikato region. If your site is outside our service area, please contact us to discuss possibilities.<br><br>
+                            <strong>🔬 Site-Specific Surveys:</strong> For optimal designs, we may recommend geotechnical surveys or additional site assessments depending on your wall height, soil conditions, and location. These will be quoted separately if needed.
+                        </div>
                     </div>
                 </div>
 
@@ -899,38 +1091,100 @@
                         <h3>What Type of Retaining Wall?</h3>
                     </div>
                     <p class="quote-step-description">
-                        Select the type(s) of retaining wall you're interested in. Not sure? Select multiple options 
-                        and we'll help you choose the best solution for your site. Each type has different cost, 
-                        aesthetic, and structural characteristics.
+                        Each wall type has different characteristics. Select one or more options, and we'll help you find the perfect solution for your site and budget.
                     </p>
                     
                     <div class="wall-type-grid">
-                        <div class="wall-type-option" onclick="toggleWallType(this, 'gravity')">
-                            <input type="checkbox" id="wall-gravity" name="wall-type" value="Gravity (Concrete)">
-                            <label for="wall-gravity">Gravity (Concrete)</label>
+                        <!-- Gravity Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'gravity')">
+                            <div class="wall-card-image" style="background: linear-gradient(135deg, #8B7355 0%, #A0826D 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">🏗️</div>
+                            <div class="wall-card-content">
+                                <label for="wall-gravity" class="wall-card-title">Gravity (Concrete)</label>
+                                <input type="checkbox" id="wall-gravity" name="wall-type" value="Gravity (Concrete)" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>✅</strong> Cost-effective for small heights</li>
+                                    <li><strong>✅</strong> Durable and long-lasting</li>
+                                    <li><strong>❌</strong> Heavier appearance</li>
+                                    <li><strong>❌</strong> Limited height capacity</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="wall-type-option" onclick="toggleWallType(this, 'hybrid')">
-                            <input type="checkbox" id="wall-hybrid" name="wall-type" value="Hybrid">
-                            <label for="wall-hybrid">Hybrid</label>
+
+                        <!-- MSE Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'mse')">
+                            <div class="wall-card-image" style="background: linear-gradient(135deg, #4A90A4 0%, #2C5F7F 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">🏗️</div>
+                            <div class="wall-card-content">
+                                <label for="wall-mse" class="wall-card-title">MSE (Mechanically Stabilized Earth)</label>
+                                <input type="checkbox" id="wall-mse" name="wall-type" value="MSE (Mechanically Stabilized Earth)" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>✅</strong> Great for tall walls (2m+)</li>
+                                    <li><strong>✅</strong> Flexible & seismic-resistant</li>
+                                    <li><strong>✅</strong> Excellent value at height</li>
+                                    <li><strong>❌</strong> Requires proper design</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="wall-type-option" onclick="toggleWallType(this, 'landscape')">
-                            <input type="checkbox" id="wall-landscape" name="wall-type" value="Landscape">
-                            <label for="wall-landscape">Landscape</label>
+
+                        <!-- Timber Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'timber')">
+                            <div class="wall-card-image" style="background: linear-gradient(135deg, #8B6F47 0%, #A0826D 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">🌲</div>
+                            <div class="wall-card-content">
+                                <label for="wall-timber" class="wall-card-title">Timber</label>
+                                <input type="checkbox" id="wall-timber" name="wall-type" value="Timber" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>✅</strong> Natural aesthetic appeal</li>
+                                    <li><strong>✅</strong> Good for landscaping</li>
+                                    <li><strong>✅</strong> Relatively affordable</li>
+                                    <li><strong>❌</strong> Maintenance required</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="wall-type-option" onclick="toggleWallType(this, 'mse')">
-                            <input type="checkbox" id="wall-mse" name="wall-type" value="MSE (Mechanically Stabilized Earth)">
-                            <label for="wall-mse">MSE</label>
+
+                        <!-- Landscape Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'landscape')">
+                            <div class="wall-card-image" style="background: linear-gradient(135deg, #D4A574 0%, #E8C4A0 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">🪨</div>
+                            <div class="wall-card-content">
+                                <label for="wall-landscape" class="wall-card-title">Landscape/Stone</label>
+                                <input type="checkbox" id="wall-landscape" name="wall-type" value="Landscape" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>✅</strong> Beautiful natural look</li>
+                                    <li><strong>✅</strong> Great for gardens</li>
+                                    <li><strong>✅</strong> Various colors/styles</li>
+                                    <li><strong>❌</strong> Limited to modest heights</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="wall-type-option" onclick="toggleWallType(this, 'timber')">
-                            <input type="checkbox" id="wall-timber" name="wall-type" value="Timber">
-                            <label for="wall-timber">Timber</label>
+
+                        <!-- Hybrid Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'hybrid')">
+                            <div class="wall-card-image" style="background: linear-gradient(135deg, #6B5B4C 0%, #8B7B6C 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">🔧</div>
+                            <div class="wall-card-content">
+                                <label for="wall-hybrid" class="wall-card-title">Hybrid</label>
+                                <input type="checkbox" id="wall-hybrid" name="wall-type" value="Hybrid" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>✅</strong> Best of both worlds</li>
+                                    <li><strong>✅</strong> Versatile design</li>
+                                    <li><strong>✅</strong> Custom solutions</li>
+                                    <li><strong>❌</strong> Requires planning</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="wall-type-option" onclick="toggleWallType(this, 'other')">
-                            <input type="checkbox" id="wall-other" name="wall-type" value="Other">
-                            <label for="wall-other">Other</label>
+
+                        <!-- Other -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'other')">
+                            <div class="wall-card-image" style="background: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">❓</div>
+                            <div class="wall-card-content">
+                                <label for="wall-other" class="wall-card-title">Other/Not Sure</label>
+                                <input type="checkbox" id="wall-other" name="wall-type" value="Other" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>📝</strong> Tell us what you're thinking</li>
+                                    <li><strong>💡</strong> We'll guide you to the best solution</li>
+                                    <li><strong>✅</strong> No pressure - we explore options</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <input type="text" id="other-wall-type" class="other-input" placeholder="Please describe the wall type you're looking for...">
+                    <input type="text" id="other-wall-type" class="other-input" placeholder="Please describe the wall type you're looking for or your project requirements...">
                 </div>
 
                 <!-- Step 4: Geotechnical Report -->
@@ -1066,18 +1320,19 @@
                         
                         <div>
                             <div class="summary-section">
-                                <h4>Site Map Preview</h4>
-                                <div id="map-snapshot-container" style="background: rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: var(--spacing-md); min-height: 200px; display: flex; align-items: center; justify-content: center;">
-                                    <p id="snapshot-placeholder" style="color: rgba(255,255,255,0.5); text-align: center;">
-                                        Map snapshot will appear here<br>when you mark wall locations<br><br>
-                                        <span style="font-size: 0.85rem;">Click "Capture Snapshot" after drawing walls</span>
-                                    </p>
-                                    <img id="map-snapshot-img" style="max-width: 100%; border-radius: var(--radius-sm); display: none;">
+                                <h4>📸 Site Map Preview</h4>
+                                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: var(--spacing-md);">Capture a snapshot of your marked walls for reference</p>
+                                <div id="map-snapshot-container" style="background: linear-gradient(135deg, rgba(44, 95, 127, 0.2) 0%, rgba(74, 144, 164, 0.1) 100%); border-radius: var(--radius-md); padding: var(--spacing-lg); min-height: 250px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.3);">
+                                    <div id="snapshot-placeholder" style="color: rgba(255,255,255,0.7); text-align: center;">
+                                        <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">🗺️</div>
+                                        <p style="margin: 0;">Map snapshot will appear here<br><span style="font-size: 0.85rem; opacity: 0.9;">when you draw and capture your wall locations</span></p>
+                                    </div>
+                                    <img id="map-snapshot-img" style="max-width: 100%; border-radius: var(--radius-md); display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
                                 </div>
-                                <button id="capture-map-btn" onclick="manualCaptureSnapshot()" style="margin-top: var(--spacing-sm); padding: 10px 16px; background: var(--teal-accent); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; width: 100%; font-size: 0.9rem; font-weight: 600;">
+                                <button id="capture-map-btn" onclick="manualCaptureSnapshot()" style="margin-top: var(--spacing-md); padding: 12px 20px; background: linear-gradient(135deg, var(--teal-accent) 0%, #2C5F7F 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 0.95rem; font-weight: 600; transition: all 0.3s ease;">
                                     📸 Capture Map Snapshot
                                 </button>
-                                <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 8px; text-align: center;">Make sure your walls are visible on the map before capturing</p>
+                                <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 8px; text-align: center;">💡 Make sure your wall markings are visible before capturing. This snapshot will be included with your quote request.</p>
                             </div>
                             
                             <div class="summary-section" style="border-bottom: none;">
@@ -1762,16 +2017,6 @@
                 opacity: 0.7
             });
             
-            // LINZ Contour Lines - Topo50 Contours
-            contourLayer = L.tileLayer.wms('https://data.linz.govt.nz/services/key/c01j1rxmhp01hdh3v4j6ac5z1dv/wms', {
-                layers: 'layer-50768',
-                format: 'image/png',
-                transparent: true,
-                attribution: '© LINZ CC BY 4.0',
-                maxZoom: 22,
-                opacity: 0.6
-            });
-            
             // Start with map view
             mapTileLayer.addTo(map);
             
@@ -1892,32 +2137,6 @@
             }
         }
         
-        // Toggle contour lines with enhanced feedback
-        function toggleContours() {
-            const checkbox = document.getElementById('contours-toggle');
-            const label = document.getElementById('contours-label');
-            
-            if (checkbox.checked) {
-                try {
-                    contourLayer.addTo(map);
-                    // Keep contours above base layer but below boundaries and drawn items
-                    if (document.getElementById('boundaries-toggle').checked) {
-                        boundaryLayer.bringToFront();
-                    }
-                    if (drawnItems) {
-                        drawnItems.bringToFront();
-                    }
-                    label.classList.add('active');
-                } catch (error) {
-                    console.error('Error adding contours:', error);
-                    checkbox.checked = false;
-                }
-            } else {
-                map.removeLayer(contourLayer);
-                label.classList.remove('active');
-            }
-        }
-        
         // ==========================================
         // WALL DRAWING FUNCTIONS
         // ==========================================
@@ -2023,7 +2242,7 @@
             const totalDisplay = document.getElementById('total-length-display');
             
             if (drawnWalls.length === 0) {
-                container.innerHTML = '<p style="color: var(--slate); font-style: italic;">No walls drawn yet</p>';
+                container.innerHTML = '<p style="color: var(--slate); font-style: italic; text-align: center; padding: var(--spacing-md);">👈 No walls drawn yet. Draw your first wall on the map above!</p>';
                 totalDisplay.innerHTML = '';
                 return;
             }
@@ -2035,33 +2254,33 @@
                 totalLength += wall.distance;
                 const currentHeight = wall.height || '';
                 html += `
-                    <div class="wall-item" style="background: white; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #e74c3c; overflow: hidden;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px;">
-                            <span><strong>Wall #${wall.id}</strong></span>
-                            <span style="color: var(--teal-accent); font-weight: 600; font-size: 1.1rem;">~${formatDistance(wall.distance)} <span style="font-size: 0.75rem; color: var(--slate);">(est.)</span></span>
-                            <button onclick="focusOnWall(${wall.id})" style="background: var(--teal-accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">📍 View</button>
+                    <div class="wall-item">
+                        <div class="wall-info">
+                            <span class="wall-label">Wall #${wall.id}</span>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <span style="color: var(--slate); font-size: 0.9rem;">📏 Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
+                                <div class="height-input-group">
+                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Height:</span>
+                                    <input type="number" 
+                                        id="wall-height-${wall.id}" 
+                                        value="${currentHeight}" 
+                                        placeholder="e.g. 1.5" 
+                                        min="0.1" 
+                                        max="20" 
+                                        step="0.1"
+                                        onchange="updateWallHeight(${wall.id}, this.value)"
+                                        style="flex: 1;">
+                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">m</span>
+                                </div>
+                            </div>
                         </div>
-                        <div style="padding: 8px 12px 12px; background: var(--light-gray); border-top: 1px solid var(--border-gray);">
-                            <label style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem;">
-                                <span style="color: var(--slate);">📏 Est. Height:</span>
-                                <input type="number" 
-                                    id="wall-height-${wall.id}" 
-                                    value="${currentHeight}" 
-                                    placeholder="e.g. 1.5" 
-                                    min="0.1" 
-                                    max="20" 
-                                    step="0.1"
-                                    onchange="updateWallHeight(${wall.id}, this.value)"
-                                    style="width: 70px; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: 4px; font-size: 0.9rem; text-align: center;">
-                                <span style="color: var(--slate);">metres</span>
-                            </label>
-                        </div>
+                        <button onclick="focusOnWall(${wall.id})">📍 View on Map</button>
                     </div>
                 `;
             });
             
             container.innerHTML = html;
-            totalDisplay.innerHTML = `<strong>Est. Total Length:</strong> ~${formatDistance(totalLength)}<br><span style="font-size: 0.8rem; opacity: 0.9;">*Approximate only - actual measurements may vary</span>`;
+            totalDisplay.innerHTML = `<strong style="color: var(--primary-black); font-size: 1rem;">📊 Est. Total Length:</strong> <span style="color: var(--teal-accent); font-size: 1.1rem;">~${formatDistance(totalLength)}</span><br><span style="font-size: 0.8rem; color: var(--slate); margin-top: 8px; display: block;">*Measurements are approximate - exact dimensions will be verified during site assessment</span>`;
         }
         
         function updateWallHeight(wallId, height) {
@@ -2445,9 +2664,11 @@
         // ==========================================
         
         function toggleWallType(element, type) {
-            const checkbox = element.querySelector('input[type="checkbox"]');
+            // Handle both old .wall-type-option and new .wall-type-card structures
+            const card = element.closest('.wall-type-card, .wall-type-option');
+            const checkbox = card.querySelector('input[type="checkbox"]');
             checkbox.checked = !checkbox.checked;
-            element.classList.toggle('selected', checkbox.checked);
+            card.classList.toggle('selected', checkbox.checked);
             
             if (type === 'other') {
                 const otherInput = document.getElementById('other-wall-type');
