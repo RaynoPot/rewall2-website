@@ -105,14 +105,8 @@
                         </label>
                         
                         <label for="service-area">
-                            Service Area *
-                            <select id="service-area" name="service-area" required>
-                                <option value="">Select area...</option>
-                                <option>Auckland</option>
-                                <option>Waikato</option>
-                                <option>Bay of Plenty</option>
-                                <option>Other (please specify)</option>
-                            </select>
+                            Service Area / Address
+                            <input type="text" id="service-area" name="service-area" placeholder="Enter your address or area (e.g., Auckland, Waikato, or specific suburb)">
                         </label>
                         
                         <label for="message">
@@ -171,27 +165,39 @@
         <!-- Partner Info -->
         <section class="alt-bg">
             <div class="container">
-                <h2 style="text-align: center;">Our Partners</h2>
+                <h2 style="text-align: center; margin-bottom: var(--spacing-xl);">Our Partners</h2>
                 <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-xl);">
                     ReWall works with trusted partners across the industry. Your inquiry may also involve conversations with:
                 </p>
                 
-                <div class="grid grid-3">
-                    <div class="card">
-                        <h3>🔧 Nemean Engineering</h3>
-                        <p>For engineering design and structural analysis questions.</p>
-                        <a href="https://www.nemean.nz/" target="_blank" rel="noopener">Visit Nemean →</a>
-                    </div>
-                    <div class="card">
-                        <h3>💻 Data Bloc</h3>
-                        <p>For digital planning tools and project visualization.</p>
-                        <a href="https://databloc.nz/" target="_blank" rel="noopener">Visit Data Bloc →</a>
-                    </div>
-                    <div class="card">
-                        <h3>🚜 Fine Way Earthmovers</h3>
-                        <p>For construction planning and scheduling details.</p>
-                        <a href="https://finewayearthmovers.co.nz/" target="_blank" rel="noopener">Visit Fine Way →</a>
-                    </div>
+                <div class="grid grid-3" style="gap: var(--spacing-lg); max-width: 1100px; margin: 0 auto;">
+                    <a href="https://www.nemean.nz/" target="_blank" rel="noopener noreferrer" class="card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
+                        <div style="display: flex; justify-content: center; align-items: center; height: 120px; margin-bottom: var(--spacing-lg);">
+                            <img src="images/Logos/1.Nemean.jpg" alt="Nemean Engineering" style="max-width: 200px; max-height: 100px; object-fit: contain;">
+                        </div>
+                        <h3 style="color: var(--teal-accent); font-size: 1.5rem; margin-bottom: var(--spacing-sm);">Nemean</h3>
+                        <p style="font-weight: 600; color: var(--slate); margin-bottom: var(--spacing-md);">Engineering Partner</p>
+                        <p style="font-size: 0.95rem; color: var(--slate); flex-grow: 1;">For engineering design and structural analysis questions.</p>
+                        <span style="color: var(--teal-accent); font-size: 0.9rem; margin-top: var(--spacing-sm);">Visit Website →</span>
+                    </a>
+                    <a href="https://databloc.nz/" target="_blank" rel="noopener noreferrer" class="card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
+                        <div style="display: flex; justify-content: center; align-items: center; height: 120px; margin-bottom: var(--spacing-lg);">
+                            <img src="images/Logos/2.data bloc.png" alt="Data Bloc" style="max-width: 200px; max-height: 100px; object-fit: contain;">
+                        </div>
+                        <h3 style="color: var(--teal-accent); font-size: 1.5rem; margin-bottom: var(--spacing-sm);">Data Bloc</h3>
+                        <p style="font-weight: 600; color: var(--slate); margin-bottom: var(--spacing-md);">Technology Partner</p>
+                        <p style="font-size: 0.95rem; color: var(--slate); flex-grow: 1;">For digital planning tools and project visualization.</p>
+                        <span style="color: var(--teal-accent); font-size: 0.9rem; margin-top: var(--spacing-sm);">Visit Website →</span>
+                    </a>
+                    <a href="https://finewayearthmovers.co.nz/" target="_blank" rel="noopener noreferrer" class="card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
+                        <div style="display: flex; justify-content: center; align-items: center; height: 120px; margin-bottom: var(--spacing-lg);">
+                            <img src="images/Logos/3.Fineway.png" alt="Fine Way Earthmovers" style="max-width: 200px; max-height: 100px; object-fit: contain;">
+                        </div>
+                        <h3 style="color: var(--teal-accent); font-size: 1.5rem; margin-bottom: var(--spacing-sm);">Fine Way</h3>
+                        <p style="font-weight: 600; color: var(--slate); margin-bottom: var(--spacing-md);">Construction Partner</p>
+                        <p style="font-size: 0.95rem; color: var(--slate); flex-grow: 1;">For construction planning and scheduling details.</p>
+                        <span style="color: var(--teal-accent); font-size: 0.9rem; margin-top: var(--spacing-sm);">Visit Website →</span>
+                    </a>
                 </div>
             </div>
         </section>
@@ -285,7 +291,7 @@
                             <ul>
                                 <li><a href="contact.html">Contact Form</a></li>
                                 <li><a href="contact.html">Request a Quote</a></li>
-                                <li><a href="https://databloc.nz" target="_blank">Plan Your Wall</a></li>
+                                <li><a href="services.html#journey-wheel">Plan Your Wall</a></li>
                             </ul>
                         </div>
                     </div>

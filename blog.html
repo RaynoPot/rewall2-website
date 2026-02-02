@@ -29,7 +29,7 @@
         <div class="divider"></div>
         
         <div class="cta-group">
-            <button class="btn" onclick="window.location.href='contact.html'">Request a Quote</button>
+            <button class="btn" onclick="window.location.href='services.html#journey-wheel'">Request a Quote</button>
             <button class="btn secondary" onclick="window.location.href='https://databloc.nz'">Plan Your Wall</button>
         </div>
         
@@ -124,7 +124,7 @@
                         </div>
                         <h3>More Content Coming Soon</h3>
                         <p class="blog-excerpt">We're working on more in-depth case studies and engineering insights. Check back soon for new posts on topics like timber walls, landscape integration, and more...</p>
-                        <a href="contact.html" class="read-more">Subscribe for Updates →</a>
+                        <a href="#newsletter" class="read-more" onclick="document.getElementById('newsletter-section').scrollIntoView({behavior: 'smooth'}); return false;">Subscribe for Updates →</a>
                     </div>
                 </article>
             </div>
@@ -568,12 +568,14 @@
         </div>
 
         <!-- Newsletter Section -->
-        <section class="alt-bg">
+        <section class="alt-bg" id="newsletter-section">
             <div class="container" style="max-width: 600px; text-align: center;">
                 <h2>Stay Updated</h2>
                 <p>Get engineering insights, project updates, and industry news delivered to your inbox.</p>
-                <form style="margin-top: var(--spacing-lg);">
-                    <input type="email" placeholder="Your email address" required style="margin-bottom: var(--spacing-md);">
+                <form action="https://formsubmit.co/rewallsolutions@gmail.com" method="POST" style="margin-top: var(--spacing-lg);">
+                    <input type="email" name="email" placeholder="Your email address" required style="margin-bottom: var(--spacing-md); padding: 10px; width: 100%; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                    <input type="hidden" name="_subject" value="New Newsletter Subscription - ReWall NZ">
+                    <input type="hidden" name="_next" value="https://rewall.netlify.app/blog.html?subscribed=true">
                     <button type="submit" class="btn" style="width: 100%;">Subscribe</button>
                 </form>
                 <p style="font-size: 0.85rem; color: var(--slate); margin-top: var(--spacing-md);">We respect your privacy. Unsubscribe anytime.</p>
@@ -617,7 +619,7 @@
                             <ul>
                                 <li><a href="contact.html">Contact Form</a></li>
                                 <li><a href="contact.html">Request a Quote</a></li>
-                                <li><a href="https://databloc.nz" target="_blank">Plan Your Wall</a></li>
+                                <li><a href="services.html#journey-wheel">Plan Your Wall</a></li>
                             </ul>
                         </div>
                     </div>
