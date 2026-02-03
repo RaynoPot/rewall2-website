@@ -372,6 +372,27 @@
             user-select: none;
         }
         
+        /* Boundary loading indicator */
+        .layer-toggle-item.loading {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .layer-toggle-item.loading::after {
+            content: ' ⏳';
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .layer-toggle-item.error {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        
         .drawing-info {
             background: #e3f2fd;
             padding: var(--spacing-md);
@@ -2105,29 +2126,105 @@
                 maxZoom: 22
             });
             
-            // LINZ NZ Parcel Boundaries using WMS
-            // Layer 50772 = NZ Primary Parcels (wireframe boundaries)
-            const linzApiKey = 'c01j1rxmhp01hdh3v4j6ac5z1dv';
-            boundaryLayer = L.tileLayer.wms(
-                `https://data.linz.govt.nz/services;key=${linzApiKey}/wms`,
-                {
-                    layers: 'layer-50772',
-                    format: 'image/png',
-                    transparent: true,
-                    attribution: '© LINZ CC BY 4.0',
-                    maxZoom: 22,
-                    version: '1.1.1',
-                    styles: ''
+            // ==========================================
+            // LINZ PROPERTY BOUNDARIES - WFS via Netlify Function
+            // ==========================================
+
+            // Global variable to store boundary GeoJSON layer
+            let boundaryGeoJson = null;
+            let boundaryLoadingState = false;
+
+            // Initialize boundary layer (empty at start)
+            function initializeBoundaryLayer() {
+                if (boundaryGeoJson) {
+                    map.removeLayer(boundaryGeoJson);
                 }
-            );
-            
-            // Add load event listeners for debugging
-            boundaryLayer.on('load', function() {
-                console.log('LINZ boundary tiles loaded successfully');
-            });
-            boundaryLayer.on('tileerror', function(e) {
-                console.error('LINZ tile error:', e.tile, e.error);
-            });
+                
+                boundaryGeoJson = L.geoJSON(null, {
+                    style: {
+                        color: '#FF6B35',        // Orange/red for visibility
+                        weight: 2,
+                        opacity: 0.8,
+                        fillColor: 'transparent',
+                        fillOpacity: 0
+                    },
+                    onEachFeature: function(feature, layer) {
+                        // Optional: Add popup with property info
+                        if (feature.properties) {
+                            const props = feature.properties;
+                            let popupContent = '<div style="font-size: 12px;">';
+                            popupContent += '<strong>Property Parcel</strong><br>';
+                            if (props.id) popupContent += `ID: ${props.id}<br>`;
+                            if (props.appellation) popupContent += `${props.appellation}<br>`;
+                            if (props.affected_surveys) popupContent += `Survey: ${props.affected_surveys}<br>`;
+                            popupContent += '</div>';
+                            layer.bindPopup(popupContent);
+                        }
+                    }
+                });
+                
+                // Keep reference for backwards compatibility
+                boundaryLayer = boundaryGeoJson;
+            }
+
+            // Load LINZ boundaries for current map view
+            async function loadBoundariesForView() {
+                if (boundaryLoadingState) {
+                    console.log('Boundary load already in progress...');
+                    return;
+                }
+                
+                boundaryLoadingState = true;
+                
+                try {
+                    const bounds = map.getBounds();
+                    const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+                    
+                    console.log('Fetching LINZ boundaries for bbox:', bbox);
+                    
+                    // Call Netlify function
+                    const response = await fetch(
+                        `/.netlify/functions/linzApi?bbox=${bbox}&layer=layer-50772&count=2000`
+                    );
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.message || data.error);
+                    }
+                    
+                    console.log(`Loaded ${data.features?.length || 0} property boundaries`);
+                    
+                    // Clear existing boundaries and add new ones
+                    if (boundaryGeoJson) {
+                        boundaryGeoJson.clearLayers();
+                        boundaryGeoJson.addData(data);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading boundaries:', error);
+                    alert('Unable to load property boundaries. Please try again.');
+                } finally {
+                    boundaryLoadingState = false;
+                }
+            }
+
+            // Auto-refresh boundaries when map moves (debounced)
+            let boundaryRefreshTimeout = null;
+            function scheduleBoundaryRefresh() {
+                if (!document.getElementById('boundaries-toggle')?.checked) {
+                    return;
+                }
+                
+                clearTimeout(boundaryRefreshTimeout);
+                boundaryRefreshTimeout = setTimeout(() => {
+                    loadBoundariesForView();
+                }, 1000); // Wait 1 second after map stops moving
+            }
             
             // Start with map view
             mapTileLayer.addTo(map);
@@ -2135,6 +2232,9 @@
             // Initialize drawing layer
             drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
+            
+            // Initialize boundary layer
+            initializeBoundaryLayer();
             
             // Add drawing controls
             drawControl = new L.Control.Draw({
@@ -2225,30 +2325,63 @@
             currentLayer = type;
         }
         
-        // Toggle property boundaries with enhanced feedback
-        function toggleBoundaries() {
+        // Toggle property boundaries with WFS loading
+        async function toggleBoundaries() {
             const checkbox = document.getElementById('boundaries-toggle');
             const label = document.getElementById('boundaries-label');
             
             if (checkbox.checked) {
+                // Add loading state
+                label.classList.add('loading');
+                
                 try {
-                    console.log('Adding LINZ boundary layer to map...');
-                    console.log('Boundary layer URL:', boundaryLayer._url || boundaryLayer._wmsUrl);
-                    boundaryLayer.addTo(map);
+                    console.log('Enabling LINZ boundary layer...');
+                    
+                    // Initialize if needed
+                    if (!boundaryGeoJson) {
+                        initializeBoundaryLayer();
+                    }
+                    
+                    // Add to map
+                    boundaryGeoJson.addTo(map);
+                    
+                    // Load boundaries for current view
+                    await loadBoundariesForView();
+                    
                     // Keep boundaries above base layer but below drawn items
-                    boundaryLayer.bringToFront();
                     if (drawnItems) {
                         drawnItems.bringToFront();
                     }
+                    
+                    // Remove loading, add active
+                    label.classList.remove('loading');
                     label.classList.add('active');
-                    console.log('Boundary layer added successfully');
+                    console.log('✓ Boundary layer enabled');
+                    
+                    // Add map event listeners for auto-refresh
+                    map.on('moveend', scheduleBoundaryRefresh);
+                    map.on('zoomend', scheduleBoundaryRefresh);
+                    
                 } catch (error) {
-                    console.error('Error adding boundaries:', error);
+                    console.error('Error enabling boundaries:', error);
+                    label.classList.remove('loading');
+                    label.classList.add('error');
                     checkbox.checked = false;
+                    setTimeout(() => label.classList.remove('error'), 3000);
+                    alert('Failed to load property boundaries. Please try again.');
                 }
             } else {
-                map.removeLayer(boundaryLayer);
-                label.classList.remove('active');
+                // Remove from map
+                if (boundaryGeoJson) {
+                    map.removeLayer(boundaryGeoJson);
+                }
+                
+                label.classList.remove('active', 'loading', 'error');
+                console.log('✓ Boundary layer disabled');
+                
+                // Remove event listeners
+                map.off('moveend', scheduleBoundaryRefresh);
+                map.off('zoomend', scheduleBoundaryRefresh);
             }
         }
         
