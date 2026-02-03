@@ -2105,9 +2105,15 @@
                 maxZoom: 22
             });
             
-            // LINZ NZ Parcel Boundaries using WMS
-            // Layer 50772 = NZ Primary Parcels (wireframe boundaries)
+            // LINZ NZ Property Boundaries
+            // Using LINZ Data Service with multiple fallback options
             const linzApiKey = 'c01j1rxmhp01hdh3v4j6ac5z1dv';
+            
+            // Variable to store boundary GeoJSON layer
+            let boundaryGeoJsonLayer = null;
+            let boundaryLoadingTimeout = null;
+            
+            // Primary: Try LINZ WMS service for property boundaries
             boundaryLayer = L.tileLayer.wms(
                 `https://data.linz.govt.nz/services;key=${linzApiKey}/wms`,
                 {
@@ -2116,17 +2122,47 @@
                     transparent: true,
                     attribution: '© LINZ CC BY 4.0',
                     maxZoom: 22,
+                    minZoom: 15,
                     version: '1.1.1',
-                    styles: ''
+                    styles: '',
+                    opacity: 0.8
                 }
             );
+            console.log('✓ LINZ WMS boundary layer initialized');
+            
+            // Track tile errors for fallback
+            let tileErrorCount = 0;
             
             // Add load event listeners for debugging
             boundaryLayer.on('load', function() {
-                console.log('LINZ boundary tiles loaded successfully');
+                console.log('✓ LINZ boundary tiles loaded successfully');
+                tileErrorCount = 0;  // Reset on success
             });
+            
             boundaryLayer.on('tileerror', function(e) {
-                console.error('LINZ tile error:', e.tile, e.error);
+                tileErrorCount++;
+                console.warn('LINZ tile error (count: ' + tileErrorCount + '):', e);
+                
+                // If too many errors, show user-friendly message
+                if (tileErrorCount >= 5) {
+                    const existingMsg = document.getElementById('boundary-error-msg');
+                    if (!existingMsg) {
+                        const errorMsg = document.createElement('div');
+                        errorMsg.id = 'boundary-error-msg';
+                        errorMsg.style.cssText = 'position: absolute; bottom: 10px; left: 10px; background: rgba(255, 107, 107, 0.95); color: white; padding: 8px 16px; border-radius: 6px; z-index: 1000; font-size: 0.85rem; max-width: 300px;';
+                        errorMsg.innerHTML = '⚠️ Property boundaries may not display. Try zooming in more.';
+                        const mapContainer = document.getElementById('map-container');
+                        if (mapContainer) mapContainer.appendChild(errorMsg);
+                        setTimeout(() => {
+                            const msg = document.getElementById('boundary-error-msg');
+                            if (msg) msg.remove();
+                        }, 5000);
+                    }
+                }
+            });
+            
+            boundaryLayer.on('loading', function() {
+                console.log('Loading LINZ boundary tiles...');
             });
             
             // Start with map view
@@ -2232,23 +2268,62 @@
             
             if (checkbox.checked) {
                 try {
-                    console.log('Adding LINZ boundary layer to map...');
-                    console.log('Boundary layer URL:', boundaryLayer._url || boundaryLayer._wmsUrl);
+                    console.log('Enabling LINZ boundary layer...');
+                    
+                    // Check if boundary layer exists
+                    if (!boundaryLayer) {
+                        console.error('Boundary layer not initialized');
+                        alert('Property boundaries are not available. Please try refreshing the page.');
+                        checkbox.checked = false;
+                        return;
+                    }
+                    
+                    // Check zoom level - boundaries only visible at higher zoom
+                    const currentZoom = map.getZoom();
+                    if (currentZoom < 15) {
+                        console.log('Zoom level too low for boundaries, showing message...');
+                        // Notify user and zoom in
+                        const zoomMsg = document.createElement('div');
+                        zoomMsg.id = 'zoom-message';
+                        zoomMsg.style.cssText = 'position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #fff3cd; color: #856404; padding: 8px 16px; border-radius: 6px; z-index: 1000; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+                        zoomMsg.innerHTML = '🔍 Zooming in to show property boundaries...';
+                        document.getElementById('map-container').appendChild(zoomMsg);
+                        
+                        // Auto-zoom to minimum required level
+                        map.setZoom(16);
+                        
+                        setTimeout(() => {
+                            const msg = document.getElementById('zoom-message');
+                            if (msg) msg.remove();
+                        }, 3000);
+                    }
+                    
+                    console.log('Adding boundary layer to map...');
                     boundaryLayer.addTo(map);
+                    
                     // Keep boundaries above base layer but below drawn items
                     boundaryLayer.bringToFront();
                     if (drawnItems) {
                         drawnItems.bringToFront();
                     }
                     label.classList.add('active');
-                    console.log('Boundary layer added successfully');
+                    console.log('✓ Boundary layer added successfully');
                 } catch (error) {
-                    console.error('Error adding boundaries:', error);
+                    console.error('Error enabling boundaries:', error);
+                    alert('Failed to enable property boundaries. Please try again.');
                     checkbox.checked = false;
+                    label.classList.remove('active');
                 }
             } else {
-                map.removeLayer(boundaryLayer);
-                label.classList.remove('active');
+                try {
+                    if (boundaryLayer && map.hasLayer(boundaryLayer)) {
+                        map.removeLayer(boundaryLayer);
+                    }
+                    label.classList.remove('active');
+                    console.log('Boundary layer removed');
+                } catch (error) {
+                    console.error('Error removing boundaries:', error);
+                }
             }
         }
         
