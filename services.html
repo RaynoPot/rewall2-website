@@ -2184,7 +2184,7 @@
                     
                     // Call Netlify function
                     const response = await fetch(
-                        `/.netlify/functions/linzApi?bbox=${bbox}&layer=layer-50772&count=2000`
+                        `/.netlify/functions/linzApi?bbox=${encodeURIComponent(bbox)}&layer=layer-50772&count=2000`
                     );
                     
                     if (!response.ok) {
@@ -2207,7 +2207,7 @@
                     
                 } catch (error) {
                     console.error('Error loading boundaries:', error);
-                    alert('Unable to load property boundaries. Please try again.');
+                    alert(`Unable to load property boundaries: ${error.message}. Please check your connection and try again.`);
                 } finally {
                     boundaryLoadingState = false;
                 }
@@ -2368,7 +2368,7 @@
                     label.classList.add('error');
                     checkbox.checked = false;
                     setTimeout(() => label.classList.remove('error'), 3000);
-                    alert('Failed to load property boundaries. Please try again.');
+                    alert(`Failed to enable property boundaries: ${error.message}. Please try again.`);
                 }
             } else {
                 // Remove from map

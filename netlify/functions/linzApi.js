@@ -49,7 +49,19 @@ exports.handler = async function(event, context) {
     const featureCount = count || '1500';
 
     // LINZ API key from environment variable
-    const apiKey = process.env.LINZ_API_KEY || '92c1e6a03cf849e4a836ea1c5e017e6e';
+    const apiKey = process.env.LINZ_API_KEY;
+    
+    if (!apiKey) {
+      console.error('LINZ_API_KEY environment variable not set');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          error: 'Server configuration error',
+          message: 'LINZ API key not configured'
+        })
+      };
+    }
     
     // Construct WFS request URL
     const linzUrl = `https://data.linz.govt.nz/services;key=${apiKey}/wfs/${targetLayer}/?` +
