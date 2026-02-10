@@ -168,8 +168,10 @@
             border-radius: 12px !important;
             transition: all 0.3s ease !important;
             animation: drawButtonGlow 2s ease-in-out infinite !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpolyline points='4,24 10,10 18,16 24,4' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='24' r='2.5' fill='white'/%3E%3Ccircle cx='10' cy='10' r='2.5' fill='white'/%3E%3Ccircle cx='18' cy='16' r='2.5' fill='white'/%3E%3Ccircle cx='24' cy='4' r='2.5' fill='white'/%3E%3C/svg%3E") !important;
             background-size: 28px 28px !important;
             background-position: center !important;
+            background-repeat: no-repeat !important;
             position: relative;
         }
 
@@ -1229,6 +1231,9 @@
                         <h4>🧱 Your Marked Walls</h4>
                         <div id="walls-list"></div>
                         <div id="total-length-display" class="total-length"></div>
+                        <button id="download-map-btn" onclick="downloadMapSnapshot()" style="margin-top: var(--spacing-md); padding: 14px 20px; background: linear-gradient(135deg, #FF6B35 0%, #e55a2b 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);">
+                            📥 Download Map Image
+                        </button>
                         <div class="walls-info-note">
                             <strong>📍 Service Areas:</strong> We operate across Auckland and the North Waikato region. If your site is outside our service area, please contact us to discuss possibilities.<br><br>
                             <strong>🔬 Site-Specific Surveys:</strong> For optimal designs, we may recommend geotechnical surveys or additional site assessments depending on your wall height, soil conditions, and location. These will be quoted separately if needed.
@@ -1512,9 +1517,6 @@
                                 </div>
                                 <button id="capture-map-btn" onclick="manualCaptureSnapshot()" style="margin-top: var(--spacing-md); padding: 12px 20px; background: linear-gradient(135deg, var(--teal-accent) 0%, #2C5F7F 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 0.95rem; font-weight: 600; transition: all 0.3s ease;">
                                     📸 Capture Map Snapshot
-                                </button>
-                                <button id="download-map-btn" onclick="downloadMapSnapshot()" style="margin-top: 8px; padding: 12px 20px; background: linear-gradient(135deg, #FF6B35 0%, #e55a2b 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 0.95rem; font-weight: 600; transition: all 0.3s ease; display: none;">
-                                    📥 Download Map Image
                                 </button>
                                 <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 8px; text-align: center;">💡 Make sure your wall markings are visible before capturing. This snapshot will be included with your quote request.</p>
                             </div>
@@ -2951,8 +2953,6 @@
             snapshotImg.src = mapSnapshot;
             snapshotImg.style.display = 'block';
             placeholder.style.display = 'none';
-            const dlBtn = document.getElementById('download-map-btn');
-            if (dlBtn) dlBtn.style.display = 'block';
             
             console.log('Snapshot complete with satellite background');
         }
