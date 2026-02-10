@@ -1145,7 +1145,7 @@
                         <h3>What Type of Retaining Wall?</h3>
                     </div>
                     <p class="quote-step-description">
-                        Each wall type has different characteristics. Select one or more options, and we'll help you find the perfect solution for your site and budget.
+                        You don't need to decide this now. If you have an idea, feel free to select one or more options, or simply leave this blank. Our experienced team will take care of the rest and recommend the best retaining wall solution for your site.
                     </p>
                     
                     <div class="wall-type-grid">
@@ -1162,6 +1162,7 @@
                                 <ul class="wall-pros-cons">
                                     <li><strong>✅</strong> Cost-effective for small heights</li>
                                     <li><strong>✅</strong> Durable and long-lasting</li>
+                                    <li><strong>✅</strong> Aesthetic face with numerous finishes to choose from</li>
                                     <li><strong>❌</strong> Heavier appearance</li>
                                     <li><strong>❌</strong> Limited height capacity</li>
                                 </ul>
@@ -1182,7 +1183,7 @@
                                     <li><strong>✅</strong> Great for tall walls (2m+)</li>
                                     <li><strong>✅</strong> Flexible & seismic-resistant</li>
                                     <li><strong>✅</strong> Excellent value at height</li>
-                                    <li><strong>❌</strong> Requires proper design</li>
+                                    <li><strong>❌</strong> Requires engineering design</li>
                                 </ul>
                             </div>
                         </div>
@@ -3015,7 +3016,7 @@
             // Wall types
             const wallTypesDisplay = document.getElementById('summary-wall-types');
             const selectedWallTypes = [];
-            document.querySelectorAll('.wall-type-option input:checked').forEach(input => {
+            document.querySelectorAll('.wall-type-card input:checked, .wall-type-option input:checked').forEach(input => {
                 if (input.id !== 'wall-other') {
                     selectedWallTypes.push(input.value);
                 }
@@ -3137,7 +3138,7 @@
             });
             
             const wallTypes = [];
-            document.querySelectorAll('.wall-type-option input:checked').forEach(input => {
+            document.querySelectorAll('.wall-type-card input:checked, .wall-type-option input:checked').forEach(input => {
                 wallTypes.push(input.value);
             });
             
