@@ -87,15 +87,15 @@
         
         /* Drawing Tool Enhancement - Pulsing Animation */
         .leaflet-draw-toolbar {
-            animation: drawToolPulse 2s ease-in-out infinite;
+            animation: none;
         }
-        
-        @keyframes drawToolPulse {
+
+        @keyframes drawButtonGlow {
             0%, 100% {
-                box-shadow: 0 0 0 0 rgba(74, 144, 164, 0.7);
+                box-shadow: 0 0 8px rgba(255, 107, 53, 0.4), 0 2px 8px rgba(0,0,0,0.2);
             }
             50% {
-                box-shadow: 0 0 0 10px rgba(74, 144, 164, 0);
+                box-shadow: 0 0 20px rgba(255, 107, 53, 0.7), 0 2px 12px rgba(0,0,0,0.3);
             }
         }
         
@@ -103,7 +103,7 @@
         .draw-prompt-tooltip {
             position: absolute;
             left: 70px;
-            top: 55px;
+            top: 75px;
             background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
             color: white;
             padding: 12px 20px;
@@ -159,17 +159,41 @@
             display: none;
         }
         
-        /* Enhanced draw button styling */
+        /* Enhanced draw button styling - large and obvious */
         .leaflet-draw-draw-polyline {
-            background-color: #4A90A4 !important;
-            border: 2px solid white !important;
-            border-radius: 6px !important;
+            width: 52px !important;
+            height: 52px !important;
+            background-color: #FF6B35 !important;
+            border: 3px solid white !important;
+            border-radius: 12px !important;
             transition: all 0.3s ease !important;
+            animation: drawButtonGlow 2s ease-in-out infinite !important;
+            background-size: 28px 28px !important;
+            background-position: center !important;
+            position: relative;
         }
-        
+
         .leaflet-draw-draw-polyline:hover {
-            background-color: #2C7A99 !important;
+            background-color: #E55A2B !important;
             transform: scale(1.1);
+        }
+
+        /* "Draw Wall" label next to button */
+        .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
+            content: '📐 Draw Wall';
+            position: absolute;
+            left: 58px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #FF6B35;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+            pointer-events: none;
         }
         
         .map-controls {
@@ -487,6 +511,32 @@
             background: #2C5F7F;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+        }
+
+        .wall-item .wall-delete-btn {
+            background: #e74c3c !important;
+            font-size: 0.8rem;
+        }
+
+        .wall-item .wall-delete-btn:hover {
+            background: #c0392b !important;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3) !important;
+        }
+
+        /* Wall number labels on map */
+        .wall-map-label {
+            background: var(--teal-accent);
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         
         .total-length {
@@ -864,6 +914,15 @@
         /* Leaflet custom styling */
         .leaflet-draw-toolbar a {
             background-color: var(--teal-accent) !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+        }
+
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline {
+            width: 52px !important;
+            height: 52px !important;
+            line-height: 52px !important;
         }
         
         .leaflet-draw-actions a {
@@ -953,6 +1012,46 @@
                 <p class="subheadline"><strong>Pick One. Pick Many. Pick All.</strong> You're in control.</p>
                 <p style="max-width: 700px; margin: 0 auto; color: var(--slate); font-size: 1rem;">From initial site planning to final sign-off, ReWall guides you through every step. Choose individual services or let us handle the complete journey.</p>
                 <button class="btn" onclick="document.getElementById('full-services').scrollIntoView({ behavior: 'smooth' });" style="margin-top: var(--spacing-lg);">Learn About Full-Service Solutions ↓</button>
+            </div>
+        </section>
+
+        <!-- How It Works - Step Guide -->
+        <section style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: var(--spacing-xxl) 0; border-bottom: 1px solid var(--border-gray);">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: var(--spacing-sm);">How It Works</h2>
+                <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-xl); font-size: 1.1rem; max-width: 650px; margin-left: auto; margin-right: auto;">Getting a quote is quick and straightforward. Here's what to expect:</p>
+
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--spacing-xl); max-width: 1100px; margin: 0 auto; padding: var(--spacing-md) 0;">
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">1</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Pick Your Services</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Choose what you need help with — one stage, a few, or the full package</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">2</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Show Us Where</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Search your address on the map, then use the draw tool on the left to sketch where your retaining wall(s) will go</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">3</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Wall Preferences</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Tell us the wall type and height if you know — no stress if you don't, we'll advise</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">4</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Your Details</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Drop in your name and email so we can get back to you with a response</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: #28a745; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(40, 167, 69, 0.35);">&#10003;</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Submit & Done</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Hit send — we'll review your request and be in touch within 48 hours</p>
+                    </div>
+                </div>
+
+                <p style="text-align: center; max-width: 500px; margin: var(--spacing-xl) auto 0; color: var(--slate); font-size: 0.9rem; font-style: italic;">
+                    Don't worry about getting it perfect. Our team will guide you through anything you're unsure about.
+                </p>
             </div>
         </section>
 
@@ -1051,43 +1150,10 @@
         <!-- Quote Builder Section -->
         <section class="quote-builder" id="quote-builder">
             <div class="container">
-                <div style="text-align: center; margin-bottom: var(--spacing-xxl); padding-top: var(--spacing-xl);">
+                <div style="text-align: center; margin-bottom: var(--spacing-xl); padding-top: var(--spacing-xl);">
                     <h2 style="font-size: 2rem; margin-bottom: var(--spacing-sm);">Build Your Quote</h2>
-                    <p style="max-width: 600px; margin: 0 auto var(--spacing-xl); color: var(--slate); font-size: 1.15rem; line-height: 1.7;">
-                        Getting a quote is quick and easy. Just follow the steps below — fill in what you can, skip what you don't know. We'll handle the rest.
-                    </p>
-
-                    <!-- Visual step guide -->
-                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--spacing-lg); max-width: 900px; margin: 0 auto; padding: var(--spacing-lg) 0;">
-                        <div style="flex: 1; min-width: 140px; max-width: 160px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; margin: 0 auto var(--spacing-sm);">1</div>
-                            <p style="font-weight: 600; font-size: 0.9rem; color: var(--charcoal); margin: 0 0 4px;">Pick Services</p>
-                            <p style="font-size: 0.8rem; color: var(--slate); margin: 0;">What do you need help with?</p>
-                        </div>
-                        <div style="flex: 1; min-width: 140px; max-width: 160px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; margin: 0 auto var(--spacing-sm);">2</div>
-                            <p style="font-weight: 600; font-size: 0.9rem; color: var(--charcoal); margin: 0 0 4px;">Show Us Where</p>
-                            <p style="font-size: 0.8rem; color: var(--slate); margin: 0;">Find your property on the map</p>
-                        </div>
-                        <div style="flex: 1; min-width: 140px; max-width: 160px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; margin: 0 auto var(--spacing-sm);">3</div>
-                            <p style="font-weight: 600; font-size: 0.9rem; color: var(--charcoal); margin: 0 0 4px;">Wall Preferences</p>
-                            <p style="font-size: 0.8rem; color: var(--slate); margin: 0;">Type & height (if you know)</p>
-                        </div>
-                        <div style="flex: 1; min-width: 140px; max-width: 160px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; margin: 0 auto var(--spacing-sm);">4</div>
-                            <p style="font-weight: 600; font-size: 0.9rem; color: var(--charcoal); margin: 0 0 4px;">Your Details</p>
-                            <p style="font-size: 0.8rem; color: var(--slate); margin: 0;">So we can get back to you</p>
-                        </div>
-                        <div style="flex: 1; min-width: 140px; max-width: 160px; text-align: center;">
-                            <div style="width: 48px; height: 48px; background: #28a745; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; margin: 0 auto var(--spacing-sm);">✓</div>
-                            <p style="font-weight: 600; font-size: 0.9rem; color: var(--charcoal); margin: 0 0 4px;">Submit</p>
-                            <p style="font-size: 0.8rem; color: var(--slate); margin: 0;">We'll be in touch within 48hrs</p>
-                        </div>
-                    </div>
-
-                    <p style="max-width: 550px; margin: var(--spacing-md) auto 0; color: var(--slate); font-size: 0.9rem; font-style: italic;">
-                        Only your name and email are required — everything else is optional. Don't worry about getting it perfect, our team will guide you from here.
+                    <p style="max-width: 600px; margin: 0 auto; color: var(--slate); font-size: 1.1rem; line-height: 1.7;">
+                        Fill in what you can, skip what you don't know. Only your name and email are required — our team will guide you from there.
                     </p>
                 </div>
 
@@ -1446,6 +1512,9 @@
                                 </div>
                                 <button id="capture-map-btn" onclick="manualCaptureSnapshot()" style="margin-top: var(--spacing-md); padding: 12px 20px; background: linear-gradient(135deg, var(--teal-accent) 0%, #2C5F7F 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 0.95rem; font-weight: 600; transition: all 0.3s ease;">
                                     📸 Capture Map Snapshot
+                                </button>
+                                <button id="download-map-btn" onclick="downloadMapSnapshot()" style="margin-top: 8px; padding: 12px 20px; background: linear-gradient(135deg, #FF6B35 0%, #e55a2b 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 0.95rem; font-weight: 600; transition: all 0.3s ease; display: none;">
+                                    📥 Download Map Image
                                 </button>
                                 <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 8px; text-align: center;">💡 Make sure your wall markings are visible before capturing. This snapshot will be included with your quote request.</p>
                             </div>
@@ -2425,21 +2494,49 @@
         function handleDrawCreated(e) {
             const layer = e.layer;
             wallCounter++;
-            
+
             // Calculate length
             const latlngs = layer.getLatLngs();
             const distance = calculateTotalDistance(latlngs);
-            
+
             // Store wall data
             layer.wallId = wallCounter;
             layer.wallDistance = distance;
+
+            // Create label marker at midpoint of wall
+            const midIndex = Math.floor(latlngs.length / 2);
+            let labelLatLng;
+            if (latlngs.length === 2) {
+                labelLatLng = L.latLng(
+                    (latlngs[0].lat + latlngs[1].lat) / 2,
+                    (latlngs[0].lng + latlngs[1].lng) / 2
+                );
+            } else if (latlngs.length > 2 && latlngs.length % 2 === 0) {
+                labelLatLng = L.latLng(
+                    (latlngs[midIndex - 1].lat + latlngs[midIndex].lat) / 2,
+                    (latlngs[midIndex - 1].lng + latlngs[midIndex].lng) / 2
+                );
+            } else {
+                labelLatLng = latlngs[midIndex];
+            }
+
+            const labelIcon = L.divIcon({
+                className: '',
+                html: `<div class="wall-map-label">#${wallCounter}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+            const labelMarker = L.marker(labelLatLng, { icon: labelIcon, interactive: false });
+            labelMarker.addTo(map);
+
             drawnWalls.push({
                 id: wallCounter,
                 layer: layer,
+                labelMarker: labelMarker,
                 distance: distance,
                 latlngs: latlngs.map(ll => ({ lat: ll.lat, lng: ll.lng }))
             });
-            
+
             // Add styled popup
             layer.bindPopup(`
                 <div style="text-align: center;">
@@ -2448,28 +2545,32 @@
                     <span style="font-size: 0.75em; color: #666;">(est.)</span>
                 </div>
             `);
-            
+
             // Add to map
             drawnItems.addLayer(layer);
-            
+
             // Update UI
             updateWallsList();
             updateQuoteSummary();
-            
+
             // Show walls container
             document.getElementById('drawn-walls-container').style.display = 'block';
-            
+
             // Auto-capture map snapshot
             setTimeout(() => captureMapSnapshot(), 500);
         }
         
         function handleDrawDeleted(e) {
             e.layers.eachLayer(function(layer) {
+                const wall = drawnWalls.find(w => w.layer === layer);
+                if (wall && wall.labelMarker) {
+                    map.removeLayer(wall.labelMarker);
+                }
                 drawnWalls = drawnWalls.filter(w => w.layer !== layer);
             });
             updateWallsList();
             updateQuoteSummary();
-            
+
             if (drawnWalls.length === 0) {
                 document.getElementById('drawn-walls-container').style.display = 'none';
                 document.getElementById('snapshot-placeholder').style.display = 'block';
@@ -2478,7 +2579,7 @@
                 captureMapSnapshot();
             }
         }
-        
+
         function handleDrawEdited(e) {
             e.layers.eachLayer(function(layer) {
                 const latlngs = layer.getLatLngs();
@@ -2491,11 +2592,31 @@
                         <span style="font-size: 0.75em; color: #666;">(est.)</span>
                     </div>
                 `);
-                
+
                 const wall = drawnWalls.find(w => w.layer === layer);
                 if (wall) {
                     wall.distance = distance;
                     wall.latlngs = latlngs.map(ll => ({ lat: ll.lat, lng: ll.lng }));
+
+                    // Reposition label marker to new midpoint
+                    if (wall.labelMarker) {
+                        const midIdx = Math.floor(latlngs.length / 2);
+                        let newLatLng;
+                        if (latlngs.length === 2) {
+                            newLatLng = L.latLng(
+                                (latlngs[0].lat + latlngs[1].lat) / 2,
+                                (latlngs[0].lng + latlngs[1].lng) / 2
+                            );
+                        } else if (latlngs.length > 2 && latlngs.length % 2 === 0) {
+                            newLatLng = L.latLng(
+                                (latlngs[midIdx - 1].lat + latlngs[midIdx].lat) / 2,
+                                (latlngs[midIdx - 1].lng + latlngs[midIdx].lng) / 2
+                            );
+                        } else {
+                            newLatLng = latlngs[midIdx];
+                        }
+                        wall.labelMarker.setLatLng(newLatLng);
+                    }
                 }
             });
             updateWallsList();
@@ -2555,7 +2676,10 @@
                                 </div>
                             </div>
                         </div>
-                        <button onclick="focusOnWall(${wall.id})">📍 View on Map</button>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                            <button onclick="focusOnWall(${wall.id})">📍 View</button>
+                            <button class="wall-delete-btn" onclick="deleteWall(${wall.id})">🗑️ Delete</button>
+                        </div>
                     </div>
                 `;
             });
@@ -2577,6 +2701,26 @@
             if (wall) {
                 map.fitBounds(wall.layer.getBounds(), { padding: [50, 50] });
                 wall.layer.openPopup();
+            }
+        }
+
+        function deleteWall(wallId) {
+            const wall = drawnWalls.find(w => w.id === wallId);
+            if (wall) {
+                drawnItems.removeLayer(wall.layer);
+                if (wall.labelMarker) {
+                    map.removeLayer(wall.labelMarker);
+                }
+                drawnWalls = drawnWalls.filter(w => w.id !== wallId);
+                updateWallsList();
+                updateQuoteSummary();
+                if (drawnWalls.length === 0) {
+                    document.getElementById('drawn-walls-container').style.display = 'none';
+                    document.getElementById('snapshot-placeholder').style.display = 'block';
+                    document.getElementById('map-snapshot-img').style.display = 'none';
+                } else {
+                    captureMapSnapshot();
+                }
             }
         }
         
@@ -2807,6 +2951,8 @@
             snapshotImg.src = mapSnapshot;
             snapshotImg.style.display = 'block';
             placeholder.style.display = 'none';
+            const dlBtn = document.getElementById('download-map-btn');
+            if (dlBtn) dlBtn.style.display = 'block';
             
             console.log('Snapshot complete with satellite background');
         }
@@ -2830,6 +2976,19 @@
                 btn.style.background = '';
                 btn.disabled = false;
             }, 1500);
+        }
+
+        function downloadMapSnapshot() {
+            if (!mapSnapshot) {
+                alert('Please capture a map snapshot first.');
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = mapSnapshot;
+            link.download = 'ReWall-Site-Map.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
         
         // ==========================================
