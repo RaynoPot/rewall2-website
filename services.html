@@ -87,15 +87,15 @@
         
         /* Drawing Tool Enhancement - Pulsing Animation */
         .leaflet-draw-toolbar {
-            animation: drawToolPulse 2s ease-in-out infinite;
+            animation: none;
         }
-        
-        @keyframes drawToolPulse {
+
+        @keyframes drawButtonGlow {
             0%, 100% {
-                box-shadow: 0 0 0 0 rgba(74, 144, 164, 0.7);
+                box-shadow: 0 0 8px rgba(255, 107, 53, 0.4), 0 2px 8px rgba(0,0,0,0.2);
             }
             50% {
-                box-shadow: 0 0 0 10px rgba(74, 144, 164, 0);
+                box-shadow: 0 0 20px rgba(255, 107, 53, 0.7), 0 2px 12px rgba(0,0,0,0.3);
             }
         }
         
@@ -103,7 +103,7 @@
         .draw-prompt-tooltip {
             position: absolute;
             left: 70px;
-            top: 55px;
+            top: 75px;
             background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
             color: white;
             padding: 12px 20px;
@@ -159,17 +159,41 @@
             display: none;
         }
         
-        /* Enhanced draw button styling */
+        /* Enhanced draw button styling - large and obvious */
         .leaflet-draw-draw-polyline {
-            background-color: #4A90A4 !important;
-            border: 2px solid white !important;
-            border-radius: 6px !important;
+            width: 52px !important;
+            height: 52px !important;
+            background-color: #FF6B35 !important;
+            border: 3px solid white !important;
+            border-radius: 12px !important;
             transition: all 0.3s ease !important;
+            animation: drawButtonGlow 2s ease-in-out infinite !important;
+            background-size: 28px 28px !important;
+            background-position: center !important;
+            position: relative;
         }
-        
+
         .leaflet-draw-draw-polyline:hover {
-            background-color: #2C7A99 !important;
+            background-color: #E55A2B !important;
             transform: scale(1.1);
+        }
+
+        /* "Draw Wall" label below button */
+        .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
+            content: '📐 Draw Wall';
+            position: absolute;
+            left: 58px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #FF6B35;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+            pointer-events: none;
         }
         
         .map-controls {
@@ -488,6 +512,32 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
         }
+
+        .wall-item .wall-delete-btn {
+            background: #e74c3c !important;
+            font-size: 0.8rem;
+        }
+
+        .wall-item .wall-delete-btn:hover {
+            background: #c0392b !important;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3) !important;
+        }
+
+        /* Wall number labels on map */
+        .wall-map-label {
+            background: var(--teal-accent);
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
         
         .total-length {
             background: white;
@@ -540,7 +590,51 @@
             border-color: var(--teal-accent);
             box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
         }
-        
+
+        /* Wall Height Estimate Section - Step 3 */
+        .wall-height-section {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, rgba(232, 244, 248, 0.6) 0%, rgba(232, 244, 248, 0.2) 100%);
+            border-radius: var(--radius-lg);
+            border: 2px solid rgba(74, 144, 164, 0.15);
+        }
+
+        .wall-height-text-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .wall-height-text-input:focus {
+            outline: none;
+            border-color: var(--teal-accent);
+            box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+        }
+
+        .wall-height-text-input::placeholder {
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+        .wall-height-tip {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: rgba(74, 144, 164, 0.08);
+            border-left: 3px solid var(--teal-accent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-size: 0.85rem;
+            color: var(--slate);
+            line-height: 1.5;
+        }
 
         .total-length {
             margin-top: var(--spacing-md);
@@ -864,6 +958,15 @@
         /* Leaflet custom styling */
         .leaflet-draw-toolbar a {
             background-color: var(--teal-accent) !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+        }
+
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline {
+            width: 52px !important;
+            height: 52px !important;
+            line-height: 52px !important;
         }
         
         .leaflet-draw-actions a {
@@ -1268,6 +1371,63 @@
                         </div>
                     </div>
                     <input type="text" id="other-wall-type" class="other-input" placeholder="Please describe the wall type you're looking for or your project requirements...">
+
+                    <!-- Wall Height Estimate (Optional) -->
+                    <div class="wall-height-section">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                            <span style="font-size: 1.4rem;">📐</span>
+                            <h4 style="margin: 0; color: var(--charcoal); font-size: 1.1rem;">How Tall Does Your Wall Need to Be?</h4>
+                            <span class="optional-badge">Optional</span>
+                        </div>
+                        <p style="color: var(--slate); font-size: 0.95rem; line-height: 1.6; margin-bottom: var(--spacing-md);">
+                            Wall height is simply the distance from the ground at the base to the top of the wall.
+                            A rough idea or range is perfectly fine — we'll confirm exact measurements during the site visit.
+                        </p>
+
+                        <!-- Simple Visual Diagram -->
+                        <div style="display: flex; justify-content: center; margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; align-items: flex-end; gap: 12px; padding: var(--spacing-md) var(--spacing-lg); background: white; border-radius: var(--radius-md); border: 1px solid var(--border-gray); display: inline-flex;">
+                                <div style="position: relative;">
+                                    <div style="width: 70px; height: 75px; background: linear-gradient(180deg, #a0917c 0%, #7a6b58 100%); border-radius: 3px 3px 0 0; border: 2px solid #6a5c4a; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 1.4rem;">🧱</span>
+                                    </div>
+                                    <div style="width: 130px; height: 6px; background: linear-gradient(90deg, #81C784, #4CAF50); border-radius: 3px; margin-left: -30px;"></div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: center; height: 75px; margin-bottom: 6px;">
+                                    <span style="font-size: 0.7rem; color: var(--teal-accent);">&#9650;</span>
+                                    <div style="width: 2px; flex: 1; background: var(--teal-accent); margin: 2px 0;"></div>
+                                    <span style="font-size: 0.7rem; color: var(--teal-accent);">&#9660;</span>
+                                </div>
+                                <div style="margin-bottom: 30px;">
+                                    <span style="font-weight: 700; color: var(--teal-accent); font-size: 0.9rem; white-space: nowrap;">Wall<br>Height</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Free-text Input -->
+                        <div style="max-width: 500px;">
+                            <label for="wall-height-estimate" style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--charcoal); font-size: 0.95rem;">
+                                Your best guess (any format is fine):
+                            </label>
+                            <input
+                                type="text"
+                                id="wall-height-estimate"
+                                class="wall-height-text-input"
+                                placeholder="e.g. about 1.5m, between 1-2 metres, not sure yet..."
+                                maxlength="100"
+                                oninput="updateQuoteSummary()"
+                            >
+                        </div>
+
+                        <!-- Reassurance Tip -->
+                        <div class="wall-height-tip">
+                            <span style="flex-shrink: 0;">💡</span>
+                            <span>
+                                <strong>No tape measure needed!</strong> A rough estimate or even "not sure" is completely fine.
+                                Our team will take proper measurements during the site assessment.
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Step 4: Geotechnical Report -->
@@ -1384,7 +1544,12 @@
                                 <h4>Wall Types</h4>
                                 <p id="summary-wall-types">None selected</p>
                             </div>
-                            
+
+                            <div class="summary-section">
+                                <h4>Estimated Wall Height</h4>
+                                <p id="summary-wall-height">Not specified</p>
+                            </div>
+
                             <div class="summary-section">
                                 <h4>Geotechnical Report</h4>
                                 <p id="summary-geotech">Not specified</p>
@@ -2393,21 +2558,51 @@
         function handleDrawCreated(e) {
             const layer = e.layer;
             wallCounter++;
-            
+
             // Calculate length
             const latlngs = layer.getLatLngs();
             const distance = calculateTotalDistance(latlngs);
-            
+
             // Store wall data
             layer.wallId = wallCounter;
             layer.wallDistance = distance;
+
+            // Create label marker at midpoint of wall
+            const midIndex = Math.floor(latlngs.length / 2);
+            let labelLatLng;
+            if (latlngs.length === 2) {
+                // Midpoint between start and end
+                labelLatLng = L.latLng(
+                    (latlngs[0].lat + latlngs[1].lat) / 2,
+                    (latlngs[0].lng + latlngs[1].lng) / 2
+                );
+            } else if (latlngs.length > 2 && latlngs.length % 2 === 0) {
+                // Average of the two middle points
+                labelLatLng = L.latLng(
+                    (latlngs[midIndex - 1].lat + latlngs[midIndex].lat) / 2,
+                    (latlngs[midIndex - 1].lng + latlngs[midIndex].lng) / 2
+                );
+            } else {
+                labelLatLng = latlngs[midIndex];
+            }
+
+            const labelIcon = L.divIcon({
+                className: '',
+                html: `<div class="wall-map-label">#${wallCounter}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+            const labelMarker = L.marker(labelLatLng, { icon: labelIcon, interactive: false });
+            labelMarker.addTo(map);
+
             drawnWalls.push({
                 id: wallCounter,
                 layer: layer,
+                labelMarker: labelMarker,
                 distance: distance,
                 latlngs: latlngs.map(ll => ({ lat: ll.lat, lng: ll.lng }))
             });
-            
+
             // Add styled popup
             layer.bindPopup(`
                 <div style="text-align: center;">
@@ -2416,28 +2611,33 @@
                     <span style="font-size: 0.75em; color: #666;">(est.)</span>
                 </div>
             `);
-            
+
             // Add to map
             drawnItems.addLayer(layer);
-            
+
             // Update UI
             updateWallsList();
             updateQuoteSummary();
-            
+
             // Show walls container
             document.getElementById('drawn-walls-container').style.display = 'block';
-            
+
             // Auto-capture map snapshot
             setTimeout(() => captureMapSnapshot(), 500);
         }
         
         function handleDrawDeleted(e) {
             e.layers.eachLayer(function(layer) {
+                // Find the wall and remove its label marker
+                const wall = drawnWalls.find(w => w.layer === layer);
+                if (wall && wall.labelMarker) {
+                    map.removeLayer(wall.labelMarker);
+                }
                 drawnWalls = drawnWalls.filter(w => w.layer !== layer);
             });
             updateWallsList();
             updateQuoteSummary();
-            
+
             if (drawnWalls.length === 0) {
                 document.getElementById('drawn-walls-container').style.display = 'none';
                 document.getElementById('snapshot-placeholder').style.display = 'block';
@@ -2464,6 +2664,26 @@
                 if (wall) {
                     wall.distance = distance;
                     wall.latlngs = latlngs.map(ll => ({ lat: ll.lat, lng: ll.lng }));
+
+                    // Reposition label marker to new midpoint
+                    if (wall.labelMarker) {
+                        const midIdx = Math.floor(latlngs.length / 2);
+                        let newLatLng;
+                        if (latlngs.length === 2) {
+                            newLatLng = L.latLng(
+                                (latlngs[0].lat + latlngs[1].lat) / 2,
+                                (latlngs[0].lng + latlngs[1].lng) / 2
+                            );
+                        } else if (latlngs.length > 2 && latlngs.length % 2 === 0) {
+                            newLatLng = L.latLng(
+                                (latlngs[midIdx - 1].lat + latlngs[midIdx].lat) / 2,
+                                (latlngs[midIdx - 1].lng + latlngs[midIdx].lng) / 2
+                            );
+                        } else {
+                            newLatLng = latlngs[midIdx];
+                        }
+                        wall.labelMarker.setLatLng(newLatLng);
+                    }
                 }
             });
             updateWallsList();
@@ -2523,7 +2743,10 @@
                                 </div>
                             </div>
                         </div>
-                        <button onclick="focusOnWall(${wall.id})">📍 View on Map</button>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                            <button onclick="focusOnWall(${wall.id})">📍 View</button>
+                            <button class="wall-delete-btn" onclick="deleteWall(${wall.id})">🗑️ Delete</button>
+                        </div>
                     </div>
                 `;
             });
@@ -2545,6 +2768,31 @@
             if (wall) {
                 map.fitBounds(wall.layer.getBounds(), { padding: [50, 50] });
                 wall.layer.openPopup();
+            }
+        }
+
+        function deleteWall(wallId) {
+            const wall = drawnWalls.find(w => w.id === wallId);
+            if (wall) {
+                // Remove polyline from map
+                drawnItems.removeLayer(wall.layer);
+                // Remove label marker from map
+                if (wall.labelMarker) {
+                    map.removeLayer(wall.labelMarker);
+                }
+                // Remove from array
+                drawnWalls = drawnWalls.filter(w => w.id !== wallId);
+                // Update UI
+                updateWallsList();
+                updateQuoteSummary();
+
+                if (drawnWalls.length === 0) {
+                    document.getElementById('drawn-walls-container').style.display = 'none';
+                    document.getElementById('snapshot-placeholder').style.display = 'block';
+                    document.getElementById('map-snapshot-img').style.display = 'none';
+                } else {
+                    setTimeout(() => captureMapSnapshot(), 500);
+                }
             }
         }
         
@@ -3032,7 +3280,14 @@
             }
             
             wallTypesDisplay.textContent = selectedWallTypes.length > 0 ? selectedWallTypes.join(', ') : 'None selected';
-            
+
+            // Wall height estimate
+            const wallHeightDisplay = document.getElementById('summary-wall-height');
+            const wallHeightEstimate = document.getElementById('wall-height-estimate')?.value?.trim() || '';
+            if (wallHeightDisplay) {
+                wallHeightDisplay.textContent = wallHeightEstimate || 'Not specified';
+            }
+
             // Geotechnical Report Status
             const geotechDisplay = document.getElementById('summary-geotech');
             const geotechSelection = document.querySelector('input[name="geotech-status"]:checked');
@@ -3091,7 +3346,7 @@
             });
             
             // Client detail inputs
-            ['client-name', 'client-email', 'client-phone', 'client-company', 'client-notes', 'other-wall-type'].forEach(id => {
+            ['client-name', 'client-email', 'client-phone', 'client-company', 'client-notes', 'other-wall-type', 'wall-height-estimate'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener('input', updateQuoteSummary);
@@ -3180,6 +3435,7 @@
                 totalWallLengthFormatted: formatDistance(drawnWalls.reduce((sum, w) => sum + w.distance, 0)),
                 wallTypes: wallTypes,
                 otherWallType: document.getElementById('other-wall-type')?.value || '',
+                wallHeightEstimate: document.getElementById('wall-height-estimate')?.value?.trim() || '',
                 geotech: geotechStatus,
                 notes: document.getElementById('client-notes')?.value || '',
                 attachments: uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })),
@@ -3249,7 +3505,10 @@
                 body += `Other details: ${data.otherWallType}\n`;
             }
             body += `\n`;
-            
+
+            body += `ESTIMATED WALL HEIGHT:\n`;
+            body += `${data.wallHeightEstimate || 'Not specified'}\n\n`;
+
             body += `PROJECT NOTES:\n`;
             body += `${data.notes || 'No notes provided'}\n\n`;
             
@@ -3413,7 +3672,8 @@
                 if (data.otherWallType) {
                     addField('Other Wall Type Details', data.otherWallType);
                 }
-                
+                addField('Estimated Wall Height', data.wallHeightEstimate || 'Not specified');
+
                 // Geotechnical
                 addField('Geotechnical Report', data.geotech || 'Not specified');
                 
