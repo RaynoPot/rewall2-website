@@ -83,6 +83,16 @@
         #site-map {
             height: 100%;
             width: 100%;
+            background: #e8e8e8;
+        }
+        
+        /* Ensure Leaflet tiles render properly */
+        .leaflet-tile-pane {
+            z-index: 200;
+        }
+        
+        .leaflet-overlay-pane {
+            z-index: 400;
         }
         
         /* Drawing Tool Enhancement - Pulsing Animation */
@@ -2392,22 +2402,28 @@
                 maxZoom: 22
             });
             
-            // Map tile layer (OpenStreetMap) - maxNativeZoom allows upscaling beyond tile resolution
-            mapTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
+            // Map tile layer (Carto - more reliable than OSM direct)
+            mapTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
                 maxNativeZoom: 19,
                 maxZoom: 22
             });
             
             // Satellite tile layer (ESRI) - higher zoom with upscaling
             satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles © Esri',
+                attribution: 'Tiles &copy; Esri',
                 maxNativeZoom: 19,
                 maxZoom: 22
             });
             
             // Start with map view
             mapTileLayer.addTo(map);
+            
+            // Force map to invalidate size after DOM is ready
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
             
             // Initialize drawing layer
             drawnItems = new L.FeatureGroup();
