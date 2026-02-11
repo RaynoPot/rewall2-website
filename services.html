@@ -1891,80 +1891,6 @@
         let boundaryRefreshTimeout = null;
         
         // ==========================================
-        // RATE LIMITING - Prevents abuse of uploads/submissions
-        // ==========================================
-        
-        const RateLimiter = {
-            // Store timestamps of actions in localStorage
-            getActionTimes(actionType) {
-                const stored = localStorage.getItem(`rewall_rate_${actionType}`);
-                return stored ? JSON.parse(stored) : [];
-            },
-            
-            setActionTimes(actionType, times) {
-                localStorage.setItem(`rewall_rate_${actionType}`, JSON.stringify(times));
-            },
-            
-            // Clean up old timestamps outside the window
-            cleanOldTimes(times, windowMs) {
-                const now = Date.now();
-                return times.filter(time => (now - time) < windowMs);
-            },
-            
-            // Check if action is allowed
-            isAllowed(actionType, maxAttempts, windowMs) {
-                let times = this.getActionTimes(actionType);
-                times = this.cleanOldTimes(times, windowMs);
-                this.setActionTimes(actionType, times);
-                return times.length < maxAttempts;
-            },
-            
-            // Record an action
-            recordAction(actionType, windowMs) {
-                let times = this.getActionTimes(actionType);
-                times = this.cleanOldTimes(times, windowMs);
-                times.push(Date.now());
-                this.setActionTimes(actionType, times);
-            },
-            
-            // Get remaining attempts
-            getRemainingAttempts(actionType, maxAttempts, windowMs) {
-                let times = this.getActionTimes(actionType);
-                times = this.cleanOldTimes(times, windowMs);
-                return Math.max(0, maxAttempts - times.length);
-            },
-            
-            // Get time until oldest action expires
-            getTimeUntilReset(actionType, windowMs) {
-                let times = this.getActionTimes(actionType);
-                times = this.cleanOldTimes(times, windowMs);
-                if (times.length === 0) return 0;
-                const oldestTime = Math.min(...times);
-                return Math.max(0, windowMs - (Date.now() - oldestTime));
-            },
-            
-            // Format time remaining as human readable
-            formatTimeRemaining(ms) {
-                const minutes = Math.ceil(ms / 60000);
-                if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
-                const hours = Math.ceil(minutes / 60);
-                return `${hours} hour${hours !== 1 ? 's' : ''}`;
-            }
-        };
-        
-        // Rate limit settings (generous for legitimate use)
-        const RATE_LIMITS = {
-            fileUpload: {
-                maxAttempts: 20,      // 20 file uploads
-                windowMs: 30 * 60 * 1000  // per 30 minutes
-            },
-            quoteSubmission: {
-                maxAttempts: 5,       // 5 quote submissions
-                windowMs: 60 * 60 * 1000  // per hour
-            }
-        };
-        
-        // ==========================================
         // LINZ PROPERTY BOUNDARIES - WFS via Netlify Function
         // ==========================================
 
@@ -2974,14 +2900,6 @@
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             const warningEl = document.getElementById('file-size-warning');
             
-            // Rate limiting check for file uploads
-            const { maxAttempts, windowMs } = RATE_LIMITS.fileUpload;
-            if (!RateLimiter.isAllowed('fileUpload', maxAttempts, windowMs)) {
-                const timeRemaining = RateLimiter.formatTimeRemaining(RateLimiter.getTimeUntilReset('fileUpload', windowMs));
-                alert(`Upload limit reached. Please try again in ${timeRemaining}.\n\nFor more files, email them to info@rewall.nz`);
-                return;
-            }
-            
             Array.from(files).forEach(file => {
                 // Check max files
                 if (uploadedFiles.length >= maxFiles) {
@@ -3008,10 +2926,6 @@
                     size: file.size,
                     file: file // Store the actual File object
                 });
-                
-                // Record successful upload for rate limiting
-                RateLimiter.recordAction('fileUpload', RATE_LIMITS.fileUpload.windowMs);
-                
                 updateFileList();
                 updateQuoteSummary();
             });
@@ -3250,14 +3164,6 @@
         function submitQuoteRequest() {
             console.log('Submit button clicked - starting submitQuoteRequest');
             
-            // Rate limiting check for quote submissions
-            const { maxAttempts, windowMs } = RATE_LIMITS.quoteSubmission;
-            if (!RateLimiter.isAllowed('quoteSubmission', maxAttempts, windowMs)) {
-                const timeRemaining = RateLimiter.formatTimeRemaining(RateLimiter.getTimeUntilReset('quoteSubmission', windowMs));
-                alert(`Submission limit reached (${maxAttempts} per hour).\n\nPlease try again in ${timeRemaining}.\n\nOr contact us directly:\n📧 info@rewall.nz\n📞 027 394 1127`);
-                return;
-            }
-            
             // Validate required fields
             const name = document.getElementById('client-name')?.value?.trim() || '';
             const email = document.getElementById('client-email')?.value?.trim() || '';
@@ -3346,9 +3252,6 @@
             
             // Create email content
             const emailBody = generateEmailBody(quoteData);
-            
-            // Record successful submission for rate limiting
-            RateLimiter.recordAction('quoteSubmission', RATE_LIMITS.quoteSubmission.windowMs);
             
             console.log('Opening submission modal...');
             
