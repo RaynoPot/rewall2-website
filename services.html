@@ -1547,7 +1547,7 @@
         <!-- Full-Service Solutions -->
         <section class="alt-bg" id="full-services">
             <div class="container">
-                <h2 style="text-align: center;">Full-Service Solutions: Complete the Circle</h2>
+                <h2 style="text-align: center; margin-bottom: var(--spacing-md);">Full-Service Solutions: Complete the Circle</h2>
                 <p style="text-align: center; max-width: 700px; margin: 0 auto var(--spacing-xl);">Let us handle everything from initial consultation to final project sign-off. Choose all 6 stages or select the ones you need.</p>
                 
                 <div class="grid" style="grid-template-columns: repeat(2, 1fr); margin-top: var(--spacing-xl);">
@@ -1621,7 +1621,7 @@
 
         <!-- Retaining Wall Types -->
         <section class="container">
-            <h2 style="text-align: center; margin-bottom: var(--spacing-xl);">Wall Types We Specialize In</h2>
+            <h2 style="text-align: center; margin-bottom: var(--spacing-lg);">Wall Types We Specialize In</h2>
             
             <div class="grid grid-2">
                 <div class="card">
@@ -1691,9 +1691,9 @@
         <section class="alt-bg">
             <div class="container">
                 <h2 style="text-align: center; margin-bottom: var(--spacing-md);">Flexible Engagement: Mix & Match Services</h2>
-                <p style="text-align: center; max-width: 700px; margin: 0 auto var(--spacing-xl); color: var(--slate);">Not ready for the complete package? Choose the specific services you need right now. Perfect flexibility for your timeline and budget.</p>
+                <p style="text-align: center; max-width: 700px; margin: 0 auto var(--spacing-lg); color: var(--slate);">Not ready for the complete package? Choose the specific services you need right now. Perfect flexibility for your timeline and budget.</p>
                 
-                <div class="grid" style="grid-template-columns: repeat(3, 1fr); margin-top: var(--spacing-xl); gap: var(--spacing-lg);">
+                <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg);">
                     <div class="card" style="border-left: 5px solid var(--teal-accent); border-radius: var(--radius-lg);">
                         <h3 style="color: var(--teal-accent);">🎯 Engineering Design Only</h3>
                         <p style="font-size: 0.95rem; color: var(--slate); margin-bottom: var(--spacing-md);"><strong>Perfect for:</strong> Builders with their own project management</p>
@@ -1808,7 +1808,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 ReWall NZ. All rights reserved. | <a href="#privacy">Privacy Policy</a></p>
+                <p>&copy; 2026 ReWall NZ. All rights reserved. | <a href="terms.html">Terms of Use</a></p>
             </div>
         </footer>
 
@@ -1867,6 +1867,82 @@
         // ==========================================
         // QUOTE BUILDER - Interactive Map & Tools
         // ==========================================
+        
+        // ==========================================
+        // RATE LIMITER - Prevent abuse
+        // ==========================================
+        const RateLimiter = {
+            // Store action timestamps in localStorage for persistence
+            getActionHistory(action) {
+                try {
+                    const data = localStorage.getItem(`rateLimit_${action}`);
+                    return data ? JSON.parse(data) : [];
+                } catch (e) {
+                    return [];
+                }
+            },
+            
+            setActionHistory(action, history) {
+                try {
+                    localStorage.setItem(`rateLimit_${action}`, JSON.stringify(history));
+                } catch (e) {
+                    console.warn('Could not save rate limit history');
+                }
+            },
+            
+            // Clean up old entries outside the window
+            cleanHistory(history, windowMs) {
+                const now = Date.now();
+                return history.filter(timestamp => now - timestamp < windowMs);
+            },
+            
+            // Check if action is allowed
+            isAllowed(action, maxAttempts, windowMs) {
+                let history = this.getActionHistory(action);
+                history = this.cleanHistory(history, windowMs);
+                return history.length < maxAttempts;
+            },
+            
+            // Record an action
+            recordAction(action, windowMs) {
+                let history = this.getActionHistory(action);
+                history = this.cleanHistory(history, windowMs);
+                history.push(Date.now());
+                this.setActionHistory(action, history);
+            },
+            
+            // Get remaining attempts
+            getRemainingAttempts(action, maxAttempts, windowMs) {
+                let history = this.getActionHistory(action);
+                history = this.cleanHistory(history, windowMs);
+                return Math.max(0, maxAttempts - history.length);
+            },
+            
+            // Get time until reset (next available attempt)
+            getTimeUntilReset(action, windowMs) {
+                let history = this.getActionHistory(action);
+                if (history.length === 0) return 0;
+                const oldest = Math.min(...history);
+                const resetTime = oldest + windowMs - Date.now();
+                return Math.max(0, resetTime);
+            },
+            
+            // Format time remaining as human readable
+            formatTimeRemaining(ms) {
+                const minutes = Math.ceil(ms / 60000);
+                if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+                const hours = Math.ceil(minutes / 60);
+                return `${hours} hour${hours !== 1 ? 's' : ''}`;
+            }
+        };
+        
+        // Rate limit configurations
+        const RATE_LIMITS = {
+            quoteSubmission: { maxAttempts: 3, windowMs: 60 * 60 * 1000 },    // 3 submissions per hour
+            fileUpload: { maxAttempts: 20, windowMs: 10 * 60 * 1000 },        // 20 file uploads per 10 minutes
+            addressSearch: { maxAttempts: 30, windowMs: 5 * 60 * 1000 },      // 30 searches per 5 minutes
+            mapDraw: { maxAttempts: 50, windowMs: 10 * 60 * 1000 }            // 50 wall draws per 10 minutes
+        };
         
         let map;
         let drawnItems;
@@ -3033,6 +3109,14 @@
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             const warningEl = document.getElementById('file-size-warning');
             
+            // Rate limiting check for file uploads
+            const { maxAttempts, windowMs } = RATE_LIMITS.fileUpload;
+            if (!RateLimiter.isAllowed('fileUpload', maxAttempts, windowMs)) {
+                const timeRemaining = RateLimiter.formatTimeRemaining(RateLimiter.getTimeUntilReset('fileUpload', windowMs));
+                alert(`⏳ Upload limit reached.\n\nTo prevent abuse, file uploads are limited. Please try again in ${timeRemaining}.\n\nIf you have more files, please email them to info@rewall.nz`);
+                return;
+            }
+            
             Array.from(files).forEach(file => {
                 // Check max files
                 if (uploadedFiles.length >= maxFiles) {
@@ -3051,6 +3135,9 @@
                     alert(`${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)}MB).\n\nMaximum size is 5MB per file.\n\nTip: Compress images or use a PDF optimizer.`);
                     return;
                 }
+                
+                // Record the upload action for rate limiting
+                RateLimiter.recordAction('fileUpload', RATE_LIMITS.fileUpload.windowMs);
                 
                 // Store actual File object for FormSubmit (not base64)
                 uploadedFiles.push({
@@ -3297,6 +3384,15 @@
         function submitQuoteRequest() {
             console.log('Submit button clicked - starting submitQuoteRequest');
             
+            // Rate limiting check for quote submissions
+            const { maxAttempts, windowMs } = RATE_LIMITS.quoteSubmission;
+            if (!RateLimiter.isAllowed('quoteSubmission', maxAttempts, windowMs)) {
+                const timeRemaining = RateLimiter.formatTimeRemaining(RateLimiter.getTimeUntilReset('quoteSubmission', windowMs));
+                const remaining = RateLimiter.getRemainingAttempts('quoteSubmission', maxAttempts, windowMs);
+                alert(`⏳ Submission limit reached.\n\nTo prevent abuse, quote submissions are limited to ${maxAttempts} per hour.\n\nPlease try again in ${timeRemaining}, or contact us directly:\n📧 info@rewall.nz\n📞 027 394 1127`);
+                return;
+            }
+            
             // Validate required fields
             const name = document.getElementById('client-name')?.value?.trim() || '';
             const email = document.getElementById('client-email')?.value?.trim() || '';
@@ -3385,6 +3481,9 @@
             
             // Create email content
             const emailBody = generateEmailBody(quoteData);
+            
+            // Record the submission for rate limiting
+            RateLimiter.recordAction('quoteSubmission', RATE_LIMITS.quoteSubmission.windowMs);
             
             console.log('Opening submission modal...');
             

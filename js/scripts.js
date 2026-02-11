@@ -3,6 +3,66 @@
 // Animations, interactions, and functionality
 // ===================================
 
+// ===================================
+// RATE LIMITER - Prevent form abuse
+// ===================================
+const RateLimiter = {
+    getActionHistory(action) {
+        try {
+            const data = localStorage.getItem(`rateLimit_${action}`);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
+    },
+    
+    setActionHistory(action, history) {
+        try {
+            localStorage.setItem(`rateLimit_${action}`, JSON.stringify(history));
+        } catch (e) {
+            console.warn('Could not save rate limit history');
+        }
+    },
+    
+    cleanHistory(history, windowMs) {
+        const now = Date.now();
+        return history.filter(timestamp => now - timestamp < windowMs);
+    },
+    
+    isAllowed(action, maxAttempts, windowMs) {
+        let history = this.getActionHistory(action);
+        history = this.cleanHistory(history, windowMs);
+        return history.length < maxAttempts;
+    },
+    
+    recordAction(action, windowMs) {
+        let history = this.getActionHistory(action);
+        history = this.cleanHistory(history, windowMs);
+        history.push(Date.now());
+        this.setActionHistory(action, history);
+    },
+    
+    formatTimeRemaining(ms) {
+        const minutes = Math.ceil(ms / 60000);
+        if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        const hours = Math.ceil(minutes / 60);
+        return `${hours} hour${hours !== 1 ? 's' : ''}`;
+    },
+    
+    getTimeUntilReset(action, windowMs) {
+        let history = this.getActionHistory(action);
+        if (history.length === 0) return 0;
+        const oldest = Math.min(...history);
+        return Math.max(0, oldest + windowMs - Date.now());
+    }
+};
+
+// Rate limits for contact forms
+const CONTACT_RATE_LIMITS = {
+    contactForm: { maxAttempts: 5, windowMs: 60 * 60 * 1000 },  // 5 submissions per hour
+    designPortalNotify: { maxAttempts: 3, windowMs: 60 * 60 * 1000 }  // 3 per hour
+};
+
 // Design Portal Modal Functions
 function openDesignPortal() {
     const modal = document.getElementById('design-portal-modal');
@@ -220,16 +280,29 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // ===================================
-// FORM HANDLING
+// FORM HANDLING WITH RATE LIMITING
 // ===================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    const contactForm = document.querySelector('form[name="contact"]');
+    // Contact form rate limiting
+    const contactForm = document.querySelector('form[action*="formsubmit.co"]');
     
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
-            // Let Netlify handle the form submission
-            // This is just for validation feedback if needed
+            const { maxAttempts, windowMs } = CONTACT_RATE_LIMITS.contactForm;
+            
+            // Check rate limit
+            if (!RateLimiter.isAllowed('contactForm', maxAttempts, windowMs)) {
+                e.preventDefault();
+                const timeRemaining = RateLimiter.formatTimeRemaining(RateLimiter.getTimeUntilReset('contactForm', windowMs));
+                alert(`⏳ Submission limit reached.\n\nTo prevent spam, form submissions are limited to ${maxAttempts} per hour.\n\nPlease try again in ${timeRemaining}, or contact us directly:\n📧 info@rewall.nz\n📞 027 394 1127`);
+                return false;
+            }
+            
+            // Record the submission
+            RateLimiter.recordAction('contactForm', windowMs);
+            
+            // Show loading state
             const submitBtn = contactForm.querySelector('button[type="submit"]');
             if (submitBtn) {
                 submitBtn.textContent = 'Sending...';
@@ -237,6 +310,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Design Portal notify form rate limiting
+    const notifyForms = document.querySelectorAll('.design-portal-notify');
+    notifyForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const { maxAttempts, windowMs } = CONTACT_RATE_LIMITS.designPortalNotify;
+            
+            if (!RateLimiter.isAllowed('designPortalNotify', maxAttempts, windowMs)) {
+                e.preventDefault();
+                const timeRemaining = RateLimiter.formatTimeRemaining(RateLimiter.getTimeUntilReset('designPortalNotify', windowMs));
+                alert(`⏳ You've already signed up for notifications.\n\nPlease try again in ${timeRemaining} if you need to update your email.`);
+                return false;
+            }
+            
+            RateLimiter.recordAction('designPortalNotify', windowMs);
+        });
+    });
 });
 
 // ===================================
