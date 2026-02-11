@@ -2813,222 +2813,89 @@
         async function captureMapSnapshot() {
             const placeholder = document.getElementById('snapshot-placeholder');
             const snapshotImg = document.getElementById('map-snapshot-img');
+            const mapContainer = document.getElementById('site-map');
             
-            console.log('Capturing map snapshot with satellite tiles...');
+            console.log('Capturing map snapshot via screen capture...');
             
-            const canvas = document.createElement('canvas');
-            canvas.width = 600;
-            canvas.height = 400;
-            const ctx = canvas.getContext('2d');
-            
-            // Calculate bounds for walls or use map bounds
-            let minLat, maxLat, minLng, maxLng;
-            const bounds = map.getBounds();
-            
-            if (drawnWalls.length > 0) {
-                minLat = Infinity; maxLat = -Infinity;
-                minLng = Infinity; maxLng = -Infinity;
-                
-                drawnWalls.forEach(wall => {
-                    let latlngs = wall.layer.getLatLngs();
-                    if (latlngs[0] && Array.isArray(latlngs[0]) && !latlngs[0].lat) {
-                        latlngs = latlngs[0];
-                    }
-                    latlngs.forEach(ll => {
-                        minLat = Math.min(minLat, ll.lat);
-                        maxLat = Math.max(maxLat, ll.lat);
-                        minLng = Math.min(minLng, ll.lng);
-                        maxLng = Math.max(maxLng, ll.lng);
-                    });
+            try {
+                // Use html2canvas to capture the map exactly as shown on screen
+                const canvas = await html2canvas(mapContainer, {
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#f0f0f0',
+                    scale: 2, // Higher quality
+                    logging: false,
+                    imageTimeout: 15000
                 });
                 
-                // Add padding
-                const latPad = (maxLat - minLat) * 0.5 || 0.0008;
-                const lngPad = (maxLng - minLng) * 0.5 || 0.0008;
-                minLat -= latPad; maxLat += latPad;
-                minLng -= lngPad; maxLng += lngPad;
-            } else {
-                minLat = bounds.getSouth();
-                maxLat = bounds.getNorth();
-                minLng = bounds.getWest();
-                maxLng = bounds.getEast();
-            }
-            
-            // Determine zoom level for tiles (18 gives good detail)
-            const zoom = 18;
-            
-            // Get tile coordinates
-            const minTileX = lng2tile(minLng, zoom);
-            const maxTileX = lng2tile(maxLng, zoom);
-            const minTileY = lat2tile(maxLat, zoom); // Note: Y is inverted
-            const maxTileY = lat2tile(minLat, zoom);
-            
-            // Calculate actual bounds from tiles
-            const tileBoundsWest = tile2lng(minTileX, zoom);
-            const tileBoundsEast = tile2lng(maxTileX + 1, zoom);
-            const tileBoundsNorth = tile2lat(minTileY, zoom);
-            const tileBoundsSouth = tile2lat(maxTileY + 1, zoom);
-            
-            // Tile size
-            const tileSize = 256;
-            const tilesX = maxTileX - minTileX + 1;
-            const tilesY = maxTileY - minTileY + 1;
-            
-            // Create temp canvas for tiles
-            const tileCanvas = document.createElement('canvas');
-            tileCanvas.width = tilesX * tileSize;
-            tileCanvas.height = tilesY * tileSize;
-            const tileCtx = tileCanvas.getContext('2d');
-            
-            // Fill with dark background first
-            tileCtx.fillStyle = '#2d4a2d';
-            tileCtx.fillRect(0, 0, tileCanvas.width, tileCanvas.height);
-            
-            console.log(`Loading ${tilesX * tilesY} satellite tiles...`);
-            
-            // Load all tiles
-            const tilePromises = [];
-            for (let x = minTileX; x <= maxTileX; x++) {
-                for (let y = minTileY; y <= maxTileY; y++) {
-                    const tileUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
-                    
-                    const promise = new Promise((resolve) => {
-                        const img = new Image();
-                        img.crossOrigin = 'anonymous';
-                        img.onload = () => {
-                            const destX = (x - minTileX) * tileSize;
-                            const destY = (y - minTileY) * tileSize;
-                            tileCtx.drawImage(img, destX, destY, tileSize, tileSize);
-                            resolve(true);
-                        };
-                        img.onerror = () => {
-                            console.log(`Tile ${x},${y} failed`);
-                            resolve(false);
-                        };
-                        img.src = tileUrl;
-                    });
-                    tilePromises.push(promise);
-                }
-            }
-            
-            // Wait for all tiles
-            const results = await Promise.all(tilePromises);
-            const loadedCount = results.filter(r => r).length;
-            console.log(`Loaded ${loadedCount}/${results.length} tiles`);
-            
-            // Now draw the relevant portion onto our 600x400 canvas
-            // Calculate pixel coordinates for our bounds within the tile canvas
-            const pxPerDegLng = tileCanvas.width / (tileBoundsEast - tileBoundsWest);
-            const pxPerDegLat = tileCanvas.height / (tileBoundsNorth - tileBoundsSouth);
-            
-            const srcX = (minLng - tileBoundsWest) * pxPerDegLng;
-            const srcY = (tileBoundsNorth - maxLat) * pxPerDegLat;
-            const srcW = (maxLng - minLng) * pxPerDegLng;
-            const srcH = (maxLat - minLat) * pxPerDegLat;
-            
-            // Draw cropped satellite imagery to final canvas
-            ctx.drawImage(tileCanvas, srcX, srcY, srcW, srcH, 0, 0, 600, 400);
-            
-            // Scale functions for drawing walls
-            const scaleX = (lng) => ((lng - minLng) / (maxLng - minLng)) * 600;
-            const scaleY = (lat) => 400 - ((lat - minLat) / (maxLat - minLat)) * 400;
-            
-            // Draw walls on top of satellite background
-            if (drawnWalls.length > 0) {
-                drawnWalls.forEach((wall, idx) => {
-                    let latlngs = wall.layer.getLatLngs();
-                    if (latlngs[0] && Array.isArray(latlngs[0]) && !latlngs[0].lat) {
-                        latlngs = latlngs[0];
-                    }
-                    
-                    if (latlngs.length >= 2) {
-                        // White outline for visibility on satellite
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 8;
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-                        ctx.beginPath();
-                        ctx.moveTo(scaleX(latlngs[0].lng), scaleY(latlngs[0].lat));
-                        for (let i = 1; i < latlngs.length; i++) {
-                            ctx.lineTo(scaleX(latlngs[i].lng), scaleY(latlngs[i].lat));
-                        }
-                        ctx.stroke();
-                        
-                        // Red wall line
-                        ctx.strokeStyle = '#FF0000';
-                        ctx.lineWidth = 4;
-                        ctx.beginPath();
-                        ctx.moveTo(scaleX(latlngs[0].lng), scaleY(latlngs[0].lat));
-                        for (let i = 1; i < latlngs.length; i++) {
-                            ctx.lineTo(scaleX(latlngs[i].lng), scaleY(latlngs[i].lat));
-                        }
-                        ctx.stroke();
-                        
-                        // Dots at vertices
-                        latlngs.forEach(ll => {
-                            ctx.fillStyle = '#ffffff';
-                            ctx.beginPath();
-                            ctx.arc(scaleX(ll.lng), scaleY(ll.lat), 8, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.fillStyle = '#FF0000';
-                            ctx.beginPath();
-                            ctx.arc(scaleX(ll.lng), scaleY(ll.lat), 5, 0, Math.PI * 2);
-                            ctx.fill();
-                        });
-                        
-                        // Label with background
-                        const midIdx = Math.floor(latlngs.length / 2);
-                        const midPt = latlngs[midIdx];
-                        const labelX = scaleX(midPt.lng);
-                        const labelY = scaleY(midPt.lat) - 20;
-                        const label = 'Wall #' + (idx + 1);
-                        
-                        ctx.font = 'bold 14px Arial';
-                        const textWidth = ctx.measureText(label).width;
-                        
-                        ctx.fillStyle = 'rgba(0,0,0,0.8)';
-                        ctx.fillRect(labelX - textWidth/2 - 6, labelY - 12, textWidth + 12, 20);
-                        
-                        ctx.fillStyle = '#ffffff';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(label, labelX, labelY + 2);
-                    }
-                });
-            }
-            
-            // Legend box
-            ctx.fillStyle = 'rgba(0,0,0,0.75)';
-            ctx.fillRect(10, 10, 150, 30);
-            ctx.strokeStyle = '#FF0000';
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(20, 25);
-            ctx.lineTo(55, 25);
-            ctx.stroke();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 12px Arial';
-            ctx.textAlign = 'left';
-            ctx.fillText('= Wall location', 65, 29);
-            
-            // Address bar at bottom
-            const addr = document.getElementById('address-search')?.value || '';
-            if (addr) {
+                // Create final output canvas at 600x400
+                const outputCanvas = document.createElement('canvas');
+                outputCanvas.width = 600;
+                outputCanvas.height = 400;
+                const ctx = outputCanvas.getContext('2d');
+                
+                // Draw the captured map scaled to fit
+                ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 600, 400);
+                
+                // Add legend box
                 ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                ctx.fillRect(0, 365, 600, 35);
+                ctx.fillRect(10, 10, 150, 30);
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(20, 25);
+                ctx.lineTo(55, 25);
+                ctx.stroke();
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 12px Arial';
                 ctx.textAlign = 'left';
-                ctx.fillText('📍 ' + addr.substring(0, 70), 10, 387);
+                ctx.fillText('= Wall location', 65, 29);
+                
+                // Add address bar at bottom if we have an address
+                const addr = document.getElementById('address-search')?.value || '';
+                if (addr) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                    ctx.fillRect(0, 365, 600, 35);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('📍 ' + addr.substring(0, 70), 10, 387);
+                }
+                
+                // Save snapshot
+                mapSnapshot = outputCanvas.toDataURL('image/png');
+                snapshotImg.src = mapSnapshot;
+                snapshotImg.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                console.log('Snapshot captured successfully');
+                
+            } catch (error) {
+                console.error('Screenshot capture failed:', error);
+                
+                // Fallback: create a simple placeholder image
+                const fallbackCanvas = document.createElement('canvas');
+                fallbackCanvas.width = 600;
+                fallbackCanvas.height = 400;
+                const ctx = fallbackCanvas.getContext('2d');
+                
+                ctx.fillStyle = '#e0e0e0';
+                ctx.fillRect(0, 0, 600, 400);
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Map snapshot - please see attached drawing', 300, 200);
+                
+                if (drawnWalls.length > 0) {
+                    ctx.fillText(`${drawnWalls.length} wall(s) marked`, 300, 230);
+                }
+                
+                mapSnapshot = fallbackCanvas.toDataURL('image/png');
+                snapshotImg.src = mapSnapshot;
+                snapshotImg.style.display = 'block';
+                placeholder.style.display = 'none';
             }
-            
-            // Save snapshot
-            mapSnapshot = canvas.toDataURL('image/png');
-            snapshotImg.src = mapSnapshot;
-            snapshotImg.style.display = 'block';
-            placeholder.style.display = 'none';
-            
-            console.log('Snapshot complete with satellite background');
         }
         
         // Manual capture with visual feedback
