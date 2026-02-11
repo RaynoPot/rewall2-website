@@ -13,10 +13,10 @@
     <link rel="stylesheet" href="css/styles.css">
     
     <!-- Leaflet CSS for Map -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <!-- Leaflet Draw CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
     
     <style>
         /* Quote Builder Styles */
@@ -83,16 +83,6 @@
         #site-map {
             height: 100%;
             width: 100%;
-            background: #e8e8e8;
-        }
-        
-        /* Ensure Leaflet tiles render properly */
-        .leaflet-tile-pane {
-            z-index: 200;
-        }
-        
-        .leaflet-overlay-pane {
-            z-index: 400;
         }
         
         /* Drawing Tool Enhancement - Pulsing Animation */
@@ -1863,8 +1853,8 @@
     <script src="js/scripts.js"></script>
     
     <!-- Leaflet JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     
     <!-- html2canvas for map snapshots -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -2402,10 +2392,9 @@
                 maxZoom: 22
             });
             
-            // Map tile layer (Carto - more reliable than OSM direct)
-            mapTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                subdomains: 'abcd',
+            // Map tile layer (OpenStreetMap)
+            mapTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxNativeZoom: 19,
                 maxZoom: 22
             });
@@ -2419,11 +2408,6 @@
             
             // Start with map view
             mapTileLayer.addTo(map);
-            
-            // Force map to invalidate size after DOM is ready
-            setTimeout(function() {
-                map.invalidateSize();
-            }, 100);
             
             // Initialize drawing layer
             drawnItems = new L.FeatureGroup();
