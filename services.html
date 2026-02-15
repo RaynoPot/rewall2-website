@@ -216,15 +216,18 @@
         .address-search-wrapper {
             display: flex;
             gap: var(--spacing-sm);
+            align-items: stretch;
         }
         
         .address-search input {
             flex: 1;
-            padding: 12px 16px;
+            padding: 0 16px;
+            height: 48px;
             border: 2px solid var(--border-gray);
             border-radius: var(--radius-md);
             font-size: 1rem;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
         
         .address-search input:focus {
@@ -234,7 +237,8 @@
         }
         
         .address-search button {
-            padding: 12px 24px;
+            padding: 0 24px;
+            height: 48px;
             background: var(--teal-accent);
             color: white;
             border: none;
@@ -243,6 +247,7 @@
             font-weight: 600;
             transition: all 0.3s ease;
             white-space: nowrap;
+            box-sizing: border-box;
         }
         
         .address-search button:hover {
@@ -516,13 +521,13 @@
         }
 
         .wall-item .wall-delete-btn {
-            background: #e74c3c !important;
+            background: var(--slate) !important;
             font-size: 0.8rem;
         }
 
         .wall-item .wall-delete-btn:hover {
-            background: #c0392b !important;
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3) !important;
+            background: #1a252f !important;
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3) !important;
         }
 
         /* Wall number labels on map */
@@ -594,12 +599,14 @@
         }
         
         .height-optional-tag {
-            font-size: 0.7rem;
-            color: var(--slate);
-            background: rgba(74, 144, 164, 0.1);
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-left: 4px;
+            font-size: 0.85rem;
+            color: var(--teal-accent);
+            background: rgba(74, 144, 164, 0.15);
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-left: 6px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
         
 
@@ -928,6 +935,16 @@
             width: 36px !important;
             height: 36px !important;
             line-height: 36px !important;
+            border: none !important;
+        }
+
+        .leaflet-draw-toolbar {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .leaflet-draw-section {
+            border: none !important;
         }
 
         .leaflet-draw-toolbar a.leaflet-draw-draw-polyline {
@@ -1231,7 +1248,7 @@
                     <div class="drawing-info">
                         <h4>📏 How to Draw Your Walls</h4>
                         <p>
-                            <strong>1.</strong> Click the <span style="background: #4A90A4; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600;">📐 Draw a polyline</span> tool on the left side of the map<br>
+                            <strong>1.</strong> Click the <span style="background: #4A90A4; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600;">📐 Draw Wall</span> tool on the left side of the map<br>
                             <strong>2.</strong> Click on the map to place points along your wall line<br>
                             <strong>3.</strong> Double-click or click "Finish" to complete the wall<br>
                             <strong>4.</strong> The distance will be calculated automatically<br>
@@ -2685,7 +2702,7 @@
                         <div class="wall-info">
                             <span class="wall-label">Wall #${wall.id}</span>
                             <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <span style="color: var(--slate); font-size: 0.9rem;">📏 Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
+                                <span style="color: var(--slate); font-size: 0.9rem;">📏 Est. Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
                                 <div class="height-input-group">
                                     <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Est. height:</span>
                                     <input type="number" 
