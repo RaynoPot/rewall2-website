@@ -569,16 +569,16 @@
         .height-input-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: var(--light-gray);
             padding: 10px;
             border-radius: var(--radius-sm);
             margin-top: var(--spacing-sm);
+            flex-wrap: wrap;
         }
         
         .height-input-group input {
-            flex: 1;
-            max-width: 80px;
+            max-width: 60px;
             padding: 6px 8px;
             border: 1px solid var(--border-gray);
             border-radius: 4px;
@@ -591,6 +591,15 @@
             outline: none;
             border-color: var(--teal-accent);
             box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
+        }
+        
+        .height-optional-tag {
+            font-size: 0.7rem;
+            color: var(--slate);
+            background: rgba(74, 144, 164, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 4px;
         }
         
 
@@ -1059,7 +1068,10 @@
 
         <!-- Service Circle Diagram - MAIN FOCUS -->
         <section class="container" id="journey-wheel" style="padding-top: var(--spacing-xl); padding-bottom: var(--spacing-xl);">
-            <h2 style="text-align: center; margin-bottom: var(--spacing-md);">Complete the Circle</h2>
+            <div style="display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                <div class="step-number" style="width: 44px; height: 44px; font-size: 1.3rem; flex-shrink: 0;">1</div>
+                <h2 style="margin: 0;">Complete the Circle</h2>
+            </div>
             <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-lg);">Choose your path: Full service or Mix & Match</p>
             
             <!-- Service Options -->
@@ -1159,10 +1171,10 @@
                     </p>
                 </div>
 
-                <!-- Step 1: Services Selected (Summary from Circle) -->
+                <!-- Services Selected (Summary from Step 1) -->
                 <div class="quote-step" id="step-services">
                     <div class="quote-step-header">
-                        <div class="step-number" id="step1-number">1</div>
+                        <div class="step-number" id="step1-number" style="background: #28a745; font-size: 1.1rem;">✓</div>
                         <h3>Services Selected</h3>
                     </div>
                     <p class="quote-step-description">
@@ -1231,7 +1243,7 @@
                         <h4>🧱 Your Marked Walls</h4>
                         <div id="walls-list"></div>
                         <div id="total-length-display" class="total-length"></div>
-                        <button id="download-map-btn" onclick="downloadMapSnapshot()" style="margin-top: var(--spacing-md); padding: 14px 20px; background: linear-gradient(135deg, #FF6B35 0%, #e55a2b 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);">
+                        <button id="download-map-btn" onclick="downloadMapSnapshot()" style="margin-top: var(--spacing-md); padding: 14px 20px; background: linear-gradient(135deg, var(--slate) 0%, #34495e 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);">
                             📥 Download Map Image
                         </button>
                         <div class="walls-info-note">
@@ -1889,6 +1901,7 @@
         let boundaryGeoJson = null;
         let boundaryLoadingState = false;
         let boundaryRefreshTimeout = null;
+        let selectedParcelInfo = null; // Stores clicked property parcel data
         
         // ==========================================
         // LINZ PROPERTY BOUNDARIES - WFS via Netlify Function
@@ -1909,7 +1922,7 @@
                     fillOpacity: 0
                 },
                 onEachFeature: function(feature, layer) {
-                    // Optional: Add popup with property info
+                    // Add popup with property info and store on click
                     if (feature.properties) {
                         const props = feature.properties;
                         let popupContent = '<div style="font-size: 12px;">';
@@ -1919,6 +1932,15 @@
                         if (props.affected_surveys) popupContent += `Survey: ${props.affected_surveys}<br>`;
                         popupContent += '</div>';
                         layer.bindPopup(popupContent);
+
+                        // Store parcel info when user clicks this boundary
+                        layer.on('click', function() {
+                            selectedParcelInfo = {
+                                id: props.id || '',
+                                appellation: props.appellation || '',
+                                survey: props.affected_surveys || ''
+                            };
+                        });
                     }
                 }
             });
@@ -2656,7 +2678,8 @@
             
             drawnWalls.forEach((wall) => {
                 totalLength += wall.distance;
-                const currentHeight = wall.height || '';
+                const currentHeightLow = wall.heightLow || '';
+                const currentHeightHigh = wall.heightHigh || '';
                 html += `
                     <div class="wall-item">
                         <div class="wall-info">
@@ -2664,17 +2687,26 @@
                             <div style="display: flex; flex-direction: column; gap: 6px;">
                                 <span style="color: var(--slate); font-size: 0.9rem;">📏 Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
                                 <div class="height-input-group">
-                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Height:</span>
+                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Est. height:</span>
                                     <input type="number" 
-                                        id="wall-height-${wall.id}" 
-                                        value="${currentHeight}" 
-                                        placeholder="e.g. 1.5" 
+                                        id="wall-height-low-${wall.id}" 
+                                        value="${currentHeightLow}" 
+                                        placeholder="Low" 
                                         min="0.1" 
                                         max="20" 
                                         step="0.1"
-                                        onchange="updateWallHeight(${wall.id}, this.value)"
-                                        style="flex: 1;">
+                                        onchange="updateWallHeightRange(${wall.id})">
+                                    <span style="color: var(--slate); font-size: 0.85rem;">to</span>
+                                    <input type="number" 
+                                        id="wall-height-high-${wall.id}" 
+                                        value="${currentHeightHigh}" 
+                                        placeholder="High" 
+                                        min="0.1" 
+                                        max="20" 
+                                        step="0.1"
+                                        onchange="updateWallHeightRange(${wall.id})">
                                     <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">m</span>
+                                    <span class="height-optional-tag">optional</span>
                                 </div>
                             </div>
                         </div>
@@ -2687,13 +2719,16 @@
             });
             
             container.innerHTML = html;
-            totalDisplay.innerHTML = `<strong style="color: var(--primary-black); font-size: 1rem;">📊 Est. Total Length:</strong> <span style="color: var(--teal-accent); font-size: 1.1rem;">~${formatDistance(totalLength)}</span><br><span style="font-size: 0.8rem; color: var(--slate); margin-top: 8px; display: block;">*Measurements are approximate - exact dimensions will be verified during site assessment</span>`;
+            totalDisplay.innerHTML = `<strong style="color: var(--primary-black); font-size: 1rem;">📊 Est. Total Length:</strong> <span style="color: var(--teal-accent); font-size: 1.1rem;">~${formatDistance(totalLength)}</span><br><span style="font-size: 0.8rem; color: var(--slate); margin-top: 8px; display: block;">*Measurements are approximate. Exact dimensions will be confirmed during site assessment.</span><br><span style="font-size: 0.8rem; color: var(--slate); display: block; margin-top: 4px;">Not sure about the height? No problem. Leave it blank and our team will work it out during the assessment.</span>`;
         }
         
-        function updateWallHeight(wallId, height) {
+        function updateWallHeightRange(wallId) {
             const wall = drawnWalls.find(w => w.id === wallId);
             if (wall) {
-                wall.height = parseFloat(height) || null;
+                const lowVal = document.getElementById('wall-height-low-' + wallId)?.value;
+                const highVal = document.getElementById('wall-height-high-' + wallId)?.value;
+                wall.heightLow = parseFloat(lowVal) || null;
+                wall.heightHigh = parseFloat(highVal) || null;
                 updateQuoteSummary();
             }
         }
@@ -2906,6 +2941,51 @@
             ctx.fillText('~' + formatDistance(totalLength), legendX + padding + 85, totalY + 15);
         }
 
+        // Draw property parcel info box in top-right corner of snapshot
+        function drawParcelInfo(ctx, canvasWidth, canvasHeight) {
+            if (!selectedParcelInfo) return;
+
+            var padding = 10;
+            var lineHeight = 16;
+            var lines = [];
+
+            lines.push({ text: 'Property Parcel', bold: true });
+            if (selectedParcelInfo.id) lines.push({ text: 'ID: ' + selectedParcelInfo.id, bold: false });
+            if (selectedParcelInfo.appellation) lines.push({ text: selectedParcelInfo.appellation, bold: false });
+            if (selectedParcelInfo.survey) lines.push({ text: 'Survey: ' + selectedParcelInfo.survey, bold: false });
+
+            if (lines.length <= 1) return; // No useful data
+
+            var boxHeight = padding + (lines.length * lineHeight) + padding;
+            var boxWidth = 180;
+            var boxX = canvasWidth - boxWidth - 8;
+            var boxY = 8;
+
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 6);
+            } else {
+                ctx.rect(boxX, boxY, boxWidth, boxHeight);
+            }
+            ctx.fill();
+
+            // Text
+            lines.forEach(function(line, i) {
+                var y = boxY + padding + (i * lineHeight) + 10;
+                if (line.bold) {
+                    ctx.fillStyle = '#4A90A4';
+                    ctx.font = 'bold 12px Arial';
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                    ctx.font = '11px Arial';
+                }
+                ctx.textAlign = 'left';
+                ctx.fillText(line.text, boxX + padding, y);
+            });
+        }
+
         async function captureMapSnapshot() {
             const placeholder = document.getElementById('snapshot-placeholder');
             const snapshotImg = document.getElementById('map-snapshot-img');
@@ -2914,7 +2994,17 @@
             console.log('Capturing map snapshot via screen capture...');
             
             try {
-                // Use html2canvas to capture the map exactly as shown on screen
+                // Hide all map UI controls and drawn layers before capture
+                // so we get a clean satellite-only base image
+                const controlsToHide = mapContainer.querySelectorAll(
+                    '.leaflet-control-container, .leaflet-draw, .leaflet-pane > svg, .leaflet-overlay-pane, .leaflet-marker-pane'
+                );
+                controlsToHide.forEach(function(el) {
+                    el.dataset.prevDisplay = el.style.display;
+                    el.style.display = 'none';
+                });
+
+                // Use html2canvas to capture only the map tiles (clean satellite image)
                 const canvas = await html2canvas(mapContainer, {
                     useCORS: true,
                     allowTaint: true,
@@ -2923,6 +3013,12 @@
                     logging: false,
                     imageTimeout: 15000
                 });
+
+                // Restore hidden elements
+                controlsToHide.forEach(function(el) {
+                    el.style.display = el.dataset.prevDisplay || '';
+                    delete el.dataset.prevDisplay;
+                });
                 
                 // Create final output canvas at 600x400
                 const outputCanvas = document.createElement('canvas');
@@ -2930,15 +3026,20 @@
                 outputCanvas.height = 400;
                 const ctx = outputCanvas.getContext('2d');
                 
-                // Draw the captured map scaled to fit
+                // Draw the clean satellite base
                 ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 600, 400);
                 
-                // Draw wall polylines directly onto the canvas (html2canvas misses SVG overlays)
+                // Draw wall polylines and labels on top (the only drawn elements)
                 drawWallsOnCanvas(ctx, 600, 400);
 
                 // Draw the legend with wall numbers and lengths
                 drawWallLegend(ctx, 600, 400);
                 
+                // Draw property parcel info in top-right corner if available
+                if (selectedParcelInfo) {
+                    drawParcelInfo(ctx, 600, 400);
+                }
+
                 // Add address bar at bottom if we have an address
                 const addr = document.getElementById('address-search')?.value || '';
                 if (addr) {
@@ -3213,6 +3314,11 @@
                 if (selectedServicesSummary) {
                     selectedServicesSummary.innerHTML = '<span style="color: var(--slate); font-style: italic;">No services selected yet. Please select from the circle above.</span>';
                 }
+                const step1Number = document.getElementById('step1-number');
+                if (step1Number) {
+                    step1Number.innerHTML = '—';
+                    step1Number.style.background = 'var(--slate)';
+                }
             }
             
             // Location
@@ -3224,7 +3330,14 @@
             if (drawnWalls.length > 0) {
                 let totalLength = drawnWalls.reduce((sum, w) => sum + w.distance, 0);
                 let wallDetails = drawnWalls.map(w => {
-                    const heightStr = w.height ? ` × ${w.height}m high` : '';
+                    let heightStr = '';
+                    if (w.heightLow && w.heightHigh) {
+                        heightStr = ` | est. ${w.heightLow}m–${w.heightHigh}m high`;
+                    } else if (w.heightLow) {
+                        heightStr = ` | est. ~${w.heightLow}m high`;
+                    } else if (w.heightHigh) {
+                        heightStr = ` | est. ~${w.heightHigh}m high`;
+                    }
                     return `Wall #${w.id}: ~${formatDistance(w.distance)}${heightStr}`;
                 }).join('<br>');
                 wallsDisplay.innerHTML = `${drawnWalls.length} wall(s) marked:<br><span style="font-size: 0.9rem;">${wallDetails}</span><br><strong style="margin-top: 8px; display: inline-block;">Est. Total Length: ~${formatDistance(totalLength)}</strong><br><span style="font-size: 0.8rem; opacity: 0.7;">*Approximate measurements</span>`;
@@ -3386,14 +3499,25 @@
                     address: selectedAddress,
                     coordinates: selectedCoordinates
                 },
-                walls: drawnWalls.map(w => ({
-                    id: w.id,
-                    length: w.distance,
-                    lengthFormatted: formatDistance(w.distance),
-                    height: w.height || null,
-                    heightFormatted: w.height ? `${w.height}m` : 'Not specified',
-                    coordinates: w.latlngs
-                })),
+                walls: drawnWalls.map(w => {
+                    let heightFormatted = 'Not specified';
+                    if (w.heightLow && w.heightHigh) {
+                        heightFormatted = `est. ${w.heightLow}m – ${w.heightHigh}m`;
+                    } else if (w.heightLow) {
+                        heightFormatted = `est. ~${w.heightLow}m`;
+                    } else if (w.heightHigh) {
+                        heightFormatted = `est. ~${w.heightHigh}m`;
+                    }
+                    return {
+                        id: w.id,
+                        length: w.distance,
+                        lengthFormatted: formatDistance(w.distance),
+                        heightLow: w.heightLow || null,
+                        heightHigh: w.heightHigh || null,
+                        heightFormatted: heightFormatted,
+                        coordinates: w.latlngs
+                    };
+                }),
                 numberOfWalls: drawnWalls.length,
                 totalWallLength: drawnWalls.reduce((sum, w) => sum + w.distance, 0),
                 totalWallLengthFormatted: formatDistance(drawnWalls.reduce((sum, w) => sum + w.distance, 0)),
@@ -3618,7 +3742,7 @@
                 addField('Number of Walls', data.numberOfWalls || 0);
                 if (data.walls && data.walls.length > 0) {
                     let wallDetails = data.walls.map((w) => 
-                        `Wall ${w.id}: ${w.lengthFormatted} long` + (w.height ? `, ${w.height}m high` : '')
+                        `Wall ${w.id}: ${w.lengthFormatted} long` + (w.heightFormatted !== 'Not specified' ? `, ${w.heightFormatted}` : '')
                     ).join(' | ');
                     addField('Wall Measurements', wallDetails);
                     addField('Total Wall Length', data.totalWallLengthFormatted || 'Not measured');
