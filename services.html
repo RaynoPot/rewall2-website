@@ -2418,6 +2418,15 @@
                     drawTooltip.classList.add('hidden');
                     tooltipHidden = true;
                 }
+                // Hide the orange Draw Wall label
+                var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
+                if (drawToolbar) drawToolbar.classList.add('drawing-active');
+            });
+
+            // Show the label again when drawing stops
+            map.on('draw:drawstop', function() {
+                var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
+                if (drawToolbar) drawToolbar.classList.remove('drawing-active');
             });
             
             // Show encouraging message when first wall is drawn
@@ -3149,12 +3158,99 @@
                 alert('Please capture a map snapshot first.');
                 return;
             }
-            const link = document.createElement('a');
-            link.href = mapSnapshot;
-            link.download = 'ReWall-Site-Map.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+
+            // Create a branded version for download
+            var mapImg = new Image();
+            mapImg.onload = function() {
+                var brandHeight = 60;
+                var totalWidth = 600;
+                var totalHeight = 400 + brandHeight;
+
+                var dlCanvas = document.createElement('canvas');
+                dlCanvas.width = totalWidth;
+                dlCanvas.height = totalHeight;
+                var ctx = dlCanvas.getContext('2d');
+
+                // Draw the map snapshot
+                ctx.drawImage(mapImg, 0, 0, 600, 400);
+
+                // Draw branded footer bar
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 400, totalWidth, brandHeight);
+
+                // Accent line at top of brand bar
+                ctx.fillStyle = '#4A90A4';
+                ctx.fillRect(0, 400, totalWidth, 3);
+
+                // Load and draw logo
+                var logo = new Image();
+                logo.onload = function() {
+                    // Draw logo on the left (scale to fit ~40px tall)
+                    var logoH = 38;
+                    var logoW = logo.width * (logoH / logo.height);
+                    ctx.drawImage(logo, 14, 413, logoW, logoH);
+
+                    // Contact info to the right of the logo
+                    var textX = 14 + logoW + 16;
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.font = '11px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('info@rewall.nz', textX, 430);
+                    ctx.fillText('027 394 1127', textX, 446);
+
+                    // Website URL on the right
+                    ctx.fillStyle = '#4A90A4';
+                    ctx.font = 'bold 13px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('www.rewall.nz', totalWidth - 14, 430);
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.font = '10px Arial';
+                    ctx.fillText('Premium Retaining Wall Solutions', totalWidth - 14, 446);
+
+                    // Subtle watermark on the map itself
+                    ctx.save();
+                    ctx.globalAlpha = 0.12;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText('R:Wall', 590, 360);
+                    ctx.restore();
+
+                    // Download
+                    var link = document.createElement('a');
+                    link.href = dlCanvas.toDataURL('image/png');
+                    link.download = 'ReWall-Site-Map.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                logo.onerror = function() {
+                    // If logo fails to load, still download without it
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('R:Wall', 14, 438);
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.font = '11px Arial';
+                    ctx.fillText('info@rewall.nz  |  027 394 1127', 90, 438);
+
+                    ctx.fillStyle = '#4A90A4';
+                    ctx.font = 'bold 13px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('www.rewall.nz', totalWidth - 14, 438);
+
+                    var link = document.createElement('a');
+                    link.href = dlCanvas.toDataURL('image/png');
+                    link.download = 'ReWall-Site-Map.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                logo.src = 'images/Logos/re wall logo WHITE.png';
+            };
+            mapImg.src = mapSnapshot;
         }
         
         // ==========================================
