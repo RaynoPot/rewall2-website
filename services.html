@@ -2356,9 +2356,9 @@
                     marker: false,
                     polyline: {
                         shapeOptions: {
-                            color: '#e74c3c',
-                            weight: 5,
-                            opacity: 0.9
+                            color: '#FF6B35',
+                            weight: 6,
+                            opacity: 1
                         },
                         metric: true,
                         showLength: true,
@@ -2736,6 +2736,172 @@
         function tile2lng(x, zoom) { return x / Math.pow(2, zoom) * 360 - 180; }
         function tile2lat(y, zoom) { const n = Math.PI - 2 * Math.PI * y / Math.pow(2, zoom); return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))); }
         
+        // Convert lat/lng to pixel position on the output canvas
+        function latLngToCanvasPoint(latlng, mapBounds, canvasWidth, canvasHeight) {
+            const sw = mapBounds.getSouthWest();
+            const ne = mapBounds.getNorthEast();
+            const x = ((latlng.lng - sw.lng) / (ne.lng - sw.lng)) * canvasWidth;
+            const y = ((ne.lat - latlng.lat) / (ne.lat - sw.lat)) * canvasHeight;
+            return { x: x, y: y };
+        }
+
+        // Draw wall polylines and labels directly onto the canvas
+        function drawWallsOnCanvas(ctx, canvasWidth, canvasHeight) {
+            if (drawnWalls.length === 0) return;
+
+            const mapBounds = map.getBounds();
+
+            drawnWalls.forEach(function(wall) {
+                const latlngs = wall.layer.getLatLngs();
+                if (latlngs.length < 2) return;
+
+                // Draw the wall polyline (thick orange line with white outline for visibility)
+                var points = [];
+                for (var i = 0; i < latlngs.length; i++) {
+                    points.push(latLngToCanvasPoint(latlngs[i], mapBounds, canvasWidth, canvasHeight));
+                }
+
+                // White outline for contrast
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (var j = 1; j < points.length; j++) {
+                    ctx.lineTo(points[j].x, points[j].y);
+                }
+                ctx.stroke();
+
+                // Orange wall line on top
+                ctx.strokeStyle = '#FF6B35';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (var k = 1; k < points.length; k++) {
+                    ctx.lineTo(points[k].x, points[k].y);
+                }
+                ctx.stroke();
+
+                // Draw endpoint circles
+                for (var m = 0; m < points.length; m++) {
+                    ctx.beginPath();
+                    ctx.arc(points[m].x, points[m].y, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#FF6B35';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                // Draw numbered label at the midpoint
+                var midIdx = Math.floor(points.length / 2);
+                var labelPt;
+                if (points.length === 2) {
+                    labelPt = { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 };
+                } else if (points.length > 2 && points.length % 2 === 0) {
+                    labelPt = { x: (points[midIdx - 1].x + points[midIdx].x) / 2, y: (points[midIdx - 1].y + points[midIdx].y) / 2 };
+                } else {
+                    labelPt = points[midIdx];
+                }
+
+                // Label circle
+                ctx.beginPath();
+                ctx.arc(labelPt.x, labelPt.y - 18, 14, 0, 2 * Math.PI);
+                ctx.fillStyle = '#4A90A4';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Label number
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('#' + wall.id, labelPt.x, labelPt.y - 18);
+            });
+
+            ctx.textBaseline = 'alphabetic';
+        }
+
+        // Draw the wall legend box with numbers and lengths
+        function drawWallLegend(ctx, canvasWidth, canvasHeight) {
+            if (drawnWalls.length === 0) return;
+
+            var lineHeight = 20;
+            var headerHeight = 26;
+            var padding = 10;
+            var legendHeight = headerHeight + (drawnWalls.length * lineHeight) + padding + 20;
+            var legendWidth = 190;
+            var legendX = 8;
+            var legendY = 8;
+
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
+            ctx.beginPath();
+            ctx.roundRect(legendX, legendY, legendWidth, legendHeight, 6);
+            ctx.fill();
+
+            // Header
+            ctx.fillStyle = '#FF6B35';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Wall Locations', legendX + padding, legendY + 19);
+
+            // Divider line
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(legendX + padding, legendY + headerHeight);
+            ctx.lineTo(legendX + legendWidth - padding, legendY + headerHeight);
+            ctx.stroke();
+
+            // Each wall entry
+            var totalLength = 0;
+            drawnWalls.forEach(function(wall, index) {
+                var rowY = legendY + headerHeight + 6 + (index * lineHeight);
+
+                // Small orange line sample
+                ctx.strokeStyle = '#FF6B35';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(legendX + padding, rowY + 9);
+                ctx.lineTo(legendX + padding + 22, rowY + 9);
+                ctx.stroke();
+
+                // Wall label and length
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('Wall #' + wall.id, legendX + padding + 28, rowY + 13);
+
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = '11px Arial';
+                ctx.fillText('~' + formatDistance(wall.distance), legendX + padding + 85, rowY + 13);
+
+                totalLength += wall.distance;
+            });
+
+            // Total line
+            var totalY = legendY + headerHeight + 6 + (drawnWalls.length * lineHeight);
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(legendX + padding, totalY);
+            ctx.lineTo(legendX + legendWidth - padding, totalY);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px Arial';
+            ctx.fillText('Total:', legendX + padding, totalY + 15);
+            ctx.fillStyle = '#FF6B35';
+            ctx.fillText('~' + formatDistance(totalLength), legendX + padding + 85, totalY + 15);
+        }
+
         async function captureMapSnapshot() {
             const placeholder = document.getElementById('snapshot-placeholder');
             const snapshotImg = document.getElementById('map-snapshot-img');
@@ -2763,20 +2929,11 @@
                 // Draw the captured map scaled to fit
                 ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 600, 400);
                 
-                // Add legend box
-                ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                ctx.fillRect(10, 10, 150, 30);
-                ctx.strokeStyle = '#FF0000';
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(20, 25);
-                ctx.lineTo(55, 25);
-                ctx.stroke();
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 12px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText('= Wall location', 65, 29);
+                // Draw wall polylines directly onto the canvas (html2canvas misses SVG overlays)
+                drawWallsOnCanvas(ctx, 600, 400);
+
+                // Draw the legend with wall numbers and lengths
+                drawWallLegend(ctx, 600, 400);
                 
                 // Add address bar at bottom if we have an address
                 const addr = document.getElementById('address-search')?.value || '';
@@ -2786,7 +2943,7 @@
                     ctx.fillStyle = '#ffffff';
                     ctx.font = 'bold 12px Arial';
                     ctx.textAlign = 'left';
-                    ctx.fillText('📍 ' + addr.substring(0, 70), 10, 387);
+                    ctx.fillText(addr.substring(0, 70), 10, 387);
                 }
                 
                 // Save snapshot
@@ -2814,7 +2971,7 @@
                 ctx.fillText('Map snapshot - please see attached drawing', 300, 200);
                 
                 if (drawnWalls.length > 0) {
-                    ctx.fillText(`${drawnWalls.length} wall(s) marked`, 300, 230);
+                    ctx.fillText(drawnWalls.length + ' wall(s) marked', 300, 230);
                 }
                 
                 mapSnapshot = fallbackCanvas.toDataURL('image/png');
