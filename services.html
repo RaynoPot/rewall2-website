@@ -2542,7 +2542,7 @@
             // Add styled popup
             layer.bindPopup(`
                 <div style="text-align: center;">
-                    <strong style="color: #e74c3c;">Wall #${wallCounter}</strong><br>
+                    <strong style="color: #FF6B35;">Wall #${wallCounter}</strong><br>
                     <span style="font-size: 1.2em; font-weight: bold;">~${formatDistance(distance)}</span>
                     <span style="font-size: 0.75em; color: #666;">(est.)</span>
                 </div>
@@ -2589,7 +2589,7 @@
                 layer.wallDistance = distance;
                 layer.setPopupContent(`
                     <div style="text-align: center;">
-                        <strong style="color: #e74c3c;">Wall #${layer.wallId}</strong><br>
+                        <strong style="color: #FF6B35;">Wall #${layer.wallId}</strong><br>
                         <span style="font-size: 1.2em; font-weight: bold;">~${formatDistance(distance)}</span>
                         <span style="font-size: 0.75em; color: #666;">(est.)</span>
                     </div>
@@ -2842,7 +2842,11 @@
             // Background
             ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
             ctx.beginPath();
-            ctx.roundRect(legendX, legendY, legendWidth, legendHeight, 6);
+            if (ctx.roundRect) {
+                ctx.roundRect(legendX, legendY, legendWidth, legendHeight, 6);
+            } else {
+                ctx.rect(legendX, legendY, legendWidth, legendHeight);
+            }
             ctx.fill();
 
             // Header
