@@ -182,16 +182,16 @@
 
         /* "Draw Wall" label next to button */
         .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
-            content: '📐 Draw Wall';
+            content: '📐 Draw Wall — Click here to start marking your wall';
             position: absolute;
             left: 58px;
             top: 50%;
             transform: translateY(-50%);
             background: #FF6B35;
             color: white;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
             white-space: nowrap;
             box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
@@ -1239,10 +1239,7 @@
                     
                     <div id="map-container">
                         <div id="site-map"></div>
-                        <div class="draw-prompt-tooltip" id="draw-tooltip">
-                            <span class="prompt-icon">👆</span>
-                            Click the drawing tool to mark your wall location!
-                        </div>
+
                     </div>
                     
                     <div class="drawing-info">
@@ -1649,7 +1646,8 @@
         </section>
 
         <!-- Retaining Wall Types -->
-        <section class="container">
+        <section>
+            <div class="container">
             <h2 style="text-align: center; margin-bottom: var(--spacing-lg);">Wall Types We Specialize In</h2>
             
             <div class="grid grid-2">
@@ -1713,6 +1711,7 @@
                         <li>• Specialized expertise</li>
                     </ul>
                 </div>
+            </div>
             </div>
         </section>
 
@@ -1778,7 +1777,8 @@
         </div>
 
         <!-- Future Tools -->
-        <section class="container">
+        <section>
+            <div class="container">
             <div class="card" style="background: linear-gradient(135deg, var(--soft-blue) 0%, #dbe8f0 100%); border-left: 4px solid var(--teal-accent);">
                 <h3 style="color: var(--teal-accent);">🔮 Coming Soon: DIY Planning Tool</h3>
                 <p><strong>Transform the way you plan retaining walls</strong></p>
@@ -1790,6 +1790,7 @@
                     <li>✓ Export pre-quote data</li>
                 </ul>
                 <p style="margin-top: var(--spacing-lg);"><em>Want early access? Contact us to join the beta program.</em></p>
+            </div>
             </div>
         </section>
 
@@ -3011,14 +3012,29 @@
             console.log('Capturing map snapshot via screen capture...');
             
             try {
-                // Hide all map UI controls and drawn layers before capture
-                // so we get a clean satellite-only base image
+                // Hide map UI controls and drawn wall layers before capture,
+                // but keep boundary/overlay pane visible so property boundaries show
                 const controlsToHide = mapContainer.querySelectorAll(
-                    '.leaflet-control-container, .leaflet-draw, .leaflet-pane > svg, .leaflet-overlay-pane, .leaflet-marker-pane'
+                    '.leaflet-control-container, .leaflet-draw, .leaflet-marker-pane'
                 );
                 controlsToHide.forEach(function(el) {
                     el.dataset.prevDisplay = el.style.display;
                     el.style.display = 'none';
+                });
+
+                // Hide only the drawn wall polylines (not boundary layers) from the SVG overlay
+                var hiddenWallElements = [];
+                drawnWalls.forEach(function(wall) {
+                    if (wall.layer && wall.layer._path) {
+                        wall.layer._path.dataset.prevDisplay = wall.layer._path.style.display;
+                        wall.layer._path.style.display = 'none';
+                        hiddenWallElements.push(wall.layer._path);
+                    }
+                    if (wall.labelMarker && wall.labelMarker._icon) {
+                        wall.labelMarker._icon.dataset.prevDisplay = wall.labelMarker._icon.style.display;
+                        wall.labelMarker._icon.style.display = 'none';
+                        hiddenWallElements.push(wall.labelMarker._icon);
+                    }
                 });
 
                 // Use html2canvas to capture only the map tiles (clean satellite image)
@@ -3033,6 +3049,10 @@
 
                 // Restore hidden elements
                 controlsToHide.forEach(function(el) {
+                    el.style.display = el.dataset.prevDisplay || '';
+                    delete el.dataset.prevDisplay;
+                });
+                hiddenWallElements.forEach(function(el) {
                     el.style.display = el.dataset.prevDisplay || '';
                     delete el.dataset.prevDisplay;
                 });
