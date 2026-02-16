@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -181,7 +181,7 @@
 
         /* "Draw Wall" label next to button */
         .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
-            content: 'ðŸ“ Draw Wall â€” Click here to start marking your wall';
+            content: '📐 Draw Wall — Click here to start marking your wall';
             position: absolute;
             left: 58px;
             top: 50%;
@@ -200,7 +200,7 @@
 
         /* After user has clicked draw tool, hide the label and only show on hover */
         .leaflet-draw-draw-polyline.draw-used::after {
-            content: 'ðŸ“ Draw Wall' !important;
+            content: '📐 Draw Wall' !important;
             opacity: 0 !important;
         }
         .leaflet-draw-draw-polyline.draw-used:hover::after {
@@ -327,7 +327,7 @@
         }
         
         .address-searching::before {
-            content: "ðŸ” ";
+            content: "🔍 ";
         }
         
         .map-layer-toggle {
@@ -424,7 +424,7 @@
         }
 
         .layer-toggle-item.loading::after {
-            content: ' â³';
+            content: ' ⏳';
             animation: pulse 1s ease-in-out infinite;
         }
 
@@ -669,7 +669,7 @@
         }
         
         .wall-type-card.selected::after {
-            content: 'âœ“';
+            content: '✓';
             position: absolute;
             top: 10px;
             right: 12px;
@@ -1123,10 +1123,10 @@
             <!-- Service Options -->
             <div style="display: flex; gap: var(--spacing-md); justify-content: center; flex-wrap: wrap; margin-bottom: var(--spacing-lg);">
                 <button class="service-option-btn active" onclick="selectServiceMode('all')" data-mode="all">
-                    âœ“ Complete Package
+                    ✓ Complete Package
                 </button>
                 <button class="service-option-btn" onclick="selectServiceMode('custom')" data-mode="custom">
-                    âœ“ Mix & Match
+                    ✓ Mix & Match
                 </button>
             </div>
             
@@ -1139,7 +1139,7 @@
             <div class="journey-circle-container">
                 <!-- Center info box -->
                 <div class="journey-center">
-                    <div id="service-mode-display" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 8px;">âœ“ Complete Journey</div>
+                    <div id="service-mode-display" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 8px;">✓ Complete Journey</div>
                     <h3 id="stage-title">Complete the Circle</h3>
                     <p id="stage-description" style="font-size: 0.8rem;">Hover over any stage to learn more, or switch to Mix & Match mode to select specific stages</p>
                 </div>
@@ -1202,7 +1202,7 @@
             <!-- Request a Quote Button -->
             <div style="text-align: center; margin-top: var(--spacing-xl);">
                 <button id="continue-to-details-btn" class="btn" onclick="scrollToQuoteBuilder()">
-                    Continue to Quote Builder â†’
+                    Continue to Quote Builder →
                 </button>
             </div>
         </section>
@@ -1220,12 +1220,12 @@
                 <!-- Services Selected (Summary from Step 1) -->
                 <div class="quote-step" id="step-services">
                     <div class="quote-step-header">
-                        <div class="step-number" id="step1-number" style="background: #28a745; font-size: 1.1rem;">âœ“</div>
+                        <div class="step-number" id="step1-number" style="background: #28a745; font-size: 1.1rem;">✓</div>
                         <h3>Services Selected</h3>
                     </div>
                     <p class="quote-step-description">
                         Your selected services from the journey circle above. 
-                        <a href="#services" style="color: var(--teal-accent);">Go back to modify â†‘</a>
+                        <a href="#services" style="color: var(--teal-accent);">Go back to modify ↑</a>
                     </p>
                     <div id="selected-services-summary" style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm);">
                         <span style="color: var(--slate); font-style: italic;">No services selected yet. Please select from the circle above.</span>
@@ -1240,7 +1240,7 @@
                         <span class="optional-badge">Optional but Recommended</span>
                     </div>
                     <p class="quote-step-description">
-                        ðŸ—ºï¸ <strong>Find your property and draw where you need retaining walls.</strong><br>
+                        🗺️ <strong>Find your property and draw where you need retaining walls.</strong><br>
                         Search for your address, toggle property boundaries on, then use the drawing tool to mark wall locations. 
                         This helps us understand your site and provide a more accurate quote. You can draw multiple walls if needed.
                     </p>
@@ -1249,7 +1249,7 @@
                         <div class="address-search">
                             <div class="address-search-wrapper">
                                 <input type="text" id="address-input" placeholder="Start typing your NZ address..." autocomplete="off">
-                                <button id="search-btn" onclick="selectFirstSuggestion()">ðŸ” Search</button>
+                                <button id="search-btn" onclick="selectFirstSuggestion()">🔍 Search</button>
                             </div>
                             <div id="address-suggestions" class="address-suggestions"></div>
                         </div>
@@ -1258,7 +1258,7 @@
                     <div class="layer-toggles" style="margin-bottom: var(--spacing-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-sm);">
                         <label class="layer-toggle-item" id="boundaries-label" title="Show/hide NZ property boundary lines">
                             <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()">
-                            <span>ðŸ  Property Boundaries</span>
+                            <span>🏠 Property Boundaries</span>
                         </label>
                         <div class="map-layer-toggle">
                             <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
@@ -1272,9 +1272,9 @@
                     </div>
                     
                     <div class="drawing-info">
-                        <h4>ðŸ“ How to Draw Your Walls</h4>
+                        <h4>📏 How to Draw Your Walls</h4>
                         <p>
-                            <strong>1.</strong> Click the <span style="background: #4A90A4; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600;">ðŸ“ Draw Wall</span> tool on the left side of the map<br>
+                            <strong>1.</strong> Click the <span style="background: #4A90A4; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600;">📐 Draw Wall</span> tool on the left side of the map<br>
                             <strong>2.</strong> Click on the map to place points along your wall line<br>
                             <strong>3.</strong> Double-click or click "Finish" to complete the wall<br>
                             <strong>4.</strong> The distance will be calculated automatically<br>
@@ -1283,15 +1283,15 @@
                     </div>
                     
                     <div id="drawn-walls-container" class="drawn-walls-list" style="display: none;">
-                        <h4>ðŸ§± Your Marked Walls</h4>
+                        <h4>🧱 Your Marked Walls</h4>
                         <div id="walls-list"></div>
                         <div id="total-length-display" class="total-length"></div>
                         <button id="download-map-btn" onclick="downloadMapSnapshot()" style="margin-top: var(--spacing-md); padding: 14px 20px; background: linear-gradient(135deg, var(--slate) 0%, #34495e 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);">
-                            ðŸ“¥ Download Map Image
+                            📥 Download Map Image
                         </button>
                         <div class="walls-info-note">
-                            <strong>ðŸ“ Service Areas:</strong> We operate across Auckland and the North Waikato region. If your site is outside our service area, please contact us to discuss possibilities.<br><br>
-                            <strong>ðŸ”¬ Site-Specific Surveys:</strong> For optimal designs, we may recommend geotechnical surveys or additional site assessments depending on your wall height, soil conditions, and location. These will be quoted separately if needed.
+                            <strong>📍 Service Areas:</strong> We operate across Auckland and the North Waikato region. If your site is outside our service area, please contact us to discuss possibilities.<br><br>
+                            <strong>🔬 Site-Specific Surveys:</strong> For optimal designs, we may recommend geotechnical surveys or additional site assessments depending on your wall height, soil conditions, and location. These will be quoted separately if needed.
                         </div>
                     </div>
                 </div>
@@ -1318,11 +1318,11 @@
                                 <label for="wall-gravity" class="wall-card-title">Gravity (Concrete)</label>
                                 <input type="checkbox" id="wall-gravity" name="wall-type" value="Gravity (Concrete)" class="wall-checkbox">
                                 <ul class="wall-pros-cons">
-                                    <li><strong>âœ…</strong> Cost-effective for small heights</li>
-                                    <li><strong>âœ…</strong> Durable and long-lasting</li>
-                                    <li><strong>âœ…</strong> Aesthetic face with numerous finishes to choose from</li>
-                                    <li><span class="limitation">â€”</span> Heavier appearance</li>
-                                    <li><span class="limitation">â€”</span> Limited height capacity</li>
+                                    <li><strong>✅</strong> Cost-effective for small heights</li>
+                                    <li><strong>✅</strong> Durable and long-lasting</li>
+                                    <li><strong>✅</strong> Aesthetic face with numerous finishes to choose from</li>
+                                    <li><span class="limitation">—</span> Heavier appearance</li>
+                                    <li><span class="limitation">—</span> Limited height capacity</li>
                                 </ul>
                             </div>
                         </div>
@@ -1338,10 +1338,10 @@
                                 <label for="wall-mse" class="wall-card-title">MSE (Mechanically Stabilized Earth)</label>
                                 <input type="checkbox" id="wall-mse" name="wall-type" value="MSE (Mechanically Stabilized Earth)" class="wall-checkbox">
                                 <ul class="wall-pros-cons">
-                                    <li><strong>âœ…</strong> Great for tall walls (2m+)</li>
-                                    <li><strong>âœ…</strong> Flexible & seismic-resistant</li>
-                                    <li><strong>âœ…</strong> Excellent value at height</li>
-                                    <li><span class="limitation">â€”</span> Requires engineering design</li>
+                                    <li><strong>✅</strong> Great for tall walls (2m+)</li>
+                                    <li><strong>✅</strong> Flexible & seismic-resistant</li>
+                                    <li><strong>✅</strong> Excellent value at height</li>
+                                    <li><span class="limitation">—</span> Requires engineering design</li>
                                 </ul>
                             </div>
                         </div>
@@ -1357,10 +1357,10 @@
                                 <label for="wall-timber" class="wall-card-title">Timber</label>
                                 <input type="checkbox" id="wall-timber" name="wall-type" value="Timber" class="wall-checkbox">
                                 <ul class="wall-pros-cons">
-                                    <li><strong>âœ…</strong> Natural aesthetic appeal</li>
-                                    <li><strong>âœ…</strong> Good for landscaping</li>
-                                    <li><strong>âœ…</strong> Relatively affordable</li>
-                                    <li><span class="limitation">â€”</span> Maintenance required</li>
+                                    <li><strong>✅</strong> Natural aesthetic appeal</li>
+                                    <li><strong>✅</strong> Good for landscaping</li>
+                                    <li><strong>✅</strong> Relatively affordable</li>
+                                    <li><span class="limitation">—</span> Maintenance required</li>
                                 </ul>
                             </div>
                         </div>
@@ -1376,10 +1376,10 @@
                                 <label for="wall-landscape" class="wall-card-title">Landscape/Stone</label>
                                 <input type="checkbox" id="wall-landscape" name="wall-type" value="Landscape" class="wall-checkbox">
                                 <ul class="wall-pros-cons">
-                                    <li><strong>âœ…</strong> Beautiful natural look</li>
-                                    <li><strong>âœ…</strong> Great for gardens</li>
-                                    <li><strong>âœ…</strong> Various colors/styles</li>
-                                    <li><span class="limitation">â€”</span> Limited to modest heights</li>
+                                    <li><strong>✅</strong> Beautiful natural look</li>
+                                    <li><strong>✅</strong> Great for gardens</li>
+                                    <li><strong>✅</strong> Various colors/styles</li>
+                                    <li><span class="limitation">—</span> Limited to modest heights</li>
                                 </ul>
                             </div>
                         </div>
@@ -1395,10 +1395,10 @@
                                 <label for="wall-hybrid" class="wall-card-title">Hybrid</label>
                                 <input type="checkbox" id="wall-hybrid" name="wall-type" value="Hybrid" class="wall-checkbox">
                                 <ul class="wall-pros-cons">
-                                    <li><strong>âœ…</strong> Best of both worlds</li>
-                                    <li><strong>âœ…</strong> Versatile design</li>
-                                    <li><strong>âœ…</strong> Custom solutions</li>
-                                    <li><span class="limitation">â€”</span> Requires planning</li>
+                                    <li><strong>✅</strong> Best of both worlds</li>
+                                    <li><strong>✅</strong> Versatile design</li>
+                                    <li><strong>✅</strong> Custom solutions</li>
+                                    <li><span class="limitation">—</span> Requires planning</li>
                                 </ul>
                             </div>
                         </div>
@@ -1418,9 +1418,9 @@
                                 <label for="wall-other" class="wall-card-title">Other/Not Sure</label>
                                 <input type="checkbox" id="wall-other" name="wall-type" value="Other" class="wall-checkbox">
                                 <ul class="wall-pros-cons">
-                                    <li><strong>ðŸ“</strong> Tell us what you're thinking</li>
-                                    <li><strong>ðŸ’¡</strong> We'll guide you to the best solution</li>
-                                    <li><strong>âœ…</strong> No pressure - we explore options</li>
+                                    <li><strong>📝</strong> Tell us what you're thinking</li>
+                                    <li><strong>💡</strong> We'll guide you to the best solution</li>
+                                    <li><strong>✅</strong> No pressure - we explore options</li>
                                 </ul>
                             </div>
                         </div>
@@ -1435,7 +1435,7 @@
                         <h3>Do You Have a Geotechnical Report?</h3>
                     </div>
                     <p class="quote-step-description">
-                        ðŸ”¬ <strong>A geotechnical report helps us understand your soil conditions.</strong><br>
+                        🔬 <strong>A geotechnical report helps us understand your soil conditions.</strong><br>
                         This information is essential for designing a safe, durable retaining wall. If you don't have one, we can arrange this as part of your project.
                     </p>
                     
@@ -1443,7 +1443,7 @@
                         <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'have-report')">
                             <input type="radio" name="geotech-status" value="have-report" style="margin-top: 4px;">
                             <div>
-                                <strong style="color: var(--charcoal);">âœ… Yes, I have a geotechnical report</strong>
+                                <strong style="color: var(--charcoal);">✅ Yes, I have a geotechnical report</strong>
                                 <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">Great! Please upload it in the documents section below, or send it to us via email.</p>
                             </div>
                         </label>
@@ -1451,7 +1451,7 @@
                         <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'need-report')">
                             <input type="radio" name="geotech-status" value="need-report" style="margin-top: 4px;">
                             <div>
-                                <strong style="color: var(--charcoal);">ðŸ“‹ No, please include geotechnical investigation in the quote</strong>
+                                <strong style="color: var(--charcoal);">📋 No, please include geotechnical investigation in the quote</strong>
                                 <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">We'll arrange a site investigation to assess soil conditions and provide recommendations.</p>
                             </div>
                         </label>
@@ -1459,7 +1459,7 @@
                         <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'not-sure')">
                             <input type="radio" name="geotech-status" value="not-sure" style="margin-top: 4px;">
                             <div>
-                                <strong style="color: var(--charcoal);">â“ I'm not sure / Need advice</strong>
+                                <strong style="color: var(--charcoal);">❓ I'm not sure / Need advice</strong>
                                 <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">No problem! We'll assess your requirements and advise whether a geotech report is needed for your project.</p>
                             </div>
                         </label>
@@ -1496,17 +1496,17 @@
                     </div>
                     
                     <div style="margin-top: var(--spacing-lg);">
-                        <label for="client-notes" style="display: block; font-weight: 600; margin-bottom: 8px;">ðŸ“ Project Notes & Questions</label>
-                        <textarea id="client-notes" rows="5" placeholder="Tell us about your project... &#10;&#10;â€¢ What's the purpose of the wall? &#10;â€¢ Any specific materials you prefer?&#10;â€¢ Timeline requirements?&#10;â€¢ Budget range?&#10;â€¢ Any access challenges to the site?&#10;â€¢ Questions for our team?" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: var(--radius-md); font-size: 1rem; resize: vertical; font-family: inherit;"></textarea>
+                        <label for="client-notes" style="display: block; font-weight: 600; margin-bottom: 8px;">📝 Project Notes & Questions</label>
+                        <textarea id="client-notes" rows="5" placeholder="Tell us about your project... &#10;&#10;• What's the purpose of the wall? &#10;• Any specific materials you prefer?&#10;• Timeline requirements?&#10;• Budget range?&#10;• Any access challenges to the site?&#10;• Questions for our team?" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: var(--radius-md); font-size: 1rem; resize: vertical; font-family: inherit;"></textarea>
                     </div>
                     
                     <div style="margin-top: var(--spacing-lg);">
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">ðŸ“Ž Attach Site Photos or Documents</label>
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">📎 Attach Site Photos or Documents</label>
                         <p style="color: var(--slate); font-size: 0.9rem; margin-bottom: var(--spacing-sm);">Upload photos of your site, existing plans, or any relevant documents</p>
                         <p style="color: #e74c3c; font-size: 0.85rem; margin-bottom: var(--spacing-sm);"><strong>Limits:</strong> Max 5MB per file, up to 5 files. Accepted: Images (JPG, PNG), PDFs, Word docs</p>
                         <div id="file-upload-area" style="border: 2px dashed var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-xl); text-align: center; cursor: pointer; transition: all 0.3s ease; background: var(--light-gray);">
                             <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx" style="display: none;">
-                            <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">ðŸ“</div>
+                            <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📁</div>
                             <p style="margin: 0; font-weight: 500;">Drop files here or click to browse</p>
                             <p style="margin: var(--spacing-xs) 0 0; font-size: 0.85rem; color: var(--slate);">JPG, PNG, PDF, Word documents (max 5MB each)</p>
                         </div>
@@ -1517,7 +1517,7 @@
 
                 <!-- Quote Summary -->
                 <div class="quote-summary" id="quote-summary">
-                    <h3>ðŸ“‹ Your Quote Request Summary</h3>
+                    <h3>📋 Your Quote Request Summary</h3>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl);">
                         <div>
@@ -1561,19 +1561,19 @@
                         
                         <div>
                             <div class="summary-section">
-                                <h4>ðŸ“¸ Site Map Preview</h4>
+                                <h4>📸 Site Map Preview</h4>
                                 <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: var(--spacing-md);">Capture a snapshot of your marked walls for reference</p>
                                 <div id="map-snapshot-container" style="background: linear-gradient(135deg, rgba(44, 95, 127, 0.2) 0%, rgba(74, 144, 164, 0.1) 100%); border-radius: var(--radius-md); padding: var(--spacing-lg); min-height: 250px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.3);">
                                     <div id="snapshot-placeholder" style="color: rgba(255,255,255,0.7); text-align: center;">
-                                        <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">ðŸ—ºï¸</div>
+                                        <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">🗺️</div>
                                         <p style="margin: 0;">Map snapshot will appear here<br><span style="font-size: 0.85rem; opacity: 0.9;">when you draw and capture your wall locations</span></p>
                                     </div>
                                     <img id="map-snapshot-img" style="max-width: 100%; border-radius: var(--radius-md); display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
                                 </div>
                                 <button id="capture-map-btn" onclick="manualCaptureSnapshot()" style="margin-top: var(--spacing-md); padding: 12px 20px; background: linear-gradient(135deg, var(--teal-accent) 0%, #2C5F7F 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 0.95rem; font-weight: 600; transition: all 0.3s ease;">
-                                    ðŸ“¸ Capture Map Snapshot
+                                    📸 Capture Map Snapshot
                                 </button>
-                                <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 8px; text-align: center;">ðŸ’¡ Make sure your wall markings are visible before capturing. This snapshot will be included with your quote request.</p>
+                                <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 8px; text-align: center;">💡 Make sure your wall markings are visible before capturing. This snapshot will be included with your quote request.</p>
                             </div>
                             
                             <div class="summary-section" style="border-bottom: none;">
@@ -1589,7 +1589,7 @@
                         </div>
                         
                         <button type="button" class="submit-quote-btn" id="submit-quote-btn" onclick="submitQuoteRequest()">
-                            ðŸš€ Submit Quote Request
+                            🚀 Submit Quote Request
                         </button>
                         <p style="text-align: center; margin-top: var(--spacing-md); font-size: 0.9rem; opacity: 0.8;">
                             We'll review your request and get back to you within 24-48 hours with a detailed response.
@@ -1607,8 +1607,8 @@
                         <img src="images/Logos/re wall logo WHITE.png" alt="ReWall Logo" style="width: 180px; height: auto; margin-bottom: var(--spacing-md);">
                         <p>Premium retaining wall solutions with expert engineering, smart digital tools, and trusted construction partners.</p>
                         <div class="footer-contact-inline">
-                            <a href="mailto:info@rewall.nz">ðŸ“§ info@rewall.nz</a>
-                            <a href="tel:+64273941127">ðŸ“ž 027 394 1127</a>
+                            <a href="mailto:info@rewall.nz">📧 info@rewall.nz</a>
+                            <a href="tel:+64273941127">📞 027 394 1127</a>
                         </div>
                     </div>
                     <div class="footer-links-group">
@@ -1652,11 +1652,11 @@
             <div class="design-portal-content">
                 <button class="design-portal-close" onclick="closeDesignPortal()">&times;</button>
                 <div class="design-portal-header">
-                    <h2>ðŸ” Design Portal</h2>
+                    <h2>🔐 Design Portal</h2>
                     <p>Professional wall design tools for clients</p>
                 </div>
                 <div class="design-portal-body">
-                    <span class="coming-soon-badge">ðŸš€ Coming Soon</span>
+                    <span class="coming-soon-badge">🚀 Coming Soon</span>
                     <h3>We're Building Something Amazing</h3>
                     <p class="portal-message">Our interactive Design Portal is currently under development. Soon you'll be able to visualize your retaining wall, explore materials, and collaborate with our engineers in real-time.</p>
                     
@@ -1679,7 +1679,7 @@
                         <button type="submit">Notify Me</button>
                     </form>
                     
-                    <p class="design-portal-alt">Ready to start now? <a href="quote.html">Get a quote today â†’</a></p>
+                    <p class="design-portal-alt">Ready to start now? <a href="quote.html">Get a quote today →</a></p>
                 </div>
             </div>
         </div>
@@ -1853,7 +1853,7 @@
                 <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
                     <div style="background: white; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
                         <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
-                            <div style="font-size: 4rem; margin-bottom: 10px;">âœ…</div>
+                            <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
                             <h2 style="color: white; margin: 0;">Quote Request Sent!</h2>
                         </div>
                         <div style="padding: 30px; text-align: center;">
@@ -1861,7 +1861,7 @@
                                 <strong>Your quote request has been sent to ReWall!</strong>
                             </p>
                             <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #28a745; text-align: left;">
-                                <p style="margin: 0 0 10px; color: #155724; font-weight: 600;">ðŸ“§ What happens next:</p>
+                                <p style="margin: 0 0 10px; color: #155724; font-weight: 600;">📧 What happens next:</p>
                                 <ul style="margin: 0; padding-left: 20px; color: #155724;">
                                     <li>You'll receive a confirmation email shortly</li>
                                     <li>Our team will review your project details</li>
@@ -2112,7 +2112,7 @@
             // Add new marker with custom icon
             const markerIcon = L.divIcon({
                 className: 'custom-marker',
-                html: '<div style="font-size: 32px; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));">ðŸ“</div>',
+                html: '<div style="font-size: 32px; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));">📍</div>',
                 iconSize: [32, 32],
                 iconAnchor: [16, 32]
             });
@@ -2259,7 +2259,7 @@
                     // Show success message briefly
                     const successMsg = document.createElement('div');
                     successMsg.style.cssText = 'position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #28a745; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 20px rgba(40,167,69,0.4); z-index: 1001; animation: slideDown 0.3s ease;';
-                    successMsg.textContent = 'âœ… Great! Wall marked successfully!';
+                    successMsg.textContent = '✅ Great! Wall marked successfully!';
                     document.getElementById('map-container').appendChild(successMsg);
                     setTimeout(() => successMsg.remove(), 3000);
                 }
@@ -2289,13 +2289,13 @@
                 mapTileLayer.bringToBack();
                 document.getElementById('map-btn').classList.add('active');
                 document.getElementById('satellite-btn').classList.remove('active');
-                console.log('âœ“ Map view activated');
+                console.log('✓ Map view activated');
             } else if (type === 'satellite') {
                 satelliteTileLayer.addTo(map);
                 satelliteTileLayer.bringToBack();
                 document.getElementById('satellite-btn').classList.add('active');
                 document.getElementById('map-btn').classList.remove('active');
-                console.log('âœ“ Satellite view activated');
+                console.log('✓ Satellite view activated');
             }
             currentLayer = type;
         }
@@ -2331,7 +2331,7 @@
                     // Remove loading, add active
                     label.classList.remove('loading');
                     label.classList.add('active');
-                    console.log('âœ“ Boundary layer enabled');
+                    console.log('✓ Boundary layer enabled');
                     
                     // Add map event listeners for auto-refresh
                     map.on('moveend', scheduleBoundaryRefresh);
@@ -2352,7 +2352,7 @@
                 }
                 
                 label.classList.remove('active', 'loading', 'error');
-                console.log('âœ“ Boundary layer disabled');
+                console.log('✓ Boundary layer disabled');
                 
                 // Remove event listeners
                 map.off('moveend', scheduleBoundaryRefresh);
@@ -2517,7 +2517,7 @@
             const totalDisplay = document.getElementById('total-length-display');
             
             if (drawnWalls.length === 0) {
-                container.innerHTML = '<p style="color: var(--slate); font-style: italic; text-align: center; padding: var(--spacing-md);">ðŸ‘ˆ No walls drawn yet. Draw your first wall on the map above!</p>';
+                container.innerHTML = '<p style="color: var(--slate); font-style: italic; text-align: center; padding: var(--spacing-md);">👈 No walls drawn yet. Draw your first wall on the map above!</p>';
                 totalDisplay.innerHTML = '';
                 return;
             }
@@ -2534,7 +2534,7 @@
                         <div class="wall-info">
                             <span class="wall-label">Wall #${wall.id}</span>
                             <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <span style="color: var(--slate); font-size: 0.9rem;">ðŸ“ Est. Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
+                                <span style="color: var(--slate); font-size: 0.9rem;">📏 Est. Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
                                 <div class="height-input-group">
                                     <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Est. height:</span>
                                     <input type="number" 
@@ -2560,15 +2560,15 @@
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-                            <button onclick="focusOnWall(${wall.id})">ðŸ“ View</button>
-                            <button class="wall-delete-btn" onclick="deleteWall(${wall.id})">ðŸ—‘ï¸ Delete</button>
+                            <button onclick="focusOnWall(${wall.id})">📍 View</button>
+                            <button class="wall-delete-btn" onclick="deleteWall(${wall.id})">🗑️ Delete</button>
                         </div>
                     </div>
                 `;
             });
             
             container.innerHTML = html;
-            totalDisplay.innerHTML = `<strong style="color: var(--primary-black); font-size: 1rem;">ðŸ“Š Est. Total Length:</strong> <span style="color: var(--teal-accent); font-size: 1.1rem;">~${formatDistance(totalLength)}</span><br><span style="font-size: 0.8rem; color: var(--slate); margin-top: 8px; display: block;">*Measurements are approximate. Exact dimensions will be confirmed during site assessment.</span><br><span style="font-size: 0.8rem; color: var(--slate); display: block; margin-top: 4px;">Not sure about the height? No problem. Leave it blank and our team will work it out during the assessment.</span>`;
+            totalDisplay.innerHTML = `<strong style="color: var(--primary-black); font-size: 1rem;">📊 Est. Total Length:</strong> <span style="color: var(--teal-accent); font-size: 1.1rem;">~${formatDistance(totalLength)}</span><br><span style="font-size: 0.8rem; color: var(--slate); margin-top: 8px; display: block;">*Measurements are approximate. Exact dimensions will be confirmed during site assessment.</span><br><span style="font-size: 0.8rem; color: var(--slate); display: block; margin-top: 4px;">Not sure about the height? No problem. Leave it blank and our team will work it out during the assessment.</span>`;
         }
         
         function updateWallHeightRange(wallId) {
@@ -2958,18 +2958,18 @@
         async function manualCaptureSnapshot() {
             const btn = document.getElementById('capture-map-btn');
             
-            btn.innerHTML = 'â³ Capturing...';
+            btn.innerHTML = '⏳ Capturing...';
             btn.disabled = true;
             
             // Just capture immediately - simple!
             captureMapSnapshot();
             
             // Show success
-            btn.innerHTML = 'âœ“ Captured!';
+            btn.innerHTML = '✓ Captured!';
             btn.style.background = '#28a745';
             
             setTimeout(() => {
-                btn.innerHTML = 'ðŸ“¸ Update Map Snapshot';
+                btn.innerHTML = '📸 Update Map Snapshot';
                 btn.style.background = '';
                 btn.disabled = false;
             }, 1500);
@@ -3150,7 +3150,7 @@
             // Show total size warning if getting close
             const totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
             if (totalSize > 15 * 1024 * 1024) {
-                warningEl.innerHTML = `âš ï¸ Total files: ${(totalSize / 1024 / 1024).toFixed(1)}MB. Large submissions may be slow.`;
+                warningEl.innerHTML = `⚠️ Total files: ${(totalSize / 1024 / 1024).toFixed(1)}MB. Large submissions may be slow.`;
                 warningEl.style.display = 'block';
             } else {
                 warningEl.style.display = 'none';
@@ -3168,11 +3168,11 @@
             container.innerHTML = uploadedFiles.map((file, index) => `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--soft-blue); border-radius: 8px; margin-bottom: 8px;">
                     <span>
-                        ${file.type.startsWith('image/') ? 'ðŸ–¼ï¸' : 'ðŸ“„'} 
+                        ${file.type.startsWith('image/') ? '🖼️' : '📄'} 
                         <strong>${file.name}</strong> 
                         <span style="color: var(--slate); font-size: 0.85rem;">(${(file.size / 1024).toFixed(1)} KB)</span>
                     </span>
-                    <button onclick="removeFile(${index})" style="background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">âœ•</button>
+                    <button onclick="removeFile(${index})" style="background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">✕</button>
                 </div>
             `).join('');
         }
@@ -3251,7 +3251,7 @@
                 stages.forEach(stage => {
                     const stageNum = stage.dataset.stage;
                     const name = stageNames[stageNum] || `Stage ${stageNum}`;
-                    servicesHtml += `<li>âœ“ ${name}</li>`;
+                    servicesHtml += `<li>✓ ${name}</li>`;
                     summaryHtml += `<span class="service-tag">${name}</span>`;
                 });
                 servicesContainer.innerHTML = servicesHtml;
@@ -3261,7 +3261,7 @@
                 
                 const step1Number = document.getElementById('step1-number');
                 if (step1Number) {
-                    step1Number.innerHTML = 'âœ“';
+                    step1Number.innerHTML = '✓';
                     step1Number.style.background = '#28a745';
                 }
             } else {
@@ -3271,7 +3271,7 @@
                 }
                 const step1Number = document.getElementById('step1-number');
                 if (step1Number) {
-                    step1Number.innerHTML = 'â€”';
+                    step1Number.innerHTML = '—';
                     step1Number.style.background = 'var(--slate)';
                 }
             }
@@ -3287,7 +3287,7 @@
                 let wallDetails = drawnWalls.map(w => {
                     let heightStr = '';
                     if (w.heightLow && w.heightHigh) {
-                        heightStr = ` | est. ${w.heightLow}mâ€“${w.heightHigh}m high`;
+                        heightStr = ` | est. ${w.heightLow}m–${w.heightHigh}m high`;
                     } else if (w.heightLow) {
                         heightStr = ` | est. ~${w.heightLow}m high`;
                     } else if (w.heightHigh) {
@@ -3325,9 +3325,9 @@
             const geotechSelection = document.querySelector('input[name="geotech-status"]:checked');
             if (geotechSelection) {
                 const geotechLabels = {
-                    'have-report': 'âœ… Has existing report',
-                    'need-report': 'ðŸ“‹ Include in quote',
-                    'not-sure': 'â“ Needs advice'
+                    'have-report': '✅ Has existing report',
+                    'need-report': '📋 Include in quote',
+                    'not-sure': '❓ Needs advice'
                 };
                 geotechDisplay.textContent = geotechLabels[geotechSelection.value] || 'Not specified';
             } else {
@@ -3343,8 +3343,8 @@
             if (name || email) {
                 contactDisplay.innerHTML = `
                     ${name ? `<strong>${name}</strong><br>` : ''}
-                    ${email ? `ðŸ“§ ${email}<br>` : ''}
-                    ${phone ? `ðŸ“ž ${phone}` : ''}
+                    ${email ? `📧 ${email}<br>` : ''}
+                    ${phone ? `📞 ${phone}` : ''}
                 `;
             } else {
                 contactDisplay.textContent = 'Not provided';
@@ -3457,7 +3457,7 @@
                 walls: drawnWalls.map(w => {
                     let heightFormatted = 'Not specified';
                     if (w.heightLow && w.heightHigh) {
-                        heightFormatted = `est. ${w.heightLow}m â€“ ${w.heightHigh}m`;
+                        heightFormatted = `est. ${w.heightLow}m – ${w.heightHigh}m`;
                     } else if (w.heightLow) {
                         heightFormatted = `est. ~${w.heightLow}m`;
                     } else if (w.heightHigh) {
@@ -3511,7 +3511,7 @@
             
             body += `SERVICES REQUESTED:\n`;
             if (data.services.length > 0) {
-                data.services.forEach(s => body += `â€¢ ${s}\n`);
+                data.services.forEach(s => body += `• ${s}\n`);
             } else {
                 body += `No specific services selected\n`;
             }
@@ -3528,7 +3528,7 @@
             if (data.walls.length > 0) {
                 data.walls.forEach(w => {
                     const heightInfo = w.height ? ` x ${w.heightFormatted} high` : ' (height not specified)';
-                    body += `â€¢ Wall #${w.id}: ~${w.lengthFormatted} length${heightInfo}\n`;
+                    body += `• Wall #${w.id}: ~${w.lengthFormatted} length${heightInfo}\n`;
                 });
                 body += `EST. TOTAL LENGTH: ~${data.totalWallLengthFormatted}\n`;
                 body += `*Note: These are approximate measurements based on map drawings and should not be relied upon for final calculations.\n`;
@@ -3539,7 +3539,7 @@
             
             body += `WALL TYPES:\n`;
             if (data.wallTypes.length > 0) {
-                data.wallTypes.forEach(t => body += `â€¢ ${t}\n`);
+                data.wallTypes.forEach(t => body += `• ${t}\n`);
             } else {
                 body += `Not specified\n`;
             }
@@ -3553,7 +3553,7 @@
             
             body += `ATTACHMENTS:\n`;
             if (data.attachments.length > 0) {
-                data.attachments.forEach(a => body += `â€¢ ${a.name} (${(a.size/1024).toFixed(1)} KB)\n`);
+                data.attachments.forEach(a => body += `• ${a.name} (${(a.size/1024).toFixed(1)} KB)\n`);
             } else {
                 body += `No files attached\n`;
             }
@@ -3576,7 +3576,7 @@
                 <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
                     <div style="background: white; border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
                         <div style="background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
-                            <div style="font-size: 4rem; margin-bottom: 10px;">ðŸŽ‰</div>
+                            <div style="font-size: 4rem; margin-bottom: 10px;">🎉</div>
                             <h2 style="color: white; margin: 0;">Quote Request Ready!</h2>
                             <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">Thank you, ${data.client.name}</p>
                         </div>
@@ -3586,7 +3586,7 @@
                             
                             <div style="display: flex; flex-direction: column; gap: 15px;">
                                 <button id="direct-send-btn" onclick="sendWithAttachments()" style="padding: 16px 24px; background: linear-gradient(135deg, #28a745 0%, #20863a 100%); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(40,167,69,0.3);">
-                                    ðŸš€ Send Quote Request Now
+                                    🚀 Send Quote Request Now
                                 </button>
                                 <p style="text-align: center; font-size: 0.85rem; color: var(--slate); margin: 0;">Sends directly to ReWall with all attachments</p>
                                 
@@ -3595,11 +3595,11 @@
                                     
                                     <div style="display: flex; gap: 10px;">
                                         <button onclick="copyToClipboard()" style="flex: 1; padding: 10px 16px; background: var(--light-gray); color: var(--primary-black); border: 1px solid var(--border-gray); border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
-                                            ðŸ“‹ Copy
+                                            📋 Copy
                                         </button>
                                         
                                         <button onclick="downloadAll()" style="flex: 1; padding: 10px 16px; background: var(--light-gray); color: var(--primary-black); border: 1px solid var(--border-gray); border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
-                                            ðŸ’¾ Download All
+                                            💾 Download All
                                         </button>
                                     </div>
                                 </div>
@@ -3607,13 +3607,13 @@
                             
                             <div style="margin-top: 25px; padding: 15px; background: var(--soft-blue); border-radius: 8px;">
                                 <p style="margin: 0; font-size: 0.9rem; color: var(--slate);">
-                                    <strong>ðŸ“ž Prefer to call?</strong><br>
+                                    <strong>📞 Prefer to call?</strong><br>
                                     Ring us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a> and mention your quote reference.
                                 </p>
                             </div>
                             
                             <button onclick="closeSubmissionModal()" style="margin-top: 20px; padding: 12px 24px; background: var(--light-gray); color: var(--primary-black); border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 100%;">
-                                â† Back to Quote Builder
+                                ← Back to Quote Builder
                             </button>
                         </div>
                     </div>
@@ -3651,7 +3651,7 @@
             const btn = document.getElementById('direct-send-btn');
             const data = window.currentQuoteData;
             
-            btn.innerHTML = 'â³ Preparing submission...';
+            btn.innerHTML = '⏳ Preparing submission...';
             btn.disabled = true;
             
             try {
@@ -3721,7 +3721,7 @@
                 // Add map snapshot as base64 attachment (FormSubmit accepts this format)
                 let attachmentCount = 0;
                 if (data.mapSnapshot) {
-                    btn.innerHTML = 'â³ Preparing map image...';
+                    btn.innerHTML = '⏳ Preparing map image...';
                     // Add as hidden field with special naming for FormSubmit attachment
                     addField('_attachment[ReWall-Site-Map.png]', data.mapSnapshot);
                     attachmentCount++;
@@ -3731,7 +3731,7 @@
                 // Add uploaded files - need to convert to base64 for FormSubmit
                 if (uploadedFiles && uploadedFiles.length > 0) {
                     for (let i = 0; i < uploadedFiles.length; i++) {
-                        btn.innerHTML = `â³ Preparing file ${i + 1}/${uploadedFiles.length}...`;
+                        btn.innerHTML = `⏳ Preparing file ${i + 1}/${uploadedFiles.length}...`;
                         if (uploadedFiles[i].file) {
                             // Read file as base64
                             const reader = new FileReader();
@@ -3751,7 +3751,7 @@
                 
                 console.log(`Total attachments: ${attachmentCount}`);
                 
-                btn.innerHTML = 'â³ Sending to ReWall...';
+                btn.innerHTML = '⏳ Sending to ReWall...';
                 
                 // Append form to body and submit
                 document.body.appendChild(form);
@@ -3761,7 +3761,7 @@
                 if (modalContent) {
                     modalContent.innerHTML = `
                         <div style="background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
-                            <div style="font-size: 4rem; margin-bottom: 10px;">ðŸ“¤</div>
+                            <div style="font-size: 4rem; margin-bottom: 10px;">📤</div>
                             <h2 style="color: white; margin: 0;">Sending...</h2>
                         </div>
                         <div style="padding: 30px; text-align: center;">
@@ -3782,12 +3782,12 @@
                 
             } catch (error) {
                 console.error('Submission Error:', error);
-                btn.innerHTML = 'âŒ Error';
+                btn.innerHTML = '❌ Error';
                 btn.style.background = '#dc3545';
                 
                 setTimeout(() => {
                     alert('There was an error preparing your submission. Please try the "Download All" option instead.');
-                    btn.innerHTML = 'ðŸš€ Send Quote Request Now';
+                    btn.innerHTML = '🚀 Send Quote Request Now';
                     btn.style.background = '';
                     btn.disabled = false;
                 }, 500);
@@ -3853,12 +3853,12 @@
                 });
             }
             
-            alert('âœ“ Files downloading!\n\nEmail these to: info@rewall.nz');
+            alert('✓ Files downloading!\n\nEmail these to: info@rewall.nz');
         }
         
         function copyToClipboard() {
             navigator.clipboard.writeText(window.currentEmailBody).then(() => {
-                alert('âœ“ Summary copied to clipboard!\n\nYou can now paste it into an email.');
+                alert('✓ Summary copied to clipboard!\n\nYou can now paste it into an email.');
             }).catch(err => {
                 const textarea = document.createElement('textarea');
                 textarea.value = window.currentEmailBody;
@@ -3866,7 +3866,7 @@
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                alert('âœ“ Summary copied to clipboard!');
+                alert('✓ Summary copied to clipboard!');
             });
         }
     </script>
