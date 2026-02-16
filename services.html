@@ -196,6 +196,21 @@
             white-space: nowrap;
             box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
             pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        /* After user has clicked draw tool, hide the label and only show on hover */
+        .leaflet-draw-toolbar.draw-used .leaflet-draw-draw-polyline::after {
+            content: '📐 Draw Wall';
+            opacity: 0;
+        }
+        .leaflet-draw-toolbar.draw-used .leaflet-draw-draw-polyline:hover::after {
+            opacity: 1;
+        }
+
+        /* While actively drawing, always hide */
+        .leaflet-draw-toolbar.drawing-active .leaflet-draw-draw-polyline::after {
+            opacity: 0 !important;
         }
         
         .map-controls {
@@ -583,8 +598,8 @@
         }
         
         .height-input-group input {
-            max-width: 60px;
-            padding: 6px 8px;
+            max-width: 80px;
+            padding: 6px 10px;
             border: 1px solid var(--border-gray);
             border-radius: 4px;
             font-size: 0.9rem;
@@ -752,6 +767,24 @@
             margin-right: 4px;
             min-width: 20px;
             display: inline-block;
+        }
+
+        .wall-pros-cons .limitation {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: #FFF3E0;
+            border: 1.5px solid #FFB74D;
+            border-radius: 4px;
+            color: #F5A623;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-right: 6px;
+            vertical-align: middle;
+            line-height: 1;
+            flex-shrink: 0;
         }
         
         /* Original wall-type-option for backward compatibility */
@@ -1292,8 +1325,8 @@
                                     <li><strong>✅</strong> Cost-effective for small heights</li>
                                     <li><strong>✅</strong> Durable and long-lasting</li>
                                     <li><strong>✅</strong> Aesthetic face with numerous finishes to choose from</li>
-                                    <li><strong>❌</strong> Heavier appearance</li>
-                                    <li><strong>❌</strong> Limited height capacity</li>
+                                    <li><span class="limitation">—</span> Heavier appearance</li>
+                                    <li><span class="limitation">—</span> Limited height capacity</li>
                                 </ul>
                             </div>
                         </div>
@@ -1312,7 +1345,7 @@
                                     <li><strong>✅</strong> Great for tall walls (2m+)</li>
                                     <li><strong>✅</strong> Flexible & seismic-resistant</li>
                                     <li><strong>✅</strong> Excellent value at height</li>
-                                    <li><strong>❌</strong> Requires engineering design</li>
+                                    <li><span class="limitation">—</span> Requires engineering design</li>
                                 </ul>
                             </div>
                         </div>
@@ -1331,7 +1364,7 @@
                                     <li><strong>✅</strong> Natural aesthetic appeal</li>
                                     <li><strong>✅</strong> Good for landscaping</li>
                                     <li><strong>✅</strong> Relatively affordable</li>
-                                    <li><strong>❌</strong> Maintenance required</li>
+                                    <li><span class="limitation">—</span> Maintenance required</li>
                                 </ul>
                             </div>
                         </div>
@@ -1350,7 +1383,7 @@
                                     <li><strong>✅</strong> Beautiful natural look</li>
                                     <li><strong>✅</strong> Great for gardens</li>
                                     <li><strong>✅</strong> Various colors/styles</li>
-                                    <li><strong>❌</strong> Limited to modest heights</li>
+                                    <li><span class="limitation">—</span> Limited to modest heights</li>
                                 </ul>
                             </div>
                         </div>
@@ -1369,7 +1402,7 @@
                                     <li><strong>✅</strong> Best of both worlds</li>
                                     <li><strong>✅</strong> Versatile design</li>
                                     <li><strong>✅</strong> Custom solutions</li>
-                                    <li><strong>❌</strong> Requires planning</li>
+                                    <li><span class="limitation">—</span> Requires planning</li>
                                 </ul>
                             </div>
                         </div>
@@ -1650,66 +1683,119 @@
             <div class="container">
             <h2 style="text-align: center; margin-bottom: var(--spacing-lg);">Wall Types We Specialize In</h2>
             
-            <div class="grid grid-2">
-                <div class="card">
-                    <h3>MSE/MSC Walls</h3>
-                    <p><strong>Mechanically Stabilized Earth Walls</strong></p>
-                    <p>High-performance solutions for large spans and heavy loads. Ideal for commercial and industrial applications.</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li>• Cost-effective for high walls</li>
-                        <li>• Excellent load-bearing capacity</li>
-                        <li>• Flexible design options</li>
-                    </ul>
+            <div class="wall-type-grid" style="pointer-events: auto;">
+                <!-- MSE/MSC Walls -->
+                <div class="wall-type-card" style="cursor: default;">
+                    <div class="wall-card-image">
+                        <div class="icon-circle">
+                            <img src="images/icons/mse-wall-icon.svg" alt="MSE/MSC Walls">
+                        </div>
+                    </div>
+                    <div class="wall-card-content">
+                        <h3 class="wall-card-title" style="font-size: 1.1rem; color: var(--dark-navy); margin-bottom: var(--spacing-xs);">MSE/MSC Walls</h3>
+                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Mechanically Stabilized Earth</p>
+                        <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">High-performance solutions for large spans and heavy loads. Ideal for commercial and industrial applications.</p>
+                        <ul class="wall-pros-cons">
+                            <li><strong>✅</strong> Cost-effective for high walls</li>
+                            <li><strong>✅</strong> Excellent load-bearing capacity</li>
+                            <li><strong>✅</strong> Flexible design options</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Gravity Retaining Walls</h3>
-                    <p><strong>Classic Concrete & Masonry</strong></p>
-                    <p>Solid, reliable structures using the weight of the wall itself. Perfect for residential and smaller projects.</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li>• Simple, proven design</li>
-                        <li>• Minimal maintenance</li>
-                        <li>• Custom finishes available</li>
-                    </ul>
+
+                <!-- Gravity Retaining Walls -->
+                <div class="wall-type-card" style="cursor: default;">
+                    <div class="wall-card-image">
+                        <div class="icon-circle">
+                            <img src="images/icons/gravity-wall-icon.svg" alt="Gravity Retaining Walls">
+                        </div>
+                    </div>
+                    <div class="wall-card-content">
+                        <h3 class="wall-card-title" style="font-size: 1.1rem; color: var(--dark-navy); margin-bottom: var(--spacing-xs);">Gravity Retaining Walls</h3>
+                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Classic Concrete & Masonry</p>
+                        <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Solid, reliable structures using the weight of the wall itself. Perfect for residential and smaller projects.</p>
+                        <ul class="wall-pros-cons">
+                            <li><strong>✅</strong> Simple, proven design</li>
+                            <li><strong>✅</strong> Minimal maintenance</li>
+                            <li><strong>✅</strong> Custom finishes available</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Timber Retaining Walls</h3>
-                    <p><strong>Natural & Aesthetic</strong></p>
-                    <p>Environmentally-friendly timber solutions that blend seamlessly with landscaping. Ideal for gardens and residential areas.</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li>• Natural appearance</li>
-                        <li>• Sustainable materials</li>
-                        <li>• Lower height restrictions</li>
-                    </ul>
+
+                <!-- Timber Retaining Walls -->
+                <div class="wall-type-card" style="cursor: default;">
+                    <div class="wall-card-image">
+                        <div class="icon-circle">
+                            <img src="images/icons/timber-wall-icon.svg" alt="Timber Retaining Walls">
+                        </div>
+                    </div>
+                    <div class="wall-card-content">
+                        <h3 class="wall-card-title" style="font-size: 1.1rem; color: var(--dark-navy); margin-bottom: var(--spacing-xs);">Timber Retaining Walls</h3>
+                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Natural & Aesthetic</p>
+                        <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Environmentally-friendly timber solutions that blend seamlessly with landscaping. Ideal for gardens and residential areas.</p>
+                        <ul class="wall-pros-cons">
+                            <li><strong>✅</strong> Natural appearance</li>
+                            <li><strong>✅</strong> Sustainable materials</li>
+                            <li><strong>✅</strong> Lower height restrictions</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Concrete Retaining Walls</h3>
-                    <p><strong>Durable & Long-lasting</strong></p>
-                    <p>Precast and cast-in-place concrete options for maximum durability and architectural flexibility.</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li>• Superior longevity</li>
-                        <li>• Design flexibility</li>
-                        <li>• Weather resistant</li>
-                    </ul>
+
+                <!-- Concrete Retaining Walls -->
+                <div class="wall-type-card" style="cursor: default;">
+                    <div class="wall-card-image">
+                        <div class="icon-circle">
+                            <img src="images/icons/concrete-wall-icon.svg" alt="Concrete Retaining Walls">
+                        </div>
+                    </div>
+                    <div class="wall-card-content">
+                        <h3 class="wall-card-title" style="font-size: 1.1rem; color: var(--dark-navy); margin-bottom: var(--spacing-xs);">Concrete Retaining Walls</h3>
+                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Durable & Long-lasting</p>
+                        <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Precast and cast-in-place concrete options for maximum durability and architectural flexibility.</p>
+                        <ul class="wall-pros-cons">
+                            <li><strong>✅</strong> Superior longevity</li>
+                            <li><strong>✅</strong> Design flexibility</li>
+                            <li><strong>✅</strong> Weather resistant</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Landscape/Garden Walls</h3>
-                    <p><strong>Aesthetic Soil Retention</strong></p>
-                    <p>Decorative solutions for smaller-scale projects that enhance landscape design while retaining soil.</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li>• Design-focused</li>
-                        <li>• Varied material options</li>
-                        <li>• Quick installation</li>
-                    </ul>
+
+                <!-- Landscape/Garden Walls -->
+                <div class="wall-type-card" style="cursor: default;">
+                    <div class="wall-card-image">
+                        <div class="icon-circle">
+                            <img src="images/icons/stone-landscape-icon.svg" alt="Landscape/Garden Walls">
+                        </div>
+                    </div>
+                    <div class="wall-card-content">
+                        <h3 class="wall-card-title" style="font-size: 1.1rem; color: var(--dark-navy); margin-bottom: var(--spacing-xs);">Landscape/Garden Walls</h3>
+                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Aesthetic Soil Retention</p>
+                        <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Decorative solutions for smaller-scale projects that enhance landscape design while retaining soil.</p>
+                        <ul class="wall-pros-cons">
+                            <li><strong>✅</strong> Design-focused</li>
+                            <li><strong>✅</strong> Varied material options</li>
+                            <li><strong>✅</strong> Quick installation</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Custom Solutions</h3>
-                    <p><strong>Tailored to Your Needs</strong></p>
-                    <p>Unique projects require unique solutions. We design custom systems for complex site conditions.</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li>• Site-specific engineering</li>
-                        <li>• Innovative approaches</li>
-                        <li>• Specialized expertise</li>
-                    </ul>
+
+                <!-- Custom Solutions -->
+                <div class="wall-type-card" style="cursor: default;">
+                    <div class="wall-card-image">
+                        <div class="icon-circle">
+                            <img src="images/icons/custom-solution-icon.svg" alt="Custom Solutions">
+                        </div>
+                    </div>
+                    <div class="wall-card-content">
+                        <h3 class="wall-card-title" style="font-size: 1.1rem; color: var(--dark-navy); margin-bottom: var(--spacing-xs);">Custom Solutions</h3>
+                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Tailored to Your Needs</p>
+                        <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Unique projects require unique solutions. We design custom systems for complex site conditions.</p>
+                        <ul class="wall-pros-cons">
+                            <li><strong>✅</strong> Site-specific engineering</li>
+                            <li><strong>✅</strong> Innovative approaches</li>
+                            <li><strong>✅</strong> Specialized expertise</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             </div>
@@ -2418,12 +2504,15 @@
                     drawTooltip.classList.add('hidden');
                     tooltipHidden = true;
                 }
-                // Hide the orange Draw Wall label
+                // Hide the orange Draw Wall label and mark as used
                 var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
-                if (drawToolbar) drawToolbar.classList.add('drawing-active');
+                if (drawToolbar) {
+                    drawToolbar.classList.add('drawing-active');
+                    drawToolbar.classList.add('draw-used');
+                }
             });
 
-            // Show the label again when drawing stops
+            // Show the label again when drawing stops (only on hover via CSS)
             map.on('draw:drawstop', function() {
                 var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
                 if (drawToolbar) drawToolbar.classList.remove('drawing-active');

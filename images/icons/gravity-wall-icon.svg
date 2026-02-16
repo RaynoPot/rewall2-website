@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="#E8F4F8" stroke="#4A90A4" stroke-width="2"/>
+  
+  <!-- Gravity/Concrete wall - trapezoidal mass concrete shape -->
+  <!-- Wall body - wider at base, narrower at top -->
+  <polygon points="28,75 72,75 65,30 35,30" fill="#B0BEC5" stroke="#78909C" stroke-width="2"/>
+  
+  <!-- Horizontal course lines -->
+  <line x1="30" y1="66" x2="71" y2="66" stroke="#90A4AE" stroke-width="1"/>
+  <line x1="32" y1="57" x2="69" y2="57" stroke="#90A4AE" stroke-width="1"/>
+  <line x1="33" y1="48" x2="67" y2="48" stroke="#90A4AE" stroke-width="1"/>
+  <line x1="34" y1="39" x2="66" y2="39" stroke="#90A4AE" stroke-width="1"/>
+  
+  <!-- Surface texture - subtle aggregate dots -->
+  <circle cx="40" cy="70" r="1.5" fill="#90A4AE" opacity="0.5"/>
+  <circle cx="55" cy="62" r="1.5" fill="#90A4AE" opacity="0.5"/>
+  <circle cx="45" cy="52" r="1.5" fill="#90A4AE" opacity="0.5"/>
+  <circle cx="58" cy="44" r="1.5" fill="#90A4AE" opacity="0.5"/>
+  <circle cx="48" cy="35" r="1.5" fill="#90A4AE" opacity="0.5"/>
+  <circle cx="60" cy="71" r="1.5" fill="#90A4AE" opacity="0.5"/>
+  <circle cx="38" cy="43" r="1.5" fill="#90A4AE" opacity="0.5"/>
+  
+  <!-- Ground line -->
+  <line x1="15" y1="75" x2="85" y2="75" stroke="#8B7355" stroke-width="2"/>
+  
+  <!-- Soil behind wall -->
+  <path d="M65 30 L80 30 L80 75 L72 75 Z" fill="#D2C4A8" opacity="0.3"/>
+  
+  <!-- Small grass accent -->
+  <path d="M76 28 Q78 20 80 28" stroke="#66BB6A" stroke-width="1.5" fill="none"/>
+  <path d="M78 29 Q81 22 83 30" stroke="#4CAF50" stroke-width="1.5" fill="none"/>
+</svg>
