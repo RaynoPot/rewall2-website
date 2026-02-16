@@ -1224,17 +1224,17 @@
                             </div>
                             <div id="address-suggestions" class="address-suggestions"></div>
                         </div>
-                        <div class="map-layer-toggle">
-                            <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
-                            <button id="satellite-btn" onclick="setMapLayer('satellite')">Satellite</button>
-                        </div>
                     </div>
                     
-                    <div class="layer-toggles" style="margin-bottom: var(--spacing-md);">
+                    <div class="layer-toggles" style="margin-bottom: var(--spacing-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-sm);">
                         <label class="layer-toggle-item" id="boundaries-label" title="Show/hide NZ property boundary lines">
                             <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()">
                             <span>🏠 Property Boundaries</span>
                         </label>
+                        <div class="map-layer-toggle">
+                            <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
+                            <button id="satellite-btn" onclick="setMapLayer('satellite')">Satellite</button>
+                        </div>
                     </div>
                     
                     <div id="map-container">
@@ -1302,7 +1302,7 @@
                         <div class="wall-type-card" onclick="toggleWallType(this, 'mse')">
                             <div class="wall-card-image">
                                 <div class="icon-circle">
-                                    <img src="images/Concrete Animation.jfif" alt="MSE">
+                                    <img src="images/icons/mse-wall-icon.svg" alt="MSE (Mechanically Stabilized Earth)">
                                 </div>
                             </div>
                             <div class="wall-card-content">
