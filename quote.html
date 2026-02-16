@@ -1,0 +1,3874 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ReWall NZ Plan & Quote - Interactive quote builder for retaining wall projects.">
+    <meta name="keywords" content="retaining wall quote, wall planning, cost estimate, ReWall NZ">
+
+    <meta property="og:title" content="Plan & Quote - ReWall NZ">
+    <meta property="og:description" content="Plan your retaining wall project and get a quote with our interactive builder">
+
+    <title>Plan & Quote - ReWall NZ</title>
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+    <style>
+        /* Quote Builder Styles */
+        .quote-builder {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: var(--spacing-xxl) 0;
+            border-top: 3px solid var(--teal-accent);
+        }
+        
+        .quote-step {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--teal-accent);
+        }
+        
+        .quote-step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--teal-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .step-number.completed {
+            background: #28a745;
+        }
+        
+        .quote-step h3 {
+            margin: 0;
+            color: var(--primary-black);
+        }
+        
+        .quote-step-description {
+            color: var(--slate);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.6;
+        }
+        
+        /* Map Container */
+        #map-container {
+            height: 500px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 2px solid var(--border-gray);
+            margin-bottom: var(--spacing-md);
+            position: relative;
+        }
+        
+        #site-map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        /* Drawing Tool Enhancement - Pulsing Animation */
+        .leaflet-draw-toolbar {
+            animation: none;
+        }
+
+        @keyframes drawButtonGlow {
+            0%, 100% {
+                box-shadow: 0 0 8px rgba(255, 107, 53, 0.4), 0 2px 8px rgba(0,0,0,0.2);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 107, 53, 0.7), 0 2px 12px rgba(0,0,0,0.3);
+            }
+        }
+        
+        /* Floating Tooltip Prompt for Drawing Tool */
+        .draw-prompt-tooltip {
+            position: absolute;
+            left: 70px;
+            top: 75px;
+            background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 20px rgba(74, 144, 164, 0.4);
+            z-index: 1000;
+            animation: tooltipBounce 2s ease-in-out infinite;
+            pointer-events: none;
+            max-width: 250px;
+        }
+        
+        .draw-prompt-tooltip::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #4A90A4;
+        }
+        
+        .draw-prompt-tooltip .prompt-icon {
+            display: inline-block;
+            margin-right: 6px;
+            animation: pointFinger 1s ease-in-out infinite;
+        }
+        
+        @keyframes tooltipBounce {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(8px);
+            }
+        }
+        
+        @keyframes pointFinger {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+        
+        /* Hide tooltip when drawing starts */
+        .draw-prompt-tooltip.hidden {
+            display: none;
+        }
+        
+        /* Enhanced draw button styling - large and obvious */
+        .leaflet-draw-draw-polyline {
+            width: 52px !important;
+            height: 52px !important;
+            background-color: #FF6B35 !important;
+            border: 3px solid white !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease !important;
+            animation: drawButtonGlow 2s ease-in-out infinite !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpolyline points='4,24 10,10 18,16 24,4' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='24' r='2.5' fill='white'/%3E%3Ccircle cx='10' cy='10' r='2.5' fill='white'/%3E%3Ccircle cx='18' cy='16' r='2.5' fill='white'/%3E%3Ccircle cx='24' cy='4' r='2.5' fill='white'/%3E%3C/svg%3E") !important;
+            background-size: 28px 28px !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            position: relative;
+        }
+
+        .leaflet-draw-draw-polyline:hover {
+            background-color: #E55A2B !important;
+            transform: scale(1.1);
+        }
+
+        /* "Draw Wall" label next to button */
+        .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
+            content: 'ðŸ“ Draw Wall â€” Click here to start marking your wall';
+            position: absolute;
+            left: 58px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #FF6B35;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        /* After user has clicked draw tool, hide the label and only show on hover */
+        .leaflet-draw-draw-polyline.draw-used::after {
+            content: 'ðŸ“ Draw Wall' !important;
+            opacity: 0 !important;
+        }
+        .leaflet-draw-draw-polyline.draw-used:hover::after {
+            opacity: 1 !important;
+        }
+
+        /* While actively drawing, always hide even on hover */
+        .leaflet-draw-draw-polyline.drawing-active::after {
+            opacity: 0 !important;
+        }
+        
+        .map-controls {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        /* Enhanced Address Search with Autocomplete */
+        .address-search {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .address-search-wrapper {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: stretch;
+        }
+        
+        .address-search input {
+            flex: 1;
+            padding: 0 16px;
+            height: 48px;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .address-search input:focus {
+            border-color: var(--teal-accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.2);
+        }
+        
+        .address-search button {
+            padding: 0 24px;
+            height: 48px;
+            background: var(--teal-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        
+        .address-search button:hover {
+            background: #3a8a9a;
+        }
+        
+        .address-search button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* Autocomplete Dropdown */
+        .address-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--teal-accent);
+            border-top: none;
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .address-suggestions.active {
+            display: block;
+        }
+        
+        .address-suggestion {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-gray);
+            transition: all 0.2s ease;
+        }
+        
+        .address-suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        .address-suggestion:hover {
+            background: var(--soft-blue);
+        }
+        
+        .address-suggestion .suggestion-main {
+            font-weight: 600;
+            color: var(--primary-black);
+        }
+        
+        .address-suggestion .suggestion-secondary {
+            font-size: 0.85rem;
+            color: var(--slate);
+            margin-top: 2px;
+        }
+        
+        .address-searching {
+            padding: 16px;
+            text-align: center;
+            color: var(--slate);
+        }
+        
+        .address-searching::before {
+            content: "ðŸ” ";
+        }
+        
+        .map-layer-toggle {
+            display: flex;
+            gap: var(--spacing-xs);
+            background: white;
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-gray);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .map-layer-toggle button {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: var(--charcoal);
+        }
+        
+        .map-layer-toggle button:hover {
+            background: var(--light-gray);
+        }
+        
+        .map-layer-toggle button.active {
+            background: var(--teal-accent);
+            color: white;
+            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.3);
+        }
+        
+        /* Layer toggles - Enhanced styling */
+        .layer-toggles {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        
+        .layer-toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 16px;
+            background: white;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .layer-toggle-item:hover {
+            background: var(--soft-blue);
+            border-color: var(--teal-accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(74, 144, 164, 0.15);
+        }
+        
+        .layer-toggle-item.active {
+            background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%);
+            color: white;
+            border-color: var(--teal-accent);
+            box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+        }
+        
+        .layer-toggle-item.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74, 144, 164, 0.4);
+        }
+        
+        .layer-toggle-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--teal-accent);
+            cursor: pointer;
+        }
+        
+        .layer-toggle-item.active input[type="checkbox"] {
+            accent-color: white;
+        }
+        
+        .layer-toggle-item span {
+            user-select: none;
+        }
+        
+        /* Boundary loading indicator */
+        .layer-toggle-item.loading {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .layer-toggle-item.loading::after {
+            content: ' â³';
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .layer-toggle-item.error {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .drawing-info {
+            background: #e3f2fd;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+            border-left: 4px solid #2196f3;
+        }
+        
+        .drawing-info h4 {
+            margin: 0 0 var(--spacing-sm) 0;
+            color: #1976d2;
+        }
+        
+        .drawing-info p {
+            margin: 0;
+            color: var(--slate);
+            font-size: 0.95rem;
+        }
+        
+        .drawn-walls-list {
+            margin-top: var(--spacing-md);
+            background: linear-gradient(135deg, var(--soft-blue) 0%, rgba(232, 244, 248, 0.5) 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            border: 2px solid rgba(74, 144, 164, 0.15);
+        }
+        
+        .drawn-walls-list h4 {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--primary-black);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .wall-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: white;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            border-left: 5px solid var(--teal-accent);
+            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .wall-item:hover {
+            box-shadow: 0 4px 16px rgba(74, 144, 164, 0.2);
+            transform: translateX(4px);
+        }
+        
+        .wall-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .wall-item .wall-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            flex: 1;
+        }
+        
+        .wall-item .wall-label {
+            font-weight: 700;
+            color: var(--primary-black);
+            min-width: 60px;
+        }
+        
+        .wall-item .wall-length {
+            font-weight: 600;
+            color: var(--teal-accent);
+            font-size: 1.1rem;
+        }
+        
+        .wall-item button {
+            background: var(--teal-accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-left: var(--spacing-md);
+        }
+        
+        .wall-item button:hover {
+            background: #2C5F7F;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+        }
+
+        .wall-item .wall-delete-btn {
+            background: var(--slate) !important;
+            font-size: 0.8rem;
+        }
+
+        .wall-item .wall-delete-btn:hover {
+            background: #1a252f !important;
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3) !important;
+        }
+
+        /* Wall number labels on map */
+        .wall-map-label {
+            background: var(--teal-accent);
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .total-length {
+            background: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+            border-top: 3px solid var(--teal-accent);
+            font-weight: 600;
+            color: var(--primary-black);
+            line-height: 1.6;
+        }
+        
+        .walls-info-note {
+            background: rgba(74, 144, 164, 0.1);
+            border-left: 4px solid var(--teal-accent);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+            font-size: 0.9rem;
+            color: var(--slate);
+        }
+        
+        .walls-info-note strong {
+            color: var(--primary-black);
+        }
+        
+        .height-input-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--light-gray);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            margin-top: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        
+        .height-input-group input {
+            max-width: 80px;
+            padding: 6px 10px;
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .height-input-group input:focus {
+            outline: none;
+            border-color: var(--teal-accent);
+            box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
+        }
+        
+        .height-optional-tag {
+            font-size: 0.85rem;
+            color: var(--teal-accent);
+            background: rgba(74, 144, 164, 0.15);
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-left: 6px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        
+
+        .total-length {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--teal-accent);
+            color: white;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Wall Type Selection - Enhanced Card Design */
+        .wall-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .wall-type-card {
+            display: flex;
+            flex-direction: column;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e8eef2;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            position: relative;
+        }
+        
+        .wall-type-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(74, 144, 164, 0.12);
+            border-color: var(--teal-accent);
+        }
+        
+        .wall-type-card.selected {
+            border-color: var(--teal-accent);
+            background: linear-gradient(180deg, #f0f9fb 0%, #ffffff 100%);
+            box-shadow: 0 8px 24px rgba(74, 144, 164, 0.2);
+        }
+        
+        .wall-type-card.selected::after {
+            content: 'âœ“';
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            background: var(--teal-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.4);
+        }
+        
+        .wall-card-image {
+            height: 160px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #f8fafb 0%, #eef3f6 100%);
+            position: relative;
+        }
+        
+        .wall-card-image .icon-circle {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 3px solid #e8eef2;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .wall-type-card:hover .icon-circle {
+            border-color: var(--teal-accent);
+            box-shadow: 0 6px 24px rgba(74, 144, 164, 0.15);
+            transform: scale(1.05);
+        }
+        
+        .wall-type-card.selected .icon-circle {
+            border-color: var(--teal-accent);
+            box-shadow: 0 6px 24px rgba(74, 144, 164, 0.2);
+        }
+        
+        .wall-card-image .icon-circle img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+        
+        .wall-card-content {
+            padding: var(--spacing-lg);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .wall-card-title {
+            font-weight: 700;
+            color: var(--primary-black);
+            margin-bottom: var(--spacing-md);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: block;
+        }
+        
+        .wall-checkbox {
+            display: none;
+        }
+        
+        .wall-pros-cons {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--slate);
+            line-height: 1.6;
+        }
+        
+        .wall-pros-cons li {
+            margin-bottom: 6px;
+            padding-left: 0;
+        }
+        
+        .wall-pros-cons strong {
+            color: var(--teal-accent);
+            margin-right: 4px;
+            min-width: 20px;
+            display: inline-block;
+        }
+
+        .wall-pros-cons .limitation {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: #FFF3E0;
+            border: 1.5px solid #FFB74D;
+            border-radius: 4px;
+            color: #F5A623;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-right: 6px;
+            vertical-align: middle;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        
+        /* Original wall-type-option for backward compatibility */
+        .wall-type-option {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .wall-type-option:hover {
+            border-color: var(--teal-accent);
+            background: white;
+        }
+        
+        .wall-type-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: var(--spacing-sm);
+            accent-color: var(--teal-accent);
+        }
+        
+        .wall-type-option.selected {
+            border-color: var(--teal-accent);
+            background: #e8f4f5;
+        }
+        
+        .wall-type-option label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .other-input {
+            margin-top: var(--spacing-md);
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            display: none;
+            font-size: 1rem;
+            font-family: var(--font-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .other-input:focus {
+            outline: none;
+            border-color: var(--teal-accent);
+            box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .wall-type-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .other-input.visible {
+            display: block;
+        }
+        
+        /* Quote Summary */
+        .quote-summary {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .quote-summary h3 {
+            color: var(--teal-accent);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+        
+        .summary-section {
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .summary-section:last-of-type {
+            border-bottom: none;
+        }
+        
+        .summary-section h4 {
+            color: var(--baby-blue);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .summary-section p, .summary-section ul {
+            margin: 0;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .summary-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .summary-section li {
+            padding: 4px 0;
+        }
+        
+        .submit-quote-btn {
+            width: 100%;
+            padding: 16px 32px;
+            background: var(--teal-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .submit-quote-btn:hover {
+            background: #3a8a9a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 144, 164, 0.4);
+        }
+        
+        .submit-quote-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .optional-badge {
+            display: inline-block;
+            background: #ffc107;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: var(--spacing-sm);
+        }
+        
+        /* Live distance tooltip */
+        .distance-tooltip {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        /* Service Tags */
+        .service-tag {
+            display: inline-block;
+            background: var(--teal-accent);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* Search Marker */
+        .search-marker {
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        /* Leaflet custom styling */
+        .leaflet-draw-toolbar a {
+            background-color: var(--teal-accent) !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            border: none !important;
+        }
+
+        .leaflet-draw-toolbar {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .leaflet-draw-section {
+            border: none !important;
+        }
+
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline {
+            width: 52px !important;
+            height: 52px !important;
+            line-height: 52px !important;
+        }
+        
+        .leaflet-draw-actions a {
+            background-color: #333 !important;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Map snapshot preview */
+        #map-snapshot-preview {
+            margin-top: var(--spacing-md);
+            display: none;
+        }
+        
+        #map-snapshot-preview img {
+            max-width: 100%;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--teal-accent);
+        }
+        
+        #map-snapshot-preview .snapshot-label {
+            font-size: 0.85rem;
+            color: var(--slate);
+            margin-top: var(--spacing-sm);
+        }
+        
+        /* Responsive summary grid */
+        @media (max-width: 768px) {
+            .quote-summary > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <img src="images/Logos/re wall logo WHITE.png" alt="R:Wall Logo" style="width: 120px; height: auto; filter: drop-shadow(0 0 8px rgba(74, 144, 164, 0.8));">
+        </div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="blog.html">Blog</a></li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <div class="cta-group">
+            <button class="btn active" onclick="window.location.href='quote.html'">Plan & Quote</button>
+            <button class="btn secondary" onclick="openDesignPortal()">Design</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <ul>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+    </nav>
+
+    <button class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="plan-quote">
+            <div class="content">
+                <h1>Plan & Quote</h1>
+                <p class="subheadline"><strong>Plan your retaining wall project and get a quote.</strong></p>
+                <p style="max-width: 700px; margin: 0 auto; color: var(--slate); font-size: 1rem;">Use our interactive quote builder to outline your project, mark wall locations, and receive a tailored estimate.</p>
+            </div>
+        </section>
+        <section id="how-it-works" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: var(--spacing-xxl) 0; border-bottom: 1px solid var(--border-gray);">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: var(--spacing-sm);">How It Works</h2>
+                <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-xl); font-size: 1.1rem; max-width: 650px; margin-left: auto; margin-right: auto;">Getting a Plan & Quote is quick and straightforward. Here's what to expect:</p>
+
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--spacing-xl); max-width: 1100px; margin: 0 auto; padding: var(--spacing-md) 0;">
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">1</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Pick Your Services</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Choose what you need help with, whether that's one stage, a few, or the full package</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">2</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Show Us Where</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Search your address on the map, then use the draw tool on the left to sketch where your retaining wall(s) will go</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">3</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Wall Preferences</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Tell us the wall type and height if you know. Not sure? We can advise</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: var(--teal-accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(74, 144, 164, 0.35);">4</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Your Details</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Drop in your name and email so we can get back to you with a response</p>
+                    </div>
+                    <div style="flex: 1; min-width: 170px; max-width: 195px; text-align: center;">
+                        <div style="width: 68px; height: 68px; background: #28a745; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.6rem; margin: 0 auto var(--spacing-md); box-shadow: 0 4px 15px rgba(40, 167, 69, 0.35);">&#10003;</div>
+                        <p style="font-weight: 700; font-size: 1rem; color: var(--charcoal); margin: 0 0 6px;">Submit & Done</p>
+                        <p style="font-size: 0.88rem; color: var(--slate); margin: 0; line-height: 1.5;">Hit send and we'll review your request. We'll be in touch within 48 hours</p>
+                    </div>
+                </div>
+
+                <p style="text-align: center; max-width: 500px; margin: var(--spacing-xl) auto 0; color: var(--slate); font-size: 0.9rem; font-style: italic;">
+                    Don't worry about getting it perfect. Our team will guide you through anything you're unsure about.
+                </p>
+            </div>
+        </section>
+
+        <!-- Service Circle Diagram - MAIN FOCUS -->
+        <section class="container" id="journey-wheel" style="padding-top: var(--spacing-xl); padding-bottom: var(--spacing-xl);">
+            <div style="display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                <div class="step-number" style="width: 44px; height: 44px; font-size: 1.3rem; flex-shrink: 0;">1</div>
+                <h2 style="margin: 0;">Complete the Circle</h2>
+            </div>
+            <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-lg);">Choose your path: Full service or Mix & Match</p>
+            
+            <!-- Service Options -->
+            <div style="display: flex; gap: var(--spacing-md); justify-content: center; flex-wrap: wrap; margin-bottom: var(--spacing-lg);">
+                <button class="service-option-btn active" onclick="selectServiceMode('all')" data-mode="all">
+                    âœ“ Complete Package
+                </button>
+                <button class="service-option-btn" onclick="selectServiceMode('custom')" data-mode="custom">
+                    âœ“ Mix & Match
+                </button>
+            </div>
+            
+            <p style="text-align: center; max-width: 700px; margin: 0 auto var(--spacing-xl); font-size: 0.95rem; color: var(--slate); line-height: 1.6;">
+                <strong>Complete Package:</strong> All 6 stages. Let us handle everything from planning to sign-off.
+                <br><br>
+                <strong>Mix & Match:</strong> Pick one stage, pick multiple stages, or pick all. Click the stages below to build the exact package you need. Perfect for any timeline and budget.
+            </p>
+            
+            <div class="journey-circle-container">
+                <!-- Center info box -->
+                <div class="journey-center">
+                    <div id="service-mode-display" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 8px;">âœ“ Complete Journey</div>
+                    <h3 id="stage-title">Complete the Circle</h3>
+                    <p id="stage-description" style="font-size: 0.8rem;">Hover over any stage to learn more, or switch to Mix & Match mode to select specific stages</p>
+                </div>
+                
+                <!-- Stage 1: Planning -->
+                <div class="journey-stage" data-stage="1" data-title="Site Planning" data-description="We assess your site, measure dimensions, evaluate soil conditions, and identify opportunities. Our team creates an initial scope of work and timeline.">
+                    <input type="checkbox" class="stage-checkbox" id="stage-1" data-stage="1">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-planning.svg" alt="Site Planning" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Site Planning</div>
+                </div>
+                
+                <!-- Stage 2: Design -->
+                <div class="journey-stage" data-stage="2" data-title="Engineering Design" data-description="Our Nemean-backed engineers create detailed designs, perform structural calculations, and produce technical drawings. All designs meet NZ Building Code requirements and local council standards.">
+                    <input type="checkbox" class="stage-checkbox" id="stage-2" data-stage="2">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-design.svg" alt="Engineering Design" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Design</div>
+                </div>
+                
+                <!-- Stage 3: Estimate -->
+                <div class="journey-stage" data-stage="3" data-title="Cost Estimate" data-description="Based on the design, we provide a detailed cost estimate covering materials, labor, project management, contingencies, and all costs involved. We break down every item so you understand exactly what you're paying for and why.">
+                    <input type="checkbox" class="stage-checkbox" id="stage-3" data-stage="3">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-estimate.svg" alt="Cost Estimate" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Estimate</div>
+                </div>
+                
+                <!-- Stage 4: Consent -->
+                <div class="journey-stage" data-stage="4" data-title="Council Consent" data-description="Wall height, location, and design complexity determine consent requirements. Building consent is typically required for walls over 1.2m in most NZ councils. We verify requirements for your area, handle all resource and building consent submissions, and manage council communications throughout the approval process.">
+                    <input type="checkbox" class="stage-checkbox" id="stage-4" data-stage="4">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-consent.svg" alt="Council Consent" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Consent</div>
+                </div>
+                
+                <!-- Stage 5: Construction -->
+                <div class="journey-stage" data-stage="5" data-title="Construction" data-description="Our trusted construction partners execute the project with quality and safety. We provide oversight, site inspections, and regular progress updates throughout. Final inspections depend on the proposed design and council requirements for your area.">
+                    <input type="checkbox" class="stage-checkbox" id="stage-5" data-stage="5">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-construction.svg" alt="Construction" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Construction</div>
+                </div>
+                
+                <!-- Stage 6: Sign-Off -->
+                <div class="journey-stage" data-stage="6" data-title="Final Sign-Off" data-description="Once construction is complete, we conduct final quality inspections, obtain sign-offs from authorities and engineers, and hand over the project to you with all documentation, warranties, and compliance certificates.">
+                    <input type="checkbox" class="stage-checkbox" id="stage-6" data-stage="6">
+                    <div class="journey-stage-icon">
+                        <img src="images/icons/stage-signoff.svg" alt="Final Sign-Off" loading="lazy">
+                    </div>
+                    <div class="journey-stage-label">Sign-Off</div>
+                </div>
+            </div>
+            
+            <!-- Request a Quote Button -->
+            <div style="text-align: center; margin-top: var(--spacing-xl);">
+                <button id="continue-to-details-btn" class="btn" onclick="scrollToQuoteBuilder()">
+                    Continue to Quote Builder â†’
+                </button>
+            </div>
+        </section>
+
+        <!-- Quote Builder Section -->
+        <section class="quote-builder" id="quote-builder">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: var(--spacing-xl); padding-top: var(--spacing-xl);">
+                    <h2 style="font-size: 2rem; margin-bottom: var(--spacing-sm);">Build Your Quote</h2>
+                    <p style="max-width: 600px; margin: 0 auto; color: var(--slate); font-size: 1.1rem; line-height: 1.7;">
+                        Fill in what you can, skip what you don't know. Only your name and email are required. Our team will guide you from there.
+                    </p>
+                </div>
+
+                <!-- Services Selected (Summary from Step 1) -->
+                <div class="quote-step" id="step-services">
+                    <div class="quote-step-header">
+                        <div class="step-number" id="step1-number" style="background: #28a745; font-size: 1.1rem;">âœ“</div>
+                        <h3>Services Selected</h3>
+                    </div>
+                    <p class="quote-step-description">
+                        Your selected services from the journey circle above. 
+                        <a href="#services" style="color: var(--teal-accent);">Go back to modify â†‘</a>
+                    </p>
+                    <div id="selected-services-summary" style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm);">
+                        <span style="color: var(--slate); font-style: italic;">No services selected yet. Please select from the circle above.</span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Site Location & Wall Drawing -->
+                <div class="quote-step" id="step-map">
+                    <div class="quote-step-header">
+                        <div class="step-number">2</div>
+                        <h3>Mark Your Retaining Wall Location</h3>
+                        <span class="optional-badge">Optional but Recommended</span>
+                    </div>
+                    <p class="quote-step-description">
+                        ðŸ—ºï¸ <strong>Find your property and draw where you need retaining walls.</strong><br>
+                        Search for your address, toggle property boundaries on, then use the drawing tool to mark wall locations. 
+                        This helps us understand your site and provide a more accurate quote. You can draw multiple walls if needed.
+                    </p>
+                    
+                    <div class="map-controls">
+                        <div class="address-search">
+                            <div class="address-search-wrapper">
+                                <input type="text" id="address-input" placeholder="Start typing your NZ address..." autocomplete="off">
+                                <button id="search-btn" onclick="selectFirstSuggestion()">ðŸ” Search</button>
+                            </div>
+                            <div id="address-suggestions" class="address-suggestions"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="layer-toggles" style="margin-bottom: var(--spacing-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-sm);">
+                        <label class="layer-toggle-item" id="boundaries-label" title="Show/hide NZ property boundary lines">
+                            <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()">
+                            <span>ðŸ  Property Boundaries</span>
+                        </label>
+                        <div class="map-layer-toggle">
+                            <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
+                            <button id="satellite-btn" onclick="setMapLayer('satellite')">Satellite</button>
+                        </div>
+                    </div>
+                    
+                    <div id="map-container">
+                        <div id="site-map"></div>
+
+                    </div>
+                    
+                    <div class="drawing-info">
+                        <h4>ðŸ“ How to Draw Your Walls</h4>
+                        <p>
+                            <strong>1.</strong> Click the <span style="background: #4A90A4; color: white; padding: 2px 8px; border-radius: 4px; font-weight: 600;">ðŸ“ Draw Wall</span> tool on the left side of the map<br>
+                            <strong>2.</strong> Click on the map to place points along your wall line<br>
+                            <strong>3.</strong> Double-click or click "Finish" to complete the wall<br>
+                            <strong>4.</strong> The distance will be calculated automatically<br>
+                            <strong>5.</strong> Draw additional walls if needed - each will be tracked separately
+                        </p>
+                    </div>
+                    
+                    <div id="drawn-walls-container" class="drawn-walls-list" style="display: none;">
+                        <h4>ðŸ§± Your Marked Walls</h4>
+                        <div id="walls-list"></div>
+                        <div id="total-length-display" class="total-length"></div>
+                        <button id="download-map-btn" onclick="downloadMapSnapshot()" style="margin-top: var(--spacing-md); padding: 14px 20px; background: linear-gradient(135deg, var(--slate) 0%, #34495e 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);">
+                            ðŸ“¥ Download Map Image
+                        </button>
+                        <div class="walls-info-note">
+                            <strong>ðŸ“ Service Areas:</strong> We operate across Auckland and the North Waikato region. If your site is outside our service area, please contact us to discuss possibilities.<br><br>
+                            <strong>ðŸ”¬ Site-Specific Surveys:</strong> For optimal designs, we may recommend geotechnical surveys or additional site assessments depending on your wall height, soil conditions, and location. These will be quoted separately if needed.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Wall Type Selection -->
+                <div class="quote-step" id="step-wall-type">
+                    <div class="quote-step-header">
+                        <div class="step-number">3</div>
+                        <h3>What Type of Retaining Wall?</h3>
+                    </div>
+                    <p class="quote-step-description">
+                        You don't need to decide this now. If you have an idea, feel free to select one or more options, or simply leave this blank. Our experienced team will take care of the rest and recommend the best retaining wall solution for your site.
+                    </p>
+                    
+                    <div class="wall-type-grid">
+                        <!-- Gravity Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'gravity')">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/Concrete Animation.jfif" alt="Gravity (Concrete)">
+                                </div>
+                            </div>
+                            <div class="wall-card-content">
+                                <label for="wall-gravity" class="wall-card-title">Gravity (Concrete)</label>
+                                <input type="checkbox" id="wall-gravity" name="wall-type" value="Gravity (Concrete)" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>âœ…</strong> Cost-effective for small heights</li>
+                                    <li><strong>âœ…</strong> Durable and long-lasting</li>
+                                    <li><strong>âœ…</strong> Aesthetic face with numerous finishes to choose from</li>
+                                    <li><span class="limitation">â€”</span> Heavier appearance</li>
+                                    <li><span class="limitation">â€”</span> Limited height capacity</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- MSE Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'mse')">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/icons/mse-wall-icon.svg" alt="MSE (Mechanically Stabilized Earth)">
+                                </div>
+                            </div>
+                            <div class="wall-card-content">
+                                <label for="wall-mse" class="wall-card-title">MSE (Mechanically Stabilized Earth)</label>
+                                <input type="checkbox" id="wall-mse" name="wall-type" value="MSE (Mechanically Stabilized Earth)" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>âœ…</strong> Great for tall walls (2m+)</li>
+                                    <li><strong>âœ…</strong> Flexible & seismic-resistant</li>
+                                    <li><strong>âœ…</strong> Excellent value at height</li>
+                                    <li><span class="limitation">â€”</span> Requires engineering design</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Timber Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'timber')">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/Timber Animation.jfif" alt="Timber">
+                                </div>
+                            </div>
+                            <div class="wall-card-content">
+                                <label for="wall-timber" class="wall-card-title">Timber</label>
+                                <input type="checkbox" id="wall-timber" name="wall-type" value="Timber" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>âœ…</strong> Natural aesthetic appeal</li>
+                                    <li><strong>âœ…</strong> Good for landscaping</li>
+                                    <li><strong>âœ…</strong> Relatively affordable</li>
+                                    <li><span class="limitation">â€”</span> Maintenance required</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Landscape Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'landscape')">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/icons/stone-landscape-icon.svg" alt="Landscape/Stone">
+                                </div>
+                            </div>
+                            <div class="wall-card-content">
+                                <label for="wall-landscape" class="wall-card-title">Landscape/Stone</label>
+                                <input type="checkbox" id="wall-landscape" name="wall-type" value="Landscape" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>âœ…</strong> Beautiful natural look</li>
+                                    <li><strong>âœ…</strong> Great for gardens</li>
+                                    <li><strong>âœ…</strong> Various colors/styles</li>
+                                    <li><span class="limitation">â€”</span> Limited to modest heights</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Hybrid Wall -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'hybrid')">
+                            <div class="wall-card-image">
+                                <div class="icon-circle">
+                                    <img src="images/Steel and Timber Animation.jfif" alt="Hybrid">
+                                </div>
+                            </div>
+                            <div class="wall-card-content">
+                                <label for="wall-hybrid" class="wall-card-title">Hybrid</label>
+                                <input type="checkbox" id="wall-hybrid" name="wall-type" value="Hybrid" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>âœ…</strong> Best of both worlds</li>
+                                    <li><strong>âœ…</strong> Versatile design</li>
+                                    <li><strong>âœ…</strong> Custom solutions</li>
+                                    <li><span class="limitation">â€”</span> Requires planning</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Other -->
+                        <div class="wall-type-card" onclick="toggleWallType(this, 'other')">
+                            <div class="wall-card-image">
+                                <div class="icon-circle" style="background: linear-gradient(135deg, #f0f4f8 0%, #e8eef2 100%);">
+                                    <svg width="70" height="70" viewBox="0 0 70 70">
+                                        <!-- Question mark with modern styling -->
+                                        <circle cx="35" cy="35" r="30" fill="none" stroke="#4A90A4" stroke-width="2" stroke-dasharray="4 2" opacity="0.4"/>
+                                        <text x="35" y="45" text-anchor="middle" font-size="36" font-weight="600" fill="#4A90A4">?</text>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="wall-card-content">
+                                <label for="wall-other" class="wall-card-title">Other/Not Sure</label>
+                                <input type="checkbox" id="wall-other" name="wall-type" value="Other" class="wall-checkbox">
+                                <ul class="wall-pros-cons">
+                                    <li><strong>ðŸ“</strong> Tell us what you're thinking</li>
+                                    <li><strong>ðŸ’¡</strong> We'll guide you to the best solution</li>
+                                    <li><strong>âœ…</strong> No pressure - we explore options</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="text" id="other-wall-type" class="other-input" placeholder="Please describe the wall type you're looking for or your project requirements...">
+                </div>
+
+                <!-- Step 4: Geotechnical Report -->
+                <div class="quote-step" id="step-geotech">
+                    <div class="quote-step-header">
+                        <div class="step-number">4</div>
+                        <h3>Do You Have a Geotechnical Report?</h3>
+                    </div>
+                    <p class="quote-step-description">
+                        ðŸ”¬ <strong>A geotechnical report helps us understand your soil conditions.</strong><br>
+                        This information is essential for designing a safe, durable retaining wall. If you don't have one, we can arrange this as part of your project.
+                    </p>
+                    
+                    <div class="geotech-options" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                        <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'have-report')">
+                            <input type="radio" name="geotech-status" value="have-report" style="margin-top: 4px;">
+                            <div>
+                                <strong style="color: var(--charcoal);">âœ… Yes, I have a geotechnical report</strong>
+                                <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">Great! Please upload it in the documents section below, or send it to us via email.</p>
+                            </div>
+                        </label>
+                        
+                        <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'need-report')">
+                            <input type="radio" name="geotech-status" value="need-report" style="margin-top: 4px;">
+                            <div>
+                                <strong style="color: var(--charcoal);">ðŸ“‹ No, please include geotechnical investigation in the quote</strong>
+                                <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">We'll arrange a site investigation to assess soil conditions and provide recommendations.</p>
+                            </div>
+                        </label>
+                        
+                        <label class="geotech-option" style="display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md); border: 2px solid var(--border-gray); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease;" onclick="selectGeotechOption(this, 'not-sure')">
+                            <input type="radio" name="geotech-status" value="not-sure" style="margin-top: 4px;">
+                            <div>
+                                <strong style="color: var(--charcoal);">â“ I'm not sure / Need advice</strong>
+                                <p style="margin: var(--spacing-xs) 0 0; color: var(--slate); font-size: 0.9rem;">No problem! We'll assess your requirements and advise whether a geotech report is needed for your project.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Step 5: Your Details & Notes -->
+                <div class="quote-step" id="step-details">
+                    <div class="quote-step-header">
+                        <div class="step-number">5</div>
+                        <h3>Your Details & Project Notes</h3>
+                    </div>
+                    <p class="quote-step-description">
+                        Tell us about yourself and your project. The more information you provide, the more accurate and helpful our response will be.
+                    </p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-md);">
+                        <div>
+                            <label for="client-name" style="display: block; font-weight: 600; margin-bottom: 8px;">Full Name *</label>
+                            <input type="text" id="client-name" placeholder="Your full name" required style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: var(--radius-md); font-size: 1rem;">
+                        </div>
+                        <div>
+                            <label for="client-email" style="display: block; font-weight: 600; margin-bottom: 8px;">Email Address *</label>
+                            <input type="email" id="client-email" placeholder="your@email.com" required style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: var(--radius-md); font-size: 1rem;">
+                        </div>
+                        <div>
+                            <label for="client-phone" style="display: block; font-weight: 600; margin-bottom: 8px;">Phone Number</label>
+                            <input type="tel" id="client-phone" placeholder="021 123 4567" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: var(--radius-md); font-size: 1rem;">
+                        </div>
+                        <div>
+                            <label for="client-company" style="display: block; font-weight: 600; margin-bottom: 8px;">Company/Project Name</label>
+                            <input type="text" id="client-company" placeholder="Optional" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: var(--radius-md); font-size: 1rem;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: var(--spacing-lg);">
+                        <label for="client-notes" style="display: block; font-weight: 600; margin-bottom: 8px;">ðŸ“ Project Notes & Questions</label>
+                        <textarea id="client-notes" rows="5" placeholder="Tell us about your project... &#10;&#10;â€¢ What's the purpose of the wall? &#10;â€¢ Any specific materials you prefer?&#10;â€¢ Timeline requirements?&#10;â€¢ Budget range?&#10;â€¢ Any access challenges to the site?&#10;â€¢ Questions for our team?" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: var(--radius-md); font-size: 1rem; resize: vertical; font-family: inherit;"></textarea>
+                    </div>
+                    
+                    <div style="margin-top: var(--spacing-lg);">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">ðŸ“Ž Attach Site Photos or Documents</label>
+                        <p style="color: var(--slate); font-size: 0.9rem; margin-bottom: var(--spacing-sm);">Upload photos of your site, existing plans, or any relevant documents</p>
+                        <p style="color: #e74c3c; font-size: 0.85rem; margin-bottom: var(--spacing-sm);"><strong>Limits:</strong> Max 5MB per file, up to 5 files. Accepted: Images (JPG, PNG), PDFs, Word docs</p>
+                        <div id="file-upload-area" style="border: 2px dashed var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-xl); text-align: center; cursor: pointer; transition: all 0.3s ease; background: var(--light-gray);">
+                            <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx" style="display: none;">
+                            <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">ðŸ“</div>
+                            <p style="margin: 0; font-weight: 500;">Drop files here or click to browse</p>
+                            <p style="margin: var(--spacing-xs) 0 0; font-size: 0.85rem; color: var(--slate);">JPG, PNG, PDF, Word documents (max 5MB each)</p>
+                        </div>
+                        <div id="file-list" style="margin-top: var(--spacing-md);"></div>
+                        <div id="file-size-warning" style="display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; color: #856404; font-size: 0.9rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Quote Summary -->
+                <div class="quote-summary" id="quote-summary">
+                    <h3>ðŸ“‹ Your Quote Request Summary</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl);">
+                        <div>
+                            <div class="summary-section">
+                                <h4>Selected Services</h4>
+                                <ul id="summary-services">
+                                    <li style="color: rgba(255,255,255,0.6); font-style: italic;">None selected</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h4>Site Location</h4>
+                                <p id="summary-location">Not specified</p>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h4>Wall Measurements</h4>
+                                <p id="summary-walls">No walls drawn</p>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h4>Wall Types</h4>
+                                <p id="summary-wall-types">None selected</p>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h4>Geotechnical Report</h4>
+                                <p id="summary-geotech">Not specified</p>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h4>Contact Details</h4>
+                                <p id="summary-contact">Not provided</p>
+                            </div>
+                            
+                            <div class="summary-section">
+                                <h4>Attachments</h4>
+                                <p id="summary-attachments">No files attached</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="summary-section">
+                                <h4>ðŸ“¸ Site Map Preview</h4>
+                                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: var(--spacing-md);">Capture a snapshot of your marked walls for reference</p>
+                                <div id="map-snapshot-container" style="background: linear-gradient(135deg, rgba(44, 95, 127, 0.2) 0%, rgba(74, 144, 164, 0.1) 100%); border-radius: var(--radius-md); padding: var(--spacing-lg); min-height: 250px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.3);">
+                                    <div id="snapshot-placeholder" style="color: rgba(255,255,255,0.7); text-align: center;">
+                                        <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">ðŸ—ºï¸</div>
+                                        <p style="margin: 0;">Map snapshot will appear here<br><span style="font-size: 0.85rem; opacity: 0.9;">when you draw and capture your wall locations</span></p>
+                                    </div>
+                                    <img id="map-snapshot-img" style="max-width: 100%; border-radius: var(--radius-md); display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+                                </div>
+                                <button id="capture-map-btn" onclick="manualCaptureSnapshot()" style="margin-top: var(--spacing-md); padding: 12px 20px; background: linear-gradient(135deg, var(--teal-accent) 0%, #2C5F7F 100%); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; width: 100%; font-size: 0.95rem; font-weight: 600; transition: all 0.3s ease;">
+                                    ðŸ“¸ Capture Map Snapshot
+                                </button>
+                                <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 8px; text-align: center;">ðŸ’¡ Make sure your wall markings are visible before capturing. This snapshot will be included with your quote request.</p>
+                            </div>
+                            
+                            <div class="summary-section" style="border-bottom: none;">
+                                <h4>Project Notes</h4>
+                                <p id="summary-notes" style="font-style: italic; opacity: 0.7;">No notes added</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: var(--spacing-xl); padding-top: var(--spacing-xl); border-top: 1px solid rgba(255,255,255,0.2);">
+                        <div id="validation-message" style="display: none; background: #ff5252; color: white; padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-md); text-align: center;">
+                            Please fill in required fields (Name and Email)
+                        </div>
+                        
+                        <button type="button" class="submit-quote-btn" id="submit-quote-btn" onclick="submitQuoteRequest()">
+                            ðŸš€ Submit Quote Request
+                        </button>
+                        <p style="text-align: center; margin-top: var(--spacing-md); font-size: 0.9rem; opacity: 0.8;">
+                            We'll review your request and get back to you within 24-48 hours with a detailed response.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <footer>
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <img src="images/Logos/re wall logo WHITE.png" alt="ReWall Logo" style="width: 180px; height: auto; margin-bottom: var(--spacing-md);">
+                        <p>Premium retaining wall solutions with expert engineering, smart digital tools, and trusted construction partners.</p>
+                        <div class="footer-contact-inline">
+                            <a href="mailto:info@rewall.nz">ðŸ“§ info@rewall.nz</a>
+                            <a href="tel:+64273941127">ðŸ“ž 027 394 1127</a>
+                        </div>
+                    </div>
+                    <div class="footer-links-group">
+                        <div class="footer-col">
+                            <h4>Quick Links</h4>
+                            <ul>
+                                <li><a href="index.html">Home</a></li>
+                                <li><a href="about.html">About</a></li>
+                                <li><a href="services.html">Services</a></li>
+                                <li><a href="gallery.html">Gallery</a></li>
+                                <li><a href="blog.html">Blog</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Services</h4>
+                            <ul>
+                                <li><a href="services.html">Full-Service Solutions</a></li>
+                                <li><a href="services.html">Engineering Design</a></li>
+                                <li><a href="services.html">Council Submissions</a></li>
+                                <li><a href="services.html">Construction</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Get In Touch</h4>
+                            <ul>
+                                <li><a href="contact.html">Contact Form</a></li>
+                                <li><a href="quote.html">Plan & Quote</a></li>
+                                <li><a href="#" onclick="openDesignPortal(); return false;">Design Portal</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ReWall NZ. All rights reserved. | <a href="terms.html">Terms of Use</a></p>
+            </div>
+        </footer>
+
+        <!-- Design Portal Modal -->
+        <div class="design-portal-modal" id="design-portal-modal">
+            <div class="design-portal-content">
+                <button class="design-portal-close" onclick="closeDesignPortal()">&times;</button>
+                <div class="design-portal-header">
+                    <h2>ðŸ” Design Portal</h2>
+                    <p>Professional wall design tools for clients</p>
+                </div>
+                <div class="design-portal-body">
+                    <span class="coming-soon-badge">ðŸš€ Coming Soon</span>
+                    <h3>We're Building Something Amazing</h3>
+                    <p class="portal-message">Our interactive Design Portal is currently under development. Soon you'll be able to visualize your retaining wall, explore materials, and collaborate with our engineers in real-time.</p>
+                    
+                    <div class="design-portal-features">
+                        <h4>What's Coming:</h4>
+                        <ul>
+                            <li>3D wall visualization</li>
+                            <li>Material & finish explorer</li>
+                            <li>Real-time cost estimates</li>
+                            <li>Direct engineer collaboration</li>
+                            <li>Project timeline tracking</li>
+                        </ul>
+                    </div>
+                    
+                    <p class="portal-message" style="margin-bottom: var(--spacing-sm); font-weight: 600;">Get notified when we launch:</p>
+                    <form class="design-portal-notify" action="https://formsubmit.co/info@rewall.nz" method="POST">
+                        <input type="hidden" name="_subject" value="Design Portal - Early Access Request">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                        <button type="submit">Notify Me</button>
+                    </form>
+                    
+                    <p class="design-portal-alt">Ready to start now? <a href="quote.html">Get a quote today â†’</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/scripts.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    
+    <!-- html2canvas for map snapshots -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- dom-to-image for better canvas capture -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    
+    <!-- Quote Builder JavaScript -->
+    <script>
+        // ==========================================
+        // QUOTE BUILDER - Interactive Map & Tools
+        // ==========================================
+        
+        let map;
+        let drawnItems;
+        let drawControl;
+        let currentLayer = 'map';
+        let mapTileLayer;
+        let satelliteTileLayer;
+        let boundaryLayer;
+        let contourLayer;
+        let drawnWalls = [];
+        let wallCounter = 0;
+        let searchMarker;
+        let selectedAddress = '';
+        let selectedCoordinates = null;
+        let mapSnapshot = null;
+        let uploadedFiles = [];
+        let searchTimeout = null;
+        
+        // LINZ Boundary layer variables (global scope)
+        let boundaryGeoJson = null;
+        let boundaryLoadingState = false;
+        let boundaryRefreshTimeout = null;
+        let selectedParcelInfo = null; // Stores clicked property parcel data
+        
+        // ==========================================
+        // LINZ PROPERTY BOUNDARIES - WFS via Netlify Function
+        // ==========================================
+
+        // Initialize boundary layer (empty at start)
+        function initializeBoundaryLayer() {
+            if (boundaryGeoJson) {
+                map.removeLayer(boundaryGeoJson);
+            }
+            
+            boundaryGeoJson = L.geoJSON(null, {
+                style: {
+                    color: '#FF6B35',        // Orange/red for visibility
+                    weight: 2,
+                    opacity: 0.8,
+                    fillColor: 'transparent',
+                    fillOpacity: 0
+                },
+                onEachFeature: function(feature, layer) {
+                    // Add popup with property info and store on click
+                    if (feature.properties) {
+                        const props = feature.properties;
+                        let popupContent = '<div style="font-size: 12px;">';
+                        popupContent += '<strong>Property Parcel</strong><br>';
+                        if (props.id) popupContent += `ID: ${props.id}<br>`;
+                        if (props.appellation) popupContent += `${props.appellation}<br>`;
+                        if (props.affected_surveys) popupContent += `Survey: ${props.affected_surveys}<br>`;
+                        popupContent += '</div>';
+                        layer.bindPopup(popupContent);
+
+                        // Store parcel info when user clicks this boundary
+                        layer.on('click', function() {
+                            selectedParcelInfo = {
+                                id: props.id || '',
+                                appellation: props.appellation || '',
+                                survey: props.affected_surveys || ''
+                            };
+                        });
+                    }
+                }
+            });
+            
+            // Keep reference for backwards compatibility
+            boundaryLayer = boundaryGeoJson;
+        }
+
+        // Load LINZ boundaries for current map view
+        async function loadBoundariesForView() {
+            if (boundaryLoadingState) {
+                console.log('Boundary load already in progress...');
+                return;
+            }
+            
+            boundaryLoadingState = true;
+            
+            try {
+                const bounds = map.getBounds();
+                const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+                
+                console.log('Fetching LINZ boundaries for bbox:', bbox);
+                
+                // Call Netlify function
+                const response = await fetch(
+                    `/.netlify/functions/linzApi?bbox=${encodeURIComponent(bbox)}&layer=layer-50772&count=2000`
+                );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.message || data.error);
+                }
+                
+                console.log(`Loaded ${data.features?.length || 0} property boundaries`);
+                
+                // Clear existing boundaries and add new ones
+                if (boundaryGeoJson) {
+                    boundaryGeoJson.clearLayers();
+                    boundaryGeoJson.addData(data);
+                }
+                
+            } catch (error) {
+                console.error('Error loading boundaries:', error);
+                throw error; // Re-throw to be caught by toggleBoundaries
+            } finally {
+                boundaryLoadingState = false;
+            }
+        }
+
+        // Auto-refresh boundaries when map moves (debounced)
+        function scheduleBoundaryRefresh() {
+            if (!document.getElementById('boundaries-toggle')?.checked) {
+                return;
+            }
+            
+            clearTimeout(boundaryRefreshTimeout);
+            boundaryRefreshTimeout = setTimeout(() => {
+                loadBoundariesForView();
+            }, 1000); // Wait 1 second after map stops moving
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if returning from FormSubmit submission
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('submitted') === 'true') {
+                showSuccessMessage();
+                // Clear the URL parameter
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            initializeMap();
+            initializeAddressSearch();
+            initializeFileUpload();
+            updateQuoteSummary();
+        });
+        
+        // Show success message after form submission
+        function showSuccessMessage() {
+            const modal = document.createElement('div');
+            modal.id = 'success-modal';
+            modal.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                    <div style="background: white; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                        <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 10px;">âœ…</div>
+                            <h2 style="color: white; margin: 0;">Quote Request Sent!</h2>
+                        </div>
+                        <div style="padding: 30px; text-align: center;">
+                            <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;">
+                                <strong>Your quote request has been sent to ReWall!</strong>
+                            </p>
+                            <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #28a745; text-align: left;">
+                                <p style="margin: 0 0 10px; color: #155724; font-weight: 600;">ðŸ“§ What happens next:</p>
+                                <ul style="margin: 0; padding-left: 20px; color: #155724;">
+                                    <li>You'll receive a confirmation email shortly</li>
+                                    <li>Our team will review your project details</li>
+                                    <li>We'll contact you within 1-2 business days</li>
+                                </ul>
+                            </div>
+                            <p style="color: var(--slate); margin-bottom: 20px;">
+                                Questions? Call us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a>
+                            </p>
+                            <button onclick="document.getElementById('success-modal').remove();" style="padding: 14px 30px; background: var(--teal-accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Scroll to quote builder
+        function scrollToQuoteBuilder() {
+            document.getElementById('quote-builder').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+        
+        // ==========================================
+        // ADDRESS SEARCH WITH AUTOCOMPLETE
+        // ==========================================
+        
+        function initializeAddressSearch() {
+            const input = document.getElementById('address-input');
+            const suggestions = document.getElementById('address-suggestions');
+            
+            // Debounced search as user types
+            input.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length < 3) {
+                    suggestions.classList.remove('active');
+                    return;
+                }
+                
+                // Show loading state
+                suggestions.innerHTML = '<div class="address-searching">Searching...</div>';
+                suggestions.classList.add('active');
+                
+                // Debounce the search
+                searchTimeout = setTimeout(() => searchAddresses(query), 300);
+            });
+            
+            // Close suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.address-search')) {
+                    suggestions.classList.remove('active');
+                }
+            });
+            
+            // Handle keyboard navigation
+            input.addEventListener('keydown', function(e) {
+                const items = suggestions.querySelectorAll('.address-suggestion');
+                const active = suggestions.querySelector('.address-suggestion.highlighted');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (active) {
+                        active.classList.remove('highlighted');
+                        const next = active.nextElementSibling;
+                        if (next) next.classList.add('highlighted');
+                        else items[0]?.classList.add('highlighted');
+                    } else {
+                        items[0]?.classList.add('highlighted');
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (active) {
+                        active.classList.remove('highlighted');
+                        const prev = active.previousElementSibling;
+                        if (prev) prev.classList.add('highlighted');
+                        else items[items.length - 1]?.classList.add('highlighted');
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (active) {
+                        active.click();
+                    } else if (items.length > 0) {
+                        items[0].click();
+                    }
+                } else if (e.key === 'Escape') {
+                    suggestions.classList.remove('active');
+                }
+            });
+        }
+        
+        async function searchAddresses(query) {
+            const suggestions = document.getElementById('address-suggestions');
+            
+            try {
+                // Use multiple search sources for better NZ coverage
+                // LINZ Address API provides the most specific NZ addresses
+                const searches = [
+                    // LINZ NZ Address Locator - best for specific NZ addresses
+                    fetch(`https://api.addressfinder.io/api/nz/address/autocomplete/?key=YPFNVGRTQDL9KE7MJAHU&q=${encodeURIComponent(query)}&max=8&format=json`).catch(() => null),
+                    // Nominatim as backup with NZ focus and street-level detail
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=nz&limit=8&addressdetails=1&bounded=1&viewbox=166.0,-47.5,178.5,-34.0`),
+                    // Photon (another geocoding service)
+                    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query + ' New Zealand')}&limit=5`)
+                ];
+                
+                const [addressFinderRes, nominatimRes, photonRes] = await Promise.allSettled(searches);
+                
+                let results = [];
+                
+                // Process AddressFinder results first (most specific NZ addresses)
+                if (addressFinderRes.status === 'fulfilled' && addressFinderRes.value) {
+                    try {
+                        const afData = await addressFinderRes.value.json();
+                        if (afData.completions) {
+                            for (const addr of afData.completions) {
+                                // Get full address details with coordinates
+                                try {
+                                    const metaRes = await fetch(`https://api.addressfinder.io/api/nz/address/metadata/?key=YPFNVGRTQDL9KE7MJAHU&pxid=${addr.pxid}&format=json`);
+                                    const meta = await metaRes.json();
+                                    if (meta.x && meta.y) {
+                                        results.push({
+                                            display: addr.a,
+                                            main: addr.a.split(',')[0],
+                                            secondary: addr.a.split(',').slice(1).join(',').trim(),
+                                            lat: parseFloat(meta.y),
+                                            lon: parseFloat(meta.x),
+                                            type: 'address',
+                                            source: 'addressfinder'
+                                        });
+                                    }
+                                } catch (e) {
+                                    // If metadata fails, skip this result
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log('AddressFinder parse error:', e);
+                    }
+                }
+                
+                // Process Nominatim results as backup
+                if (nominatimRes.status === 'fulfilled' && results.length < 5) {
+                    const nominatimData = await nominatimRes.value.json();
+                    nominatimData.forEach(r => {
+                        // Avoid duplicates and prioritize house/building addresses
+                        const mainAddr = r.address?.house_number 
+                            ? `${r.address.house_number} ${r.address.road || ''}`.trim()
+                            : (r.name || r.display_name.split(',')[0]);
+                        const secondaryAddr = [r.address?.suburb, r.address?.city || r.address?.town, r.address?.postcode].filter(Boolean).join(', ');
+                        
+                        if (!results.find(existing => existing.main === mainAddr)) {
+                            results.push({
+                                display: r.display_name,
+                                main: mainAddr,
+                                secondary: secondaryAddr || r.display_name.split(',').slice(1, 3).join(','),
+                                lat: parseFloat(r.lat),
+                                lon: parseFloat(r.lon),
+                                type: r.type,
+                                source: 'nominatim'
+                            });
+                        }
+                    });
+                }
+                
+                // Process Photon results (add unique ones)
+                if (photonRes.status === 'fulfilled' && results.length < 5) {
+                    try {
+                        const photonData = await photonRes.value.json();
+                        if (photonData.features) {
+                            photonData.features.forEach(f => {
+                                if (results.length < 8 && f.properties.country === 'New Zealand') {
+                                    const main = f.properties.name || f.properties.street || '';
+                                    const secondary = [f.properties.city, f.properties.state].filter(Boolean).join(', ');
+                                    
+                                    // Avoid duplicates
+                                    if (!results.find(r => r.main === main && r.secondary === secondary)) {
+                                        results.push({
+                                            display: `${main}, ${secondary}, New Zealand`,
+                                            main: main,
+                                            secondary: secondary,
+                                            lat: f.geometry.coordinates[1],
+                                            lon: f.geometry.coordinates[0],
+                                            type: f.properties.type,
+                                            source: 'photon'
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.log('Photon parse error:', e);
+                    }
+                }
+                
+                if (results.length === 0) {
+                    suggestions.innerHTML = '<div class="address-suggestion"><span class="suggestion-main">No results found</span><span class="suggestion-secondary">Try a different search term</span></div>';
+                } else {
+                    suggestions.innerHTML = results.map((r, i) => `
+                        <div class="address-suggestion" data-lat="${r.lat}" data-lon="${r.lon}" data-display="${r.display}">
+                            <div class="suggestion-main">${highlightMatch(r.main, document.getElementById('address-input').value)}</div>
+                            <div class="suggestion-secondary">${r.secondary || ''}</div>
+                        </div>
+                    `).join('');
+                    
+                    // Add click handlers
+                    suggestions.querySelectorAll('.address-suggestion').forEach(el => {
+                        el.addEventListener('click', () => selectAddress(el));
+                    });
+                }
+                
+                suggestions.classList.add('active');
+                
+            } catch (error) {
+                console.error('Address search error:', error);
+                suggestions.innerHTML = '<div class="address-suggestion"><span class="suggestion-main">Search error</span><span class="suggestion-secondary">Please try again</span></div>';
+            }
+        }
+        
+        function highlightMatch(text, query) {
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<strong style="color: var(--teal-accent);">$1</strong>');
+        }
+        
+        function selectAddress(element) {
+            const lat = parseFloat(element.dataset.lat);
+            const lon = parseFloat(element.dataset.lon);
+            const display = element.dataset.display;
+            
+            // Update input
+            document.getElementById('address-input').value = display;
+            document.getElementById('address-suggestions').classList.remove('active');
+            
+            // Store address
+            selectedAddress = display;
+            selectedCoordinates = { lat, lon };
+            
+            // Remove existing marker
+            if (searchMarker) {
+                map.removeLayer(searchMarker);
+            }
+            
+            // Add new marker with custom icon
+            const markerIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="font-size: 32px; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));">ðŸ“</div>',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32]
+            });
+            
+            searchMarker = L.marker([lat, lon], { icon: markerIcon }).addTo(map);
+            searchMarker.bindPopup(`<strong>Your Site</strong><br>${display}`).openPopup();
+            
+            // Zoom to location
+            map.setView([lat, lon], 18);
+            
+            // Update summary
+            updateQuoteSummary();
+            
+            // Auto-capture map after a short delay
+            setTimeout(() => {
+                if (drawnWalls.length > 0) {
+                    captureMapSnapshot();
+                }
+            }, 1000);
+        }
+        
+        function selectFirstSuggestion() {
+            const firstSuggestion = document.querySelector('.address-suggestion');
+            if (firstSuggestion) {
+                selectAddress(firstSuggestion);
+            } else {
+                // If no suggestions, do a search
+                const query = document.getElementById('address-input').value.trim();
+                if (query.length >= 3) {
+                    searchAddresses(query);
+                }
+            }
+        }
+        
+        // ==========================================
+        // LEAFLET MAP INITIALIZATION
+        // ==========================================
+        
+        function initializeMap() {
+            // Center on New Zealand - maxZoom 22 allows zooming very close to property level
+            map = L.map('site-map', {
+                center: [-41.2865, 174.7762],
+                zoom: 6,
+                zoomControl: true,
+                maxZoom: 22
+            });
+            
+            // Map tile layer (OpenStreetMap)
+            mapTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxNativeZoom: 19,
+                maxZoom: 22
+            });
+            
+            // Satellite tile layer (ESRI) - higher zoom with upscaling
+            satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxNativeZoom: 19,
+                maxZoom: 22
+            });
+            
+            // Start with map view
+            mapTileLayer.addTo(map);
+            
+            // Initialize drawing layer
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+            
+            // Initialize boundary layer
+            initializeBoundaryLayer();
+            
+            // Add drawing controls
+            drawControl = new L.Control.Draw({
+                position: 'topleft',
+                edit: {
+                    featureGroup: drawnItems,
+                    remove: true,
+                    edit: true
+                },
+                draw: {
+                    polygon: false,
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false,
+                    marker: false,
+                    polyline: {
+                        shapeOptions: {
+                            color: '#FF6B35',
+                            weight: 6,
+                            opacity: 1
+                        },
+                        metric: true,
+                        showLength: true,
+                        feet: false
+                    }
+                }
+            });
+            map.addControl(drawControl);
+            
+            // Enhanced drawing tool interactions
+            const drawTooltip = document.getElementById('draw-tooltip');
+            let tooltipHidden = false;
+            
+            // Hide orange label when user clicks the draw button itself
+            setTimeout(function() {
+                var drawBtn = document.querySelector('.leaflet-draw-draw-polyline');
+                if (drawBtn) {
+                    drawBtn.addEventListener('click', function() {
+                        // Add class directly to the button element
+                        this.classList.add('draw-used');
+                        if (!tooltipHidden && drawTooltip) {
+                            drawTooltip.classList.add('hidden');
+                            tooltipHidden = true;
+                        }
+                    });
+                }
+            }, 500);
+            
+            // Hide tooltip when user starts drawing
+            map.on('draw:drawstart', function() {
+                if (!tooltipHidden) {
+                    drawTooltip.classList.add('hidden');
+                    tooltipHidden = true;
+                }
+                // Hide the orange Draw Wall label and mark as used
+                var drawBtn = document.querySelector('.leaflet-draw-draw-polyline');
+                if (drawBtn) {
+                    drawBtn.classList.add('drawing-active');
+                    drawBtn.classList.add('draw-used');
+                }
+            });
+
+            // Show the label again when drawing stops (only on hover via CSS)
+            map.on('draw:drawstop', function() {
+                var drawBtn = document.querySelector('.leaflet-draw-draw-polyline');
+                if (drawBtn) drawBtn.classList.remove('drawing-active');
+            });
+            
+            // Show encouraging message when first wall is drawn
+            let firstWallDrawn = false;
+            map.on('draw:created', function(e) {
+                if (!firstWallDrawn) {
+                    firstWallDrawn = true;
+                    // Show success message briefly
+                    const successMsg = document.createElement('div');
+                    successMsg.style.cssText = 'position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #28a745; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 20px rgba(40,167,69,0.4); z-index: 1001; animation: slideDown 0.3s ease;';
+                    successMsg.textContent = 'âœ… Great! Wall marked successfully!';
+                    document.getElementById('map-container').appendChild(successMsg);
+                    setTimeout(() => successMsg.remove(), 3000);
+                }
+            });
+            
+            // Handle draw events
+            map.on('draw:created', handleDrawCreated);
+            map.on('draw:deleted', handleDrawDeleted);
+            map.on('draw:edited', handleDrawEdited);
+        }
+        
+        // Toggle map layers
+        function setMapLayer(type) {
+            console.log('Switching to ' + type + ' view');
+            
+            // Remove both base layers first
+            if (map.hasLayer(mapTileLayer)) {
+                map.removeLayer(mapTileLayer);
+            }
+            if (map.hasLayer(satelliteTileLayer)) {
+                map.removeLayer(satelliteTileLayer);
+            }
+            
+            if (type === 'map') {
+                mapTileLayer.addTo(map);
+                // Bring to back so overlays show on top
+                mapTileLayer.bringToBack();
+                document.getElementById('map-btn').classList.add('active');
+                document.getElementById('satellite-btn').classList.remove('active');
+                console.log('âœ“ Map view activated');
+            } else if (type === 'satellite') {
+                satelliteTileLayer.addTo(map);
+                satelliteTileLayer.bringToBack();
+                document.getElementById('satellite-btn').classList.add('active');
+                document.getElementById('map-btn').classList.remove('active');
+                console.log('âœ“ Satellite view activated');
+            }
+            currentLayer = type;
+        }
+        
+        // Toggle property boundaries with WFS loading
+        async function toggleBoundaries() {
+            const checkbox = document.getElementById('boundaries-toggle');
+            const label = document.getElementById('boundaries-label');
+            
+            if (checkbox.checked) {
+                // Add loading state
+                label.classList.add('loading');
+                
+                try {
+                    console.log('Enabling LINZ boundary layer...');
+                    
+                    // Initialize if needed
+                    if (!boundaryGeoJson) {
+                        initializeBoundaryLayer();
+                    }
+                    
+                    // Add to map
+                    boundaryGeoJson.addTo(map);
+                    
+                    // Load boundaries for current view
+                    await loadBoundariesForView();
+                    
+                    // Keep boundaries above base layer but below drawn items
+                    if (drawnItems) {
+                        drawnItems.bringToFront();
+                    }
+                    
+                    // Remove loading, add active
+                    label.classList.remove('loading');
+                    label.classList.add('active');
+                    console.log('âœ“ Boundary layer enabled');
+                    
+                    // Add map event listeners for auto-refresh
+                    map.on('moveend', scheduleBoundaryRefresh);
+                    map.on('zoomend', scheduleBoundaryRefresh);
+                    
+                } catch (error) {
+                    console.error('Error enabling boundaries:', error);
+                    label.classList.remove('loading');
+                    label.classList.add('error');
+                    checkbox.checked = false;
+                    setTimeout(() => label.classList.remove('error'), 3000);
+                    alert(`Failed to enable property boundaries: ${error.message}. Please try again.`);
+                }
+            } else {
+                // Remove from map
+                if (boundaryGeoJson) {
+                    map.removeLayer(boundaryGeoJson);
+                }
+                
+                label.classList.remove('active', 'loading', 'error');
+                console.log('âœ“ Boundary layer disabled');
+                
+                // Remove event listeners
+                map.off('moveend', scheduleBoundaryRefresh);
+                map.off('zoomend', scheduleBoundaryRefresh);
+            }
+        }
+        
+        // ==========================================
+        // WALL DRAWING FUNCTIONS
+        // ==========================================
+        
+        function handleDrawCreated(e) {
+            const layer = e.layer;
+            wallCounter++;
+
+            // Calculate length
+            const latlngs = layer.getLatLngs();
+            const distance = calculateTotalDistance(latlngs);
+
+            // Store wall data
+            layer.wallId = wallCounter;
+            layer.wallDistance = distance;
+
+            // Create label marker at midpoint of wall
+            const midIndex = Math.floor(latlngs.length / 2);
+            let labelLatLng;
+            if (latlngs.length === 2) {
+                labelLatLng = L.latLng(
+                    (latlngs[0].lat + latlngs[1].lat) / 2,
+                    (latlngs[0].lng + latlngs[1].lng) / 2
+                );
+            } else if (latlngs.length > 2 && latlngs.length % 2 === 0) {
+                labelLatLng = L.latLng(
+                    (latlngs[midIndex - 1].lat + latlngs[midIndex].lat) / 2,
+                    (latlngs[midIndex - 1].lng + latlngs[midIndex].lng) / 2
+                );
+            } else {
+                labelLatLng = latlngs[midIndex];
+            }
+
+            const labelIcon = L.divIcon({
+                className: '',
+                html: `<div class="wall-map-label">#${wallCounter}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+            const labelMarker = L.marker(labelLatLng, { icon: labelIcon, interactive: false });
+            labelMarker.addTo(map);
+
+            drawnWalls.push({
+                id: wallCounter,
+                layer: layer,
+                labelMarker: labelMarker,
+                distance: distance,
+                latlngs: latlngs.map(ll => ({ lat: ll.lat, lng: ll.lng }))
+            });
+
+            // Add styled popup
+            layer.bindPopup(`
+                <div style="text-align: center;">
+                    <strong style="color: #FF6B35;">Wall #${wallCounter}</strong><br>
+                    <span style="font-size: 1.2em; font-weight: bold;">~${formatDistance(distance)}</span>
+                    <span style="font-size: 0.75em; color: #666;">(est.)</span>
+                </div>
+            `);
+
+            // Add to map
+            drawnItems.addLayer(layer);
+
+            // Update UI
+            updateWallsList();
+            updateQuoteSummary();
+
+            // Show walls container
+            document.getElementById('drawn-walls-container').style.display = 'block';
+
+            // Auto-capture map snapshot
+            setTimeout(() => captureMapSnapshot(), 500);
+        }
+        
+        function handleDrawDeleted(e) {
+            e.layers.eachLayer(function(layer) {
+                const wall = drawnWalls.find(w => w.layer === layer);
+                if (wall && wall.labelMarker) {
+                    map.removeLayer(wall.labelMarker);
+                }
+                drawnWalls = drawnWalls.filter(w => w.layer !== layer);
+            });
+            updateWallsList();
+            updateQuoteSummary();
+
+            if (drawnWalls.length === 0) {
+                document.getElementById('drawn-walls-container').style.display = 'none';
+                document.getElementById('snapshot-placeholder').style.display = 'block';
+                document.getElementById('map-snapshot-img').style.display = 'none';
+            } else {
+                captureMapSnapshot();
+            }
+        }
+
+        function handleDrawEdited(e) {
+            e.layers.eachLayer(function(layer) {
+                const latlngs = layer.getLatLngs();
+                const distance = calculateTotalDistance(latlngs);
+                layer.wallDistance = distance;
+                layer.setPopupContent(`
+                    <div style="text-align: center;">
+                        <strong style="color: #FF6B35;">Wall #${layer.wallId}</strong><br>
+                        <span style="font-size: 1.2em; font-weight: bold;">~${formatDistance(distance)}</span>
+                        <span style="font-size: 0.75em; color: #666;">(est.)</span>
+                    </div>
+                `);
+
+                const wall = drawnWalls.find(w => w.layer === layer);
+                if (wall) {
+                    wall.distance = distance;
+                    wall.latlngs = latlngs.map(ll => ({ lat: ll.lat, lng: ll.lng }));
+
+                    // Reposition label marker to new midpoint
+                    if (wall.labelMarker) {
+                        const midIdx = Math.floor(latlngs.length / 2);
+                        let newLatLng;
+                        if (latlngs.length === 2) {
+                            newLatLng = L.latLng(
+                                (latlngs[0].lat + latlngs[1].lat) / 2,
+                                (latlngs[0].lng + latlngs[1].lng) / 2
+                            );
+                        } else if (latlngs.length > 2 && latlngs.length % 2 === 0) {
+                            newLatLng = L.latLng(
+                                (latlngs[midIdx - 1].lat + latlngs[midIdx].lat) / 2,
+                                (latlngs[midIdx - 1].lng + latlngs[midIdx].lng) / 2
+                            );
+                        } else {
+                            newLatLng = latlngs[midIdx];
+                        }
+                        wall.labelMarker.setLatLng(newLatLng);
+                    }
+                }
+            });
+            updateWallsList();
+            updateQuoteSummary();
+            captureMapSnapshot();
+        }
+        
+        function calculateTotalDistance(latlngs) {
+            let total = 0;
+            for (let i = 0; i < latlngs.length - 1; i++) {
+                total += latlngs[i].distanceTo(latlngs[i + 1]);
+            }
+            return total;
+        }
+        
+        function formatDistance(meters) {
+            if (meters >= 1000) {
+                return (meters / 1000).toFixed(2) + ' km';
+            }
+            return meters.toFixed(1) + ' m';
+        }
+        
+        function updateWallsList() {
+            const container = document.getElementById('walls-list');
+            const totalDisplay = document.getElementById('total-length-display');
+            
+            if (drawnWalls.length === 0) {
+                container.innerHTML = '<p style="color: var(--slate); font-style: italic; text-align: center; padding: var(--spacing-md);">ðŸ‘ˆ No walls drawn yet. Draw your first wall on the map above!</p>';
+                totalDisplay.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            let totalLength = 0;
+            
+            drawnWalls.forEach((wall) => {
+                totalLength += wall.distance;
+                const currentHeightLow = wall.heightLow || '';
+                const currentHeightHigh = wall.heightHigh || '';
+                html += `
+                    <div class="wall-item">
+                        <div class="wall-info">
+                            <span class="wall-label">Wall #${wall.id}</span>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <span style="color: var(--slate); font-size: 0.9rem;">ðŸ“ Est. Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
+                                <div class="height-input-group">
+                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Est. height:</span>
+                                    <input type="number" 
+                                        id="wall-height-low-${wall.id}" 
+                                        value="${currentHeightLow}" 
+                                        placeholder="Low" 
+                                        min="0.1" 
+                                        max="20" 
+                                        step="0.1"
+                                        onchange="updateWallHeightRange(${wall.id})">
+                                    <span style="color: var(--slate); font-size: 0.85rem;">to</span>
+                                    <input type="number" 
+                                        id="wall-height-high-${wall.id}" 
+                                        value="${currentHeightHigh}" 
+                                        placeholder="High" 
+                                        min="0.1" 
+                                        max="20" 
+                                        step="0.1"
+                                        onchange="updateWallHeightRange(${wall.id})">
+                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">m</span>
+                                    <span class="height-optional-tag">optional</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                            <button onclick="focusOnWall(${wall.id})">ðŸ“ View</button>
+                            <button class="wall-delete-btn" onclick="deleteWall(${wall.id})">ðŸ—‘ï¸ Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            totalDisplay.innerHTML = `<strong style="color: var(--primary-black); font-size: 1rem;">ðŸ“Š Est. Total Length:</strong> <span style="color: var(--teal-accent); font-size: 1.1rem;">~${formatDistance(totalLength)}</span><br><span style="font-size: 0.8rem; color: var(--slate); margin-top: 8px; display: block;">*Measurements are approximate. Exact dimensions will be confirmed during site assessment.</span><br><span style="font-size: 0.8rem; color: var(--slate); display: block; margin-top: 4px;">Not sure about the height? No problem. Leave it blank and our team will work it out during the assessment.</span>`;
+        }
+        
+        function updateWallHeightRange(wallId) {
+            const wall = drawnWalls.find(w => w.id === wallId);
+            if (wall) {
+                const lowVal = document.getElementById('wall-height-low-' + wallId)?.value;
+                const highVal = document.getElementById('wall-height-high-' + wallId)?.value;
+                wall.heightLow = parseFloat(lowVal) || null;
+                wall.heightHigh = parseFloat(highVal) || null;
+                updateQuoteSummary();
+            }
+        }
+        
+        function focusOnWall(wallId) {
+            const wall = drawnWalls.find(w => w.id === wallId);
+            if (wall) {
+                map.fitBounds(wall.layer.getBounds(), { padding: [50, 50] });
+                wall.layer.openPopup();
+            }
+        }
+
+        function deleteWall(wallId) {
+            const wall = drawnWalls.find(w => w.id === wallId);
+            if (wall) {
+                drawnItems.removeLayer(wall.layer);
+                if (wall.labelMarker) {
+                    map.removeLayer(wall.labelMarker);
+                }
+                drawnWalls = drawnWalls.filter(w => w.id !== wallId);
+                updateWallsList();
+                updateQuoteSummary();
+                if (drawnWalls.length === 0) {
+                    document.getElementById('drawn-walls-container').style.display = 'none';
+                    document.getElementById('snapshot-placeholder').style.display = 'block';
+                    document.getElementById('map-snapshot-img').style.display = 'none';
+                } else {
+                    captureMapSnapshot();
+                }
+            }
+        }
+        
+        // ==========================================
+        // MAP SNAPSHOT - Simple version
+        // ==========================================
+        
+        // Helper functions for tile calculations
+        function lng2tile(lng, zoom) { return Math.floor((lng + 180) / 360 * Math.pow(2, zoom)); }
+        function lat2tile(lat, zoom) { return Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)); }
+        function tile2lng(x, zoom) { return x / Math.pow(2, zoom) * 360 - 180; }
+        function tile2lat(y, zoom) { const n = Math.PI - 2 * Math.PI * y / Math.pow(2, zoom); return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))); }
+        
+        // Convert lat/lng to pixel position on the output canvas
+        function latLngToCanvasPoint(latlng, mapBounds, canvasWidth, canvasHeight) {
+            const sw = mapBounds.getSouthWest();
+            const ne = mapBounds.getNorthEast();
+            const x = ((latlng.lng - sw.lng) / (ne.lng - sw.lng)) * canvasWidth;
+            const y = ((ne.lat - latlng.lat) / (ne.lat - sw.lat)) * canvasHeight;
+            return { x: x, y: y };
+        }
+
+        // Draw wall polylines and labels directly onto the canvas
+        function drawWallsOnCanvas(ctx, canvasWidth, canvasHeight) {
+            if (drawnWalls.length === 0) return;
+
+            const mapBounds = map.getBounds();
+
+            drawnWalls.forEach(function(wall) {
+                const latlngs = wall.layer.getLatLngs();
+                if (latlngs.length < 2) return;
+
+                // Draw the wall polyline (thick orange line with white outline for visibility)
+                var points = [];
+                for (var i = 0; i < latlngs.length; i++) {
+                    points.push(latLngToCanvasPoint(latlngs[i], mapBounds, canvasWidth, canvasHeight));
+                }
+
+                // White outline for contrast
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (var j = 1; j < points.length; j++) {
+                    ctx.lineTo(points[j].x, points[j].y);
+                }
+                ctx.stroke();
+
+                // Orange wall line on top
+                ctx.strokeStyle = '#FF6B35';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (var k = 1; k < points.length; k++) {
+                    ctx.lineTo(points[k].x, points[k].y);
+                }
+                ctx.stroke();
+
+                // Draw endpoint circles
+                for (var m = 0; m < points.length; m++) {
+                    ctx.beginPath();
+                    ctx.arc(points[m].x, points[m].y, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#FF6B35';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                // Draw numbered label at the midpoint
+                var midIdx = Math.floor(points.length / 2);
+                var labelPt;
+                if (points.length === 2) {
+                    labelPt = { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 };
+                } else if (points.length > 2 && points.length % 2 === 0) {
+                    labelPt = { x: (points[midIdx - 1].x + points[midIdx].x) / 2, y: (points[midIdx - 1].y + points[midIdx].y) / 2 };
+                } else {
+                    labelPt = points[midIdx];
+                }
+
+                // Label circle
+                ctx.beginPath();
+                ctx.arc(labelPt.x, labelPt.y - 18, 14, 0, 2 * Math.PI);
+                ctx.fillStyle = '#4A90A4';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Label number
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('#' + wall.id, labelPt.x, labelPt.y - 18);
+            });
+
+            ctx.textBaseline = 'alphabetic';
+        }
+
+        // Draw the wall legend box with numbers and lengths
+        function drawWallLegend(ctx, canvasWidth, canvasHeight) {
+            if (drawnWalls.length === 0) return;
+
+            var lineHeight = 20;
+            var headerHeight = 26;
+            var padding = 10;
+            var legendHeight = headerHeight + (drawnWalls.length * lineHeight) + padding + 20;
+            var legendWidth = 190;
+            var legendX = 8;
+            var legendY = 8;
+
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(legendX, legendY, legendWidth, legendHeight, 6);
+            } else {
+                ctx.rect(legendX, legendY, legendWidth, legendHeight);
+            }
+            ctx.fill();
+
+            // Header
+            ctx.fillStyle = '#FF6B35';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Wall Locations', legendX + padding, legendY + 19);
+
+            // Divider line
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(legendX + padding, legendY + headerHeight);
+            ctx.lineTo(legendX + legendWidth - padding, legendY + headerHeight);
+            ctx.stroke();
+
+            // Each wall entry
+            var totalLength = 0;
+            drawnWalls.forEach(function(wall, index) {
+                var rowY = legendY + headerHeight + 6 + (index * lineHeight);
+
+                // Small orange line sample
+                ctx.strokeStyle = '#FF6B35';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(legendX + padding, rowY + 9);
+                ctx.lineTo(legendX + padding + 22, rowY + 9);
+                ctx.stroke();
+
+                // Wall label and length
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('Wall #' + wall.id, legendX + padding + 28, rowY + 13);
+
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = '11px Arial';
+                ctx.fillText('~' + formatDistance(wall.distance), legendX + padding + 85, rowY + 13);
+
+                totalLength += wall.distance;
+            });
+
+            // Total line
+            var totalY = legendY + headerHeight + 6 + (drawnWalls.length * lineHeight);
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(legendX + padding, totalY);
+            ctx.lineTo(legendX + legendWidth - padding, totalY);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px Arial';
+            ctx.fillText('Total:', legendX + padding, totalY + 15);
+            ctx.fillStyle = '#FF6B35';
+            ctx.fillText('~' + formatDistance(totalLength), legendX + padding + 85, totalY + 15);
+        }
+
+        // Draw property parcel info box in top-right corner of snapshot
+        function drawParcelInfo(ctx, canvasWidth, canvasHeight) {
+            if (!selectedParcelInfo) return;
+
+            var padding = 10;
+            var lineHeight = 16;
+            var lines = [];
+
+            lines.push({ text: 'Property Parcel', bold: true });
+            if (selectedParcelInfo.id) lines.push({ text: 'ID: ' + selectedParcelInfo.id, bold: false });
+            if (selectedParcelInfo.appellation) lines.push({ text: selectedParcelInfo.appellation, bold: false });
+            if (selectedParcelInfo.survey) lines.push({ text: 'Survey: ' + selectedParcelInfo.survey, bold: false });
+
+            if (lines.length <= 1) return; // No useful data
+
+            var boxHeight = padding + (lines.length * lineHeight) + padding;
+            var boxWidth = 180;
+            var boxX = canvasWidth - boxWidth - 8;
+            var boxY = 8;
+
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.80)';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 6);
+            } else {
+                ctx.rect(boxX, boxY, boxWidth, boxHeight);
+            }
+            ctx.fill();
+
+            // Text
+            lines.forEach(function(line, i) {
+                var y = boxY + padding + (i * lineHeight) + 10;
+                if (line.bold) {
+                    ctx.fillStyle = '#4A90A4';
+                    ctx.font = 'bold 12px Arial';
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                    ctx.font = '11px Arial';
+                }
+                ctx.textAlign = 'left';
+                ctx.fillText(line.text, boxX + padding, y);
+            });
+        }
+
+        async function captureMapSnapshot() {
+            const placeholder = document.getElementById('snapshot-placeholder');
+            const snapshotImg = document.getElementById('map-snapshot-img');
+            const mapContainer = document.getElementById('site-map');
+            
+            console.log('Capturing map snapshot via screen capture...');
+            
+            try {
+                // Hide map UI controls and drawn wall layers before capture,
+                // but keep boundary/overlay pane visible so property boundaries show
+                const controlsToHide = mapContainer.querySelectorAll(
+                    '.leaflet-control-container, .leaflet-draw, .leaflet-marker-pane'
+                );
+                controlsToHide.forEach(function(el) {
+                    el.dataset.prevDisplay = el.style.display;
+                    el.style.display = 'none';
+                });
+
+                // Hide only the drawn wall polylines (not boundary layers) from the SVG overlay
+                var hiddenWallElements = [];
+                drawnWalls.forEach(function(wall) {
+                    if (wall.layer && wall.layer._path) {
+                        wall.layer._path.dataset.prevDisplay = wall.layer._path.style.display;
+                        wall.layer._path.style.display = 'none';
+                        hiddenWallElements.push(wall.layer._path);
+                    }
+                    if (wall.labelMarker && wall.labelMarker._icon) {
+                        wall.labelMarker._icon.dataset.prevDisplay = wall.labelMarker._icon.style.display;
+                        wall.labelMarker._icon.style.display = 'none';
+                        hiddenWallElements.push(wall.labelMarker._icon);
+                    }
+                });
+
+                // Use html2canvas to capture only the map tiles (clean satellite image)
+                const canvas = await html2canvas(mapContainer, {
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#f0f0f0',
+                    scale: 2, // Higher quality
+                    logging: false,
+                    imageTimeout: 15000
+                });
+
+                // Restore hidden elements
+                controlsToHide.forEach(function(el) {
+                    el.style.display = el.dataset.prevDisplay || '';
+                    delete el.dataset.prevDisplay;
+                });
+                hiddenWallElements.forEach(function(el) {
+                    el.style.display = el.dataset.prevDisplay || '';
+                    delete el.dataset.prevDisplay;
+                });
+                
+                // Create final output canvas at 600x400
+                const outputCanvas = document.createElement('canvas');
+                outputCanvas.width = 600;
+                outputCanvas.height = 400;
+                const ctx = outputCanvas.getContext('2d');
+                
+                // Draw the clean satellite base
+                ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 600, 400);
+                
+                // Draw wall polylines and labels on top (the only drawn elements)
+                drawWallsOnCanvas(ctx, 600, 400);
+
+                // Draw the legend with wall numbers and lengths
+                drawWallLegend(ctx, 600, 400);
+                
+                // Draw property parcel info in top-right corner if available
+                if (selectedParcelInfo) {
+                    drawParcelInfo(ctx, 600, 400);
+                }
+
+                // Add address bar at bottom if we have an address
+                const addr = document.getElementById('address-search')?.value || '';
+                if (addr) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                    ctx.fillRect(0, 365, 600, 35);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(addr.substring(0, 70), 10, 387);
+                }
+                
+                // Save snapshot
+                mapSnapshot = outputCanvas.toDataURL('image/png');
+                snapshotImg.src = mapSnapshot;
+                snapshotImg.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                console.log('Snapshot captured successfully');
+                
+            } catch (error) {
+                console.error('Screenshot capture failed:', error);
+                
+                // Fallback: create a simple placeholder image
+                const fallbackCanvas = document.createElement('canvas');
+                fallbackCanvas.width = 600;
+                fallbackCanvas.height = 400;
+                const ctx = fallbackCanvas.getContext('2d');
+                
+                ctx.fillStyle = '#e0e0e0';
+                ctx.fillRect(0, 0, 600, 400);
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Map snapshot - please see attached drawing', 300, 200);
+                
+                if (drawnWalls.length > 0) {
+                    ctx.fillText(drawnWalls.length + ' wall(s) marked', 300, 230);
+                }
+                
+                mapSnapshot = fallbackCanvas.toDataURL('image/png');
+                snapshotImg.src = mapSnapshot;
+                snapshotImg.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
+        }
+        
+        // Manual capture with visual feedback
+        async function manualCaptureSnapshot() {
+            const btn = document.getElementById('capture-map-btn');
+            
+            btn.innerHTML = 'â³ Capturing...';
+            btn.disabled = true;
+            
+            // Just capture immediately - simple!
+            captureMapSnapshot();
+            
+            // Show success
+            btn.innerHTML = 'âœ“ Captured!';
+            btn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                btn.innerHTML = 'ðŸ“¸ Update Map Snapshot';
+                btn.style.background = '';
+                btn.disabled = false;
+            }, 1500);
+        }
+
+        function downloadMapSnapshot() {
+            if (!mapSnapshot) {
+                alert('Please capture a map snapshot first.');
+                return;
+            }
+
+            // Create a branded version for download
+            var mapImg = new Image();
+            mapImg.onload = function() {
+                var brandHeight = 60;
+                var totalWidth = 600;
+                var totalHeight = 400 + brandHeight;
+
+                var dlCanvas = document.createElement('canvas');
+                dlCanvas.width = totalWidth;
+                dlCanvas.height = totalHeight;
+                var ctx = dlCanvas.getContext('2d');
+
+                // Draw the map snapshot
+                ctx.drawImage(mapImg, 0, 0, 600, 400);
+
+                // Draw branded footer bar
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 400, totalWidth, brandHeight);
+
+                // Accent line at top of brand bar
+                ctx.fillStyle = '#4A90A4';
+                ctx.fillRect(0, 400, totalWidth, 3);
+
+                // Load and draw logo
+                var logo = new Image();
+                logo.onload = function() {
+                    // Draw logo on the left (scale to fit ~40px tall)
+                    var logoH = 38;
+                    var logoW = logo.width * (logoH / logo.height);
+                    ctx.drawImage(logo, 14, 413, logoW, logoH);
+
+                    // Contact info to the right of the logo
+                    var textX = 14 + logoW + 16;
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.font = '11px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('info@rewall.nz', textX, 430);
+                    ctx.fillText('027 394 1127', textX, 446);
+
+                    // Website URL on the right
+                    ctx.fillStyle = '#4A90A4';
+                    ctx.font = 'bold 13px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('www.rewall.nz', totalWidth - 14, 430);
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.font = '10px Arial';
+                    ctx.fillText('Premium Retaining Wall Solutions', totalWidth - 14, 446);
+
+                    // Subtle watermark on the map itself
+                    ctx.save();
+                    ctx.globalAlpha = 0.12;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText('R:Wall', 590, 360);
+                    ctx.restore();
+
+                    // Download
+                    var link = document.createElement('a');
+                    link.href = dlCanvas.toDataURL('image/png');
+                    link.download = 'ReWall-Site-Map.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                logo.onerror = function() {
+                    // If logo fails to load, still download without it
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('R:Wall', 14, 438);
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.font = '11px Arial';
+                    ctx.fillText('info@rewall.nz  |  027 394 1127', 90, 438);
+
+                    ctx.fillStyle = '#4A90A4';
+                    ctx.font = 'bold 13px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('www.rewall.nz', totalWidth - 14, 438);
+
+                    var link = document.createElement('a');
+                    link.href = dlCanvas.toDataURL('image/png');
+                    link.download = 'ReWall-Site-Map.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                logo.src = 'images/Logos/re wall logo WHITE.png';
+            };
+            mapImg.src = mapSnapshot;
+        }
+        
+        // ==========================================
+        // FILE UPLOAD
+        // ==========================================
+        
+        function initializeFileUpload() {
+            const uploadArea = document.getElementById('file-upload-area');
+            const fileInput = document.getElementById('file-input');
+            
+            // Click to upload
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--teal-accent)';
+                uploadArea.style.background = 'var(--soft-blue)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border-gray)';
+                uploadArea.style.background = 'var(--light-gray)';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border-gray)';
+                uploadArea.style.background = 'var(--light-gray)';
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            // File input change
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+        
+        function handleFiles(files) {
+            const maxFiles = 5;
+            const maxSize = 5 * 1024 * 1024; // 5MB per file for FormSubmit
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const warningEl = document.getElementById('file-size-warning');
+            
+            Array.from(files).forEach(file => {
+                // Check max files
+                if (uploadedFiles.length >= maxFiles) {
+                    alert(`Maximum ${maxFiles} files allowed. Please remove a file first.`);
+                    return;
+                }
+                
+                // Check file type
+                if (!allowedTypes.includes(file.type)) {
+                    alert(`${file.name} is not a supported file type.\n\nAccepted: JPG, PNG, GIF, PDF, DOC, DOCX`);
+                    return;
+                }
+                
+                // Check file size (5MB limit for FormSubmit)
+                if (file.size > maxSize) {
+                    alert(`${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)}MB).\n\nMaximum size is 5MB per file.\n\nTip: Compress images or use a PDF optimizer.`);
+                    return;
+                }
+                
+                // Store actual File object for FormSubmit (not base64)
+                uploadedFiles.push({
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    file: file // Store the actual File object
+                });
+                updateFileList();
+                updateQuoteSummary();
+            });
+            
+            // Show total size warning if getting close
+            const totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
+            if (totalSize > 15 * 1024 * 1024) {
+                warningEl.innerHTML = `âš ï¸ Total files: ${(totalSize / 1024 / 1024).toFixed(1)}MB. Large submissions may be slow.`;
+                warningEl.style.display = 'block';
+            } else {
+                warningEl.style.display = 'none';
+            }
+        }
+        
+        function updateFileList() {
+            const container = document.getElementById('file-list');
+            
+            if (uploadedFiles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = uploadedFiles.map((file, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--soft-blue); border-radius: 8px; margin-bottom: 8px;">
+                    <span>
+                        ${file.type.startsWith('image/') ? 'ðŸ–¼ï¸' : 'ðŸ“„'} 
+                        <strong>${file.name}</strong> 
+                        <span style="color: var(--slate); font-size: 0.85rem;">(${(file.size / 1024).toFixed(1)} KB)</span>
+                    </span>
+                    <button onclick="removeFile(${index})" style="background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">âœ•</button>
+                </div>
+            `).join('');
+        }
+        
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+            updateQuoteSummary();
+        }
+        
+        // ==========================================
+        // WALL TYPE SELECTION
+        // ==========================================
+        
+        function toggleWallType(element, type) {
+            // Handle both old .wall-type-option and new .wall-type-card structures
+            const card = element.closest('.wall-type-card, .wall-type-option');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            card.classList.toggle('selected', checkbox.checked);
+            
+            if (type === 'other') {
+                const otherInput = document.getElementById('other-wall-type');
+                otherInput.style.display = checkbox.checked ? 'block' : 'none';
+                if (checkbox.checked) {
+                    otherInput.focus();
+                }
+            }
+            
+            updateQuoteSummary();
+        }
+        
+        // ==========================================
+        // GEOTECHNICAL OPTION SELECTION
+        // ==========================================
+        
+        function selectGeotechOption(element, value) {
+            // Remove selected class from all options
+            document.querySelectorAll('.geotech-option').forEach(opt => {
+                opt.style.borderColor = 'var(--border-gray)';
+                opt.style.background = 'white';
+            });
+            
+            // Add selected styling to clicked option
+            element.style.borderColor = 'var(--teal-accent)';
+            element.style.background = 'rgba(74, 144, 164, 0.05)';
+            
+            // Check the radio button
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            updateQuoteSummary();
+        }
+        
+        // ==========================================
+        // QUOTE SUMMARY UPDATE
+        // ==========================================
+        
+        function updateQuoteSummary() {
+            // Services
+            const servicesContainer = document.getElementById('summary-services');
+            const selectedServicesSummary = document.getElementById('selected-services-summary');
+            const stages = document.querySelectorAll('.stage-checkbox:checked');
+            const stageNames = {
+                '1': 'Site Planning',
+                '2': 'Engineering Design',
+                '3': 'Cost Estimate',
+                '4': 'Council Consent',
+                '5': 'Construction',
+                '6': 'Final Sign-Off'
+            };
+            
+            if (stages.length > 0) {
+                let servicesHtml = '';
+                let summaryHtml = '';
+                stages.forEach(stage => {
+                    const stageNum = stage.dataset.stage;
+                    const name = stageNames[stageNum] || `Stage ${stageNum}`;
+                    servicesHtml += `<li>âœ“ ${name}</li>`;
+                    summaryHtml += `<span class="service-tag">${name}</span>`;
+                });
+                servicesContainer.innerHTML = servicesHtml;
+                if (selectedServicesSummary) {
+                    selectedServicesSummary.innerHTML = summaryHtml;
+                }
+                
+                const step1Number = document.getElementById('step1-number');
+                if (step1Number) {
+                    step1Number.innerHTML = 'âœ“';
+                    step1Number.style.background = '#28a745';
+                }
+            } else {
+                servicesContainer.innerHTML = '<li style="color: rgba(255,255,255,0.6); font-style: italic;">None selected</li>';
+                if (selectedServicesSummary) {
+                    selectedServicesSummary.innerHTML = '<span style="color: var(--slate); font-style: italic;">No services selected yet. Please select from the circle above.</span>';
+                }
+                const step1Number = document.getElementById('step1-number');
+                if (step1Number) {
+                    step1Number.innerHTML = 'â€”';
+                    step1Number.style.background = 'var(--slate)';
+                }
+            }
+            
+            // Location
+            const locationDisplay = document.getElementById('summary-location');
+            locationDisplay.textContent = selectedAddress || 'Not specified';
+            
+            // Walls
+            const wallsDisplay = document.getElementById('summary-walls');
+            if (drawnWalls.length > 0) {
+                let totalLength = drawnWalls.reduce((sum, w) => sum + w.distance, 0);
+                let wallDetails = drawnWalls.map(w => {
+                    let heightStr = '';
+                    if (w.heightLow && w.heightHigh) {
+                        heightStr = ` | est. ${w.heightLow}mâ€“${w.heightHigh}m high`;
+                    } else if (w.heightLow) {
+                        heightStr = ` | est. ~${w.heightLow}m high`;
+                    } else if (w.heightHigh) {
+                        heightStr = ` | est. ~${w.heightHigh}m high`;
+                    }
+                    return `Wall #${w.id}: ~${formatDistance(w.distance)}${heightStr}`;
+                }).join('<br>');
+                wallsDisplay.innerHTML = `${drawnWalls.length} wall(s) marked:<br><span style="font-size: 0.9rem;">${wallDetails}</span><br><strong style="margin-top: 8px; display: inline-block;">Est. Total Length: ~${formatDistance(totalLength)}</strong><br><span style="font-size: 0.8rem; opacity: 0.7;">*Approximate measurements</span>`;
+            } else {
+                wallsDisplay.textContent = 'No walls drawn';
+            }
+            
+            // Wall types
+            const wallTypesDisplay = document.getElementById('summary-wall-types');
+            const selectedWallTypes = [];
+            document.querySelectorAll('.wall-type-card input:checked, .wall-type-option input:checked').forEach(input => {
+                if (input.id !== 'wall-other') {
+                    selectedWallTypes.push(input.value);
+                }
+            });
+            
+            if (document.getElementById('wall-other')?.checked) {
+                const otherValue = document.getElementById('other-wall-type').value;
+                if (otherValue) {
+                    selectedWallTypes.push(`Other: ${otherValue}`);
+                } else {
+                    selectedWallTypes.push('Other (not specified)');
+                }
+            }
+            
+            wallTypesDisplay.textContent = selectedWallTypes.length > 0 ? selectedWallTypes.join(', ') : 'None selected';
+            
+            // Geotechnical Report Status
+            const geotechDisplay = document.getElementById('summary-geotech');
+            const geotechSelection = document.querySelector('input[name="geotech-status"]:checked');
+            if (geotechSelection) {
+                const geotechLabels = {
+                    'have-report': 'âœ… Has existing report',
+                    'need-report': 'ðŸ“‹ Include in quote',
+                    'not-sure': 'â“ Needs advice'
+                };
+                geotechDisplay.textContent = geotechLabels[geotechSelection.value] || 'Not specified';
+            } else {
+                geotechDisplay.textContent = 'Not specified';
+            }
+            
+            // Contact details
+            const contactDisplay = document.getElementById('summary-contact');
+            const name = document.getElementById('client-name')?.value || '';
+            const email = document.getElementById('client-email')?.value || '';
+            const phone = document.getElementById('client-phone')?.value || '';
+            
+            if (name || email) {
+                contactDisplay.innerHTML = `
+                    ${name ? `<strong>${name}</strong><br>` : ''}
+                    ${email ? `ðŸ“§ ${email}<br>` : ''}
+                    ${phone ? `ðŸ“ž ${phone}` : ''}
+                `;
+            } else {
+                contactDisplay.textContent = 'Not provided';
+            }
+            
+            // Attachments
+            const attachmentsDisplay = document.getElementById('summary-attachments');
+            if (uploadedFiles.length > 0) {
+                attachmentsDisplay.textContent = `${uploadedFiles.length} file(s) attached`;
+            } else {
+                attachmentsDisplay.textContent = 'No files attached';
+            }
+            
+            // Notes
+            const notesDisplay = document.getElementById('summary-notes');
+            const notes = document.getElementById('client-notes')?.value || '';
+            if (notes) {
+                notesDisplay.textContent = notes.length > 200 ? notes.substring(0, 200) + '...' : notes;
+                notesDisplay.style.fontStyle = 'normal';
+            } else {
+                notesDisplay.textContent = 'No notes added';
+                notesDisplay.style.fontStyle = 'italic';
+            }
+        }
+        
+        // Listen for form field changes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Service checkboxes
+            document.querySelectorAll('.stage-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateQuoteSummary);
+            });
+            
+            // Client detail inputs
+            ['client-name', 'client-email', 'client-phone', 'client-company', 'client-notes', 'other-wall-type'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', updateQuoteSummary);
+                }
+            });
+        });
+        
+        // ==========================================
+        // SUBMIT QUOTE REQUEST
+        // ==========================================
+        
+        function submitQuoteRequest() {
+            console.log('Submit button clicked - starting submitQuoteRequest');
+            
+            // Validate required fields
+            const name = document.getElementById('client-name')?.value?.trim() || '';
+            const email = document.getElementById('client-email')?.value?.trim() || '';
+            
+            console.log('Name:', name, 'Email:', email);
+            
+            const validationMsg = document.getElementById('validation-message');
+            
+            if (!name || !email) {
+                validationMsg.style.display = 'block';
+                validationMsg.textContent = 'Please fill in your Name and Email address';
+                document.getElementById('step-details').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            
+            // Basic email validation
+            if (!email.includes('@') || !email.includes('.')) {
+                validationMsg.style.display = 'block';
+                validationMsg.textContent = 'Please enter a valid email address';
+                return;
+            }
+            
+            validationMsg.style.display = 'none';
+            
+            // Gather all data
+            const services = [];
+            document.querySelectorAll('.stage-checkbox:checked').forEach(checkbox => {
+                const stage = checkbox.closest('.journey-stage');
+                services.push(stage.dataset.title);
+            });
+            
+            const wallTypes = [];
+            document.querySelectorAll('.wall-type-card input:checked, .wall-type-option input:checked').forEach(input => {
+                wallTypes.push(input.value);
+            });
+            
+            // Get geotechnical report status
+            const geotechRadio = document.querySelector('input[name="geotech-status"]:checked');
+            let geotechStatus = 'Not specified';
+            if (geotechRadio) {
+                const geotechValues = {
+                    'have-report': 'Yes, I have a geotechnical report',
+                    'need-report': 'No, please include geotechnical investigation in the quote',
+                    'not-sure': 'Not sure - please advise'
+                };
+                geotechStatus = geotechValues[geotechRadio.value] || geotechRadio.value;
+            }
+            
+            const quoteData = {
+                timestamp: new Date().toISOString(),
+                client: {
+                    name: name,
+                    email: email,
+                    phone: document.getElementById('client-phone')?.value || '',
+                    company: document.getElementById('client-company')?.value || ''
+                },
+                services: services,
+                location: {
+                    address: selectedAddress,
+                    coordinates: selectedCoordinates
+                },
+                walls: drawnWalls.map(w => {
+                    let heightFormatted = 'Not specified';
+                    if (w.heightLow && w.heightHigh) {
+                        heightFormatted = `est. ${w.heightLow}m â€“ ${w.heightHigh}m`;
+                    } else if (w.heightLow) {
+                        heightFormatted = `est. ~${w.heightLow}m`;
+                    } else if (w.heightHigh) {
+                        heightFormatted = `est. ~${w.heightHigh}m`;
+                    }
+                    return {
+                        id: w.id,
+                        length: w.distance,
+                        lengthFormatted: formatDistance(w.distance),
+                        heightLow: w.heightLow || null,
+                        heightHigh: w.heightHigh || null,
+                        heightFormatted: heightFormatted,
+                        coordinates: w.latlngs
+                    };
+                }),
+                numberOfWalls: drawnWalls.length,
+                totalWallLength: drawnWalls.reduce((sum, w) => sum + w.distance, 0),
+                totalWallLengthFormatted: formatDistance(drawnWalls.reduce((sum, w) => sum + w.distance, 0)),
+                wallTypes: wallTypes,
+                otherWallType: document.getElementById('other-wall-type')?.value || '',
+                geotech: geotechStatus,
+                notes: document.getElementById('client-notes')?.value || '',
+                attachments: uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })),
+                mapSnapshot: mapSnapshot
+            };
+            
+            console.log('Quote data prepared:', quoteData);
+            
+            // Store in sessionStorage
+            sessionStorage.setItem('quoteRequestData', JSON.stringify(quoteData));
+            sessionStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+            
+            // Create email content
+            const emailBody = generateEmailBody(quoteData);
+            
+            console.log('Opening submission modal...');
+            
+            // Show success modal and options
+            showSubmissionModal(quoteData, emailBody);
+        }
+        
+        function generateEmailBody(data) {
+            let body = `NEW QUOTE REQUEST FROM REWALL WEBSITE\n`;
+            body += `${'='.repeat(50)}\n\n`;
+            
+            body += `CLIENT DETAILS:\n`;
+            body += `Name: ${data.client.name}\n`;
+            body += `Email: ${data.client.email}\n`;
+            body += `Phone: ${data.client.phone || 'Not provided'}\n`;
+            body += `Company: ${data.client.company || 'Not provided'}\n\n`;
+            
+            body += `SERVICES REQUESTED:\n`;
+            if (data.services.length > 0) {
+                data.services.forEach(s => body += `â€¢ ${s}\n`);
+            } else {
+                body += `No specific services selected\n`;
+            }
+            body += `\n`;
+            
+            body += `SITE LOCATION:\n`;
+            body += `${data.location.address || 'Not specified'}\n`;
+            if (data.location.coordinates) {
+                body += `Coordinates: ${data.location.coordinates.lat.toFixed(6)}, ${data.location.coordinates.lon.toFixed(6)}\n`;
+            }
+            body += `\n`;
+            
+            body += `WALL MEASUREMENTS (ESTIMATED)*:\n`;
+            if (data.walls.length > 0) {
+                data.walls.forEach(w => {
+                    const heightInfo = w.height ? ` x ${w.heightFormatted} high` : ' (height not specified)';
+                    body += `â€¢ Wall #${w.id}: ~${w.lengthFormatted} length${heightInfo}\n`;
+                });
+                body += `EST. TOTAL LENGTH: ~${data.totalWallLengthFormatted}\n`;
+                body += `*Note: These are approximate measurements based on map drawings and should not be relied upon for final calculations.\n`;
+            } else {
+                body += `No walls drawn on map\n`;
+            }
+            body += `\n`;
+            
+            body += `WALL TYPES:\n`;
+            if (data.wallTypes.length > 0) {
+                data.wallTypes.forEach(t => body += `â€¢ ${t}\n`);
+            } else {
+                body += `Not specified\n`;
+            }
+            if (data.otherWallType) {
+                body += `Other details: ${data.otherWallType}\n`;
+            }
+            body += `\n`;
+            
+            body += `PROJECT NOTES:\n`;
+            body += `${data.notes || 'No notes provided'}\n\n`;
+            
+            body += `ATTACHMENTS:\n`;
+            if (data.attachments.length > 0) {
+                data.attachments.forEach(a => body += `â€¢ ${a.name} (${(a.size/1024).toFixed(1)} KB)\n`);
+            } else {
+                body += `No files attached\n`;
+            }
+            body += `\n`;
+            
+            body += `${'='.repeat(50)}\n`;
+            body += `Submitted: ${new Date().toLocaleString('en-NZ')}\n`;
+            
+            return body;
+        }
+        
+        function showSubmissionModal(data, emailBody) {
+            // Store data for direct send
+            window.currentQuoteData = data;
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'submission-modal';
+            modal.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                    <div style="background: white; border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                        <div style="background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 10px;">ðŸŽ‰</div>
+                            <h2 style="color: white; margin: 0;">Quote Request Ready!</h2>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">Thank you, ${data.client.name}</p>
+                        </div>
+                        
+                        <div style="padding: 30px;">
+                            <p style="color: var(--slate); margin-bottom: 20px;">Your quote request is ready with ${data.mapSnapshot ? 'map snapshot' : ''}${data.mapSnapshot && uploadedFiles.length > 0 ? ' + ' : ''}${uploadedFiles.length > 0 ? uploadedFiles.length + ' file(s)' : ''}.</p>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <button id="direct-send-btn" onclick="sendWithAttachments()" style="padding: 16px 24px; background: linear-gradient(135deg, #28a745 0%, #20863a 100%); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(40,167,69,0.3);">
+                                    ðŸš€ Send Quote Request Now
+                                </button>
+                                <p style="text-align: center; font-size: 0.85rem; color: var(--slate); margin: 0;">Sends directly to ReWall with all attachments</p>
+                                
+                                <div style="border-top: 1px solid var(--border-gray); margin: 10px 0; padding-top: 15px;">
+                                    <p style="font-size: 0.9rem; color: var(--slate); margin-bottom: 10px;">Other options:</p>
+                                    
+                                    <div style="display: flex; gap: 10px;">
+                                        <button onclick="copyToClipboard()" style="flex: 1; padding: 10px 16px; background: var(--light-gray); color: var(--primary-black); border: 1px solid var(--border-gray); border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                                            ðŸ“‹ Copy
+                                        </button>
+                                        
+                                        <button onclick="downloadAll()" style="flex: 1; padding: 10px 16px; background: var(--light-gray); color: var(--primary-black); border: 1px solid var(--border-gray); border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                                            ðŸ’¾ Download All
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 25px; padding: 15px; background: var(--soft-blue); border-radius: 8px;">
+                                <p style="margin: 0; font-size: 0.9rem; color: var(--slate);">
+                                    <strong>ðŸ“ž Prefer to call?</strong><br>
+                                    Ring us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a> and mention your quote reference.
+                                </p>
+                            </div>
+                            
+                            <button onclick="closeSubmissionModal()" style="margin-top: 20px; padding: 12px 24px; background: var(--light-gray); color: var(--primary-black); border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 100%;">
+                                â† Back to Quote Builder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Store email body for later use
+            window.currentEmailBody = emailBody;
+        }
+        
+        function closeSubmissionModal() {
+            const modal = document.getElementById('submission-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // Convert base64 data URL to Blob
+        function dataURLtoBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
+        
+        // Main send function using FormSubmit.co with hidden form for reliable attachment support
+        async function sendWithAttachments() {
+            const btn = document.getElementById('direct-send-btn');
+            const data = window.currentQuoteData;
+            
+            btn.innerHTML = 'â³ Preparing submission...';
+            btn.disabled = true;
+            
+            try {
+                // Create a hidden form for submission (more reliable for attachments)
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'https://formsubmit.co/info@rewall.nz';
+                form.enctype = 'multipart/form-data';
+                form.style.display = 'none';
+                
+                // Helper to add hidden field
+                const addField = (name, value) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                };
+                
+                // FormSubmit configuration
+                addField('_subject', 'ReWall Quote Request - ' + (data.location.address || 'New Project'));
+                addField('_captcha', 'false');
+                addField('_template', 'table');
+                addField('_cc', data.client.email);
+                addField('_next', window.location.href.split('?')[0] + '?submitted=true');
+                
+                // Client details
+                addField('Client Name', data.client.name);
+                addField('Client Email', data.client.email);
+                addField('Client Phone', data.client.phone || 'Not provided');
+                addField('Company/Project', data.client.company || 'Not specified');
+                
+                // Location
+                addField('Site Address', data.location.address || 'Not specified');
+                if (data.location.coordinates) {
+                    addField('Coordinates', `${data.location.coordinates.lat}, ${data.location.coordinates.lon || data.location.coordinates.lng}`);
+                }
+                
+                // Services
+                addField('Selected Services', data.services.join(', ') || 'None selected');
+                
+                // Wall details
+                addField('Number of Walls', data.numberOfWalls || 0);
+                if (data.walls && data.walls.length > 0) {
+                    let wallDetails = data.walls.map((w) => 
+                        `Wall ${w.id}: ${w.lengthFormatted} long` + (w.heightFormatted !== 'Not specified' ? `, ${w.heightFormatted}` : '')
+                    ).join(' | ');
+                    addField('Wall Measurements', wallDetails);
+                    addField('Total Wall Length', data.totalWallLengthFormatted || 'Not measured');
+                } else {
+                    addField('Wall Measurements', 'No walls drawn on map');
+                    addField('Total Wall Length', 'N/A');
+                }
+                
+                // Wall types
+                addField('Wall Types', data.wallTypes.join(', ') || 'Not specified');
+                if (data.otherWallType) {
+                    addField('Other Wall Type Details', data.otherWallType);
+                }
+                
+                // Geotechnical
+                addField('Geotechnical Report', data.geotech || 'Not specified');
+                
+                // Notes
+                addField('Project Notes', data.notes || 'None');
+                
+                // Add map snapshot as base64 attachment (FormSubmit accepts this format)
+                let attachmentCount = 0;
+                if (data.mapSnapshot) {
+                    btn.innerHTML = 'â³ Preparing map image...';
+                    // Add as hidden field with special naming for FormSubmit attachment
+                    addField('_attachment[ReWall-Site-Map.png]', data.mapSnapshot);
+                    attachmentCount++;
+                    console.log('Map snapshot added to form');
+                }
+                
+                // Add uploaded files - need to convert to base64 for FormSubmit
+                if (uploadedFiles && uploadedFiles.length > 0) {
+                    for (let i = 0; i < uploadedFiles.length; i++) {
+                        btn.innerHTML = `â³ Preparing file ${i + 1}/${uploadedFiles.length}...`;
+                        if (uploadedFiles[i].file) {
+                            // Read file as base64
+                            const reader = new FileReader();
+                            await new Promise((resolve) => {
+                                reader.onload = function(e) {
+                                    const base64Data = e.target.result;
+                                    addField(`_attachment[${uploadedFiles[i].name}]`, base64Data);
+                                    attachmentCount++;
+                                    console.log(`File ${uploadedFiles[i].name} added to form`);
+                                    resolve();
+                                };
+                                reader.readAsDataURL(uploadedFiles[i].file);
+                            });
+                        }
+                    }
+                }
+                
+                console.log(`Total attachments: ${attachmentCount}`);
+                
+                btn.innerHTML = 'â³ Sending to ReWall...';
+                
+                // Append form to body and submit
+                document.body.appendChild(form);
+                
+                // Show submitting message
+                const modalContent = document.querySelector('#submission-modal > div > div');
+                if (modalContent) {
+                    modalContent.innerHTML = `
+                        <div style="background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 10px;">ðŸ“¤</div>
+                            <h2 style="color: white; margin: 0;">Sending...</h2>
+                        </div>
+                        <div style="padding: 30px; text-align: center;">
+                            <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;">
+                                <strong>Submitting your quote request with ${attachmentCount} attachment(s)...</strong>
+                            </p>
+                            <div style="display: flex; justify-content: center; margin: 20px 0;">
+                                <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--teal-accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            </div>
+                            <p style="color: var(--slate);">Please wait, do not close this page...</p>
+                            <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+                        </div>
+                    `;
+                }
+                
+                // Submit the form
+                form.submit();
+                
+            } catch (error) {
+                console.error('Submission Error:', error);
+                btn.innerHTML = 'âŒ Error';
+                btn.style.background = '#dc3545';
+                
+                setTimeout(() => {
+                    alert('There was an error preparing your submission. Please try the "Download All" option instead.');
+                    btn.innerHTML = 'ðŸš€ Send Quote Request Now';
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 500);
+            }
+        }
+        
+        // Fallback: Open email client with details
+        function sendViaEmail() {
+            const data = window.currentQuoteData;
+            const subject = encodeURIComponent('ReWall Quote Request - ' + (data.location.address || 'New Project'));
+            const body = encodeURIComponent(window.currentEmailBody);
+            window.location.href = `mailto:info@rewall.nz?subject=${subject}&body=${body}`;
+            
+            // Download files for manual attachment
+            setTimeout(() => {
+                if (confirm('Your email app should be open.\n\nWould you like to download the map snapshot and files to attach manually?')) {
+                    downloadAll();
+                }
+            }, 1000);
+        }
+        
+        // Download all files at once
+        function downloadAll() {
+            const data = window.currentQuoteData;
+            
+            // Download summary text
+            const summaryBlob = new Blob([window.currentEmailBody], { type: 'text/plain' });
+            const summaryUrl = URL.createObjectURL(summaryBlob);
+            const summaryLink = document.createElement('a');
+            summaryLink.href = summaryUrl;
+            summaryLink.download = 'ReWall-Quote-Summary.txt';
+            document.body.appendChild(summaryLink);
+            summaryLink.click();
+            document.body.removeChild(summaryLink);
+            
+            // Download map
+            if (data.mapSnapshot) {
+                setTimeout(() => {
+                    const mapLink = document.createElement('a');
+                    mapLink.href = data.mapSnapshot;
+                    mapLink.download = 'ReWall-Site-Map.png';
+                    document.body.appendChild(mapLink);
+                    mapLink.click();
+                    document.body.removeChild(mapLink);
+                }, 300);
+            }
+            
+            // Download other files - create download links from File objects
+            if (uploadedFiles && uploadedFiles.length > 0) {
+                uploadedFiles.forEach((fileObj, idx) => {
+                    setTimeout(() => {
+                        if (fileObj.file) {
+                            const url = URL.createObjectURL(fileObj.file);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = fileObj.name;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        }
+                    }, 600 + (idx * 300));
+                });
+            }
+            
+            alert('âœ“ Files downloading!\n\nEmail these to: info@rewall.nz');
+        }
+        
+        function copyToClipboard() {
+            navigator.clipboard.writeText(window.currentEmailBody).then(() => {
+                alert('âœ“ Summary copied to clipboard!\n\nYou can now paste it into an email.');
+            }).catch(err => {
+                const textarea = document.createElement('textarea');
+                textarea.value = window.currentEmailBody;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('âœ“ Summary copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
