@@ -2498,6 +2498,23 @@
             const drawTooltip = document.getElementById('draw-tooltip');
             let tooltipHidden = false;
             
+            // Hide orange label when user clicks the draw button itself
+            setTimeout(function() {
+                var drawBtn = document.querySelector('.leaflet-draw-draw-polyline');
+                if (drawBtn) {
+                    drawBtn.addEventListener('click', function() {
+                        var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
+                        if (drawToolbar) {
+                            drawToolbar.classList.add('draw-used');
+                        }
+                        if (!tooltipHidden && drawTooltip) {
+                            drawTooltip.classList.add('hidden');
+                            tooltipHidden = true;
+                        }
+                    });
+                }
+            }, 500);
+            
             // Hide tooltip when user starts drawing
             map.on('draw:drawstart', function() {
                 if (!tooltipHidden) {
