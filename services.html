@@ -200,16 +200,16 @@
         }
 
         /* After user has clicked draw tool, hide the label and only show on hover */
-        .leaflet-draw-toolbar.draw-used .leaflet-draw-draw-polyline::after {
-            content: '📐 Draw Wall';
-            opacity: 0;
+        .leaflet-draw-draw-polyline.draw-used::after {
+            content: '📐 Draw Wall' !important;
+            opacity: 0 !important;
         }
-        .leaflet-draw-toolbar.draw-used .leaflet-draw-draw-polyline:hover::after {
-            opacity: 1;
+        .leaflet-draw-draw-polyline.draw-used:hover::after {
+            opacity: 1 !important;
         }
 
-        /* While actively drawing, always hide */
-        .leaflet-draw-toolbar.drawing-active .leaflet-draw-draw-polyline::after {
+        /* While actively drawing, always hide even on hover */
+        .leaflet-draw-draw-polyline.drawing-active::after {
             opacity: 0 !important;
         }
         
@@ -2503,10 +2503,8 @@
                 var drawBtn = document.querySelector('.leaflet-draw-draw-polyline');
                 if (drawBtn) {
                     drawBtn.addEventListener('click', function() {
-                        var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
-                        if (drawToolbar) {
-                            drawToolbar.classList.add('draw-used');
-                        }
+                        // Add class directly to the button element
+                        this.classList.add('draw-used');
                         if (!tooltipHidden && drawTooltip) {
                             drawTooltip.classList.add('hidden');
                             tooltipHidden = true;
@@ -2522,17 +2520,17 @@
                     tooltipHidden = true;
                 }
                 // Hide the orange Draw Wall label and mark as used
-                var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
-                if (drawToolbar) {
-                    drawToolbar.classList.add('drawing-active');
-                    drawToolbar.classList.add('draw-used');
+                var drawBtn = document.querySelector('.leaflet-draw-draw-polyline');
+                if (drawBtn) {
+                    drawBtn.classList.add('drawing-active');
+                    drawBtn.classList.add('draw-used');
                 }
             });
 
             // Show the label again when drawing stops (only on hover via CSS)
             map.on('draw:drawstop', function() {
-                var drawToolbar = document.querySelector('.leaflet-draw-toolbar');
-                if (drawToolbar) drawToolbar.classList.remove('drawing-active');
+                var drawBtn = document.querySelector('.leaflet-draw-draw-polyline');
+                if (drawBtn) drawBtn.classList.remove('drawing-active');
             });
             
             // Show encouraging message when first wall is drawn
