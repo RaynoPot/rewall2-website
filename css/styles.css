@@ -235,6 +235,28 @@ nav.sidebar .cta-group button {
     margin-bottom: var(--spacing-sm);
 }
 
+/* Subtle breathing glow on Plan & Quote button */
+nav.sidebar .cta-group button:first-child {
+    animation: btnBreathe 4s ease-in-out infinite;
+    position: relative;
+}
+
+nav.sidebar .cta-group button:first-child:hover {
+    animation: none;
+}
+
+@keyframes btnBreathe {
+    0%, 100% {
+        box-shadow: 0 0 4px rgba(74, 144, 164, 0.15);
+        background-color: var(--teal-accent);
+    }
+    50% {
+        box-shadow: 0 0 18px rgba(74, 144, 164, 0.55),
+                    0 0 40px rgba(74, 144, 164, 0.15);
+        background-color: #5aa3b8;
+    }
+}
+
 /* Main content area (account for sidebar) */
 main {
     margin-right: 250px;
