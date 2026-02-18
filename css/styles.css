@@ -422,7 +422,7 @@ section.hero .content {
 
 section.hero h1 {
     color: var(--primary-black);
-    font-size: 4rem;
+    font-size: 3rem;
     margin-bottom: var(--spacing-md);
     font-weight: 700;
 }
@@ -432,6 +432,16 @@ section.hero .subheadline {
     color: var(--slate);
     margin-bottom: var(--spacing-lg);
     font-weight: 400;
+}
+
+/* Partner card headings — consistent across about & contact */
+.card h3 {
+    font-size: 1.5rem;
+}
+
+/* Wall type showcase card headings */
+.wall-card-content h3.wall-card-title {
+    font-size: 1.1rem;
 }
 
 section.hero .cta-container {
@@ -2249,7 +2259,7 @@ footer a:hover {
     }
     
     section.hero .subheadline {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
     
     .gallery-grid {
