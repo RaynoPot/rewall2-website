@@ -2061,9 +2061,9 @@
             
             const zoom = map.getZoom();
             
-            // Only load contours at zoom >= 13 (otherwise too much data)
-            if (zoom < 13) {
-                console.log('Zoom too low for contours (need >= 13), current:', zoom);
+            // Only load contours at zoom >= 15 (contour data is very dense)
+            if (zoom < 15) {
+                console.log('Zoom too low for contours (need >= 15), current:', zoom);
                 if (contourGeoJson) contourGeoJson.clearLayers();
                 const label = document.getElementById('contours-label');
                 if (label) {
@@ -2087,7 +2087,7 @@
                 
                 // Use Topo50 contours (layer-50768) - reliable 20m intervals
                 const contourLayerId = 'layer-50768';
-                const featureLimit = zoom >= 16 ? 5000 : 3000;
+                const featureLimit = zoom >= 17 ? 1000 : 500;
                 
                 console.log(`Fetching LINZ contours (Topo50 20m) for bbox:`, bbox, 'zoom:', zoom);
                 

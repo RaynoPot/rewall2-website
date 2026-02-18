@@ -79,7 +79,7 @@ exports.handler = async function(event, context) {
     
     // Make request to LINZ with timeout
     const response = await axios.get(linzUrl, {
-      timeout: 15000,
+      timeout: 25000,
       headers: {
         'User-Agent': 'ReWall-NZ/1.0'
       }
