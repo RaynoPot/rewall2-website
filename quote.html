@@ -1764,6 +1764,9 @@
         // LINZ Contour layer variables
         let contourTileLayer = null;
         
+        // Elevation sampling (AWS Terrarium tiles)
+        const elevationTileCache = {};
+        
         // ==========================================
         // LINZ PROPERTY BOUNDARIES - WFS via Netlify Function
         // ==========================================
@@ -2606,6 +2609,118 @@
         }
         
         // ==========================================
+        // ELEVATION SAMPLING (AWS Terrarium Tiles)
+        // ==========================================
+        // Uses free AWS S3 Terrarium tiles to get ground elevation
+        // Encoding: elevation = (R * 256 + G + B / 256) - 32768
+        
+        function latLngToTilePixel(lat, lng, zoom) {
+            const n = Math.pow(2, zoom);
+            const xTile = Math.floor((lng + 180) / 360 * n);
+            const yTile = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+            
+            // Pixel position within the 256x256 tile
+            const xPixelFull = (lng + 180) / 360 * n * 256;
+            const yPixelFull = (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n * 256;
+            const px = Math.floor(xPixelFull - xTile * 256);
+            const py = Math.floor(yPixelFull - yTile * 256);
+            
+            return { xTile, yTile, px: Math.min(px, 255), py: Math.min(py, 255) };
+        }
+        
+        function fetchElevationTile(xTile, yTile, zoom) {
+            const key = `${zoom}/${xTile}/${yTile}`;
+            if (elevationTileCache[key]) return elevationTileCache[key];
+            
+            const promise = new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 256;
+                    canvas.height = 256;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, 256, 256);
+                    resolve(imageData);
+                };
+                img.onerror = () => reject(new Error(`Failed to load elevation tile ${key}`));
+                img.src = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${zoom}/${xTile}/${yTile}.png`;
+            });
+            
+            elevationTileCache[key] = promise;
+            return promise;
+        }
+        
+        async function getElevationAtPoint(lat, lng) {
+            const zoom = 15; // ~1m resolution at this zoom
+            const { xTile, yTile, px, py } = latLngToTilePixel(lat, lng, zoom);
+            
+            try {
+                const imageData = await fetchElevationTile(xTile, yTile, zoom);
+                const idx = (py * 256 + px) * 4;
+                const r = imageData.data[idx];
+                const g = imageData.data[idx + 1];
+                const b = imageData.data[idx + 2];
+                // Terrarium encoding
+                const elevation = (r * 256 + g + b / 256) - 32768;
+                return elevation;
+            } catch (err) {
+                console.warn('Elevation lookup failed:', err);
+                return null;
+            }
+        }
+        
+        async function estimateWallHeight(latlngs) {
+            // Sample elevation at multiple points along the line
+            const numSamples = Math.min(Math.max(latlngs.length * 3, 10), 50);
+            const samplePoints = [];
+            
+            // Interpolate points along the polyline
+            const totalDist = calculateTotalDistance(latlngs);
+            for (let i = 0; i <= numSamples; i++) {
+                const targetDist = (i / numSamples) * totalDist;
+                let accDist = 0;
+                for (let j = 0; j < latlngs.length - 1; j++) {
+                    const segDist = latlngs[j].distanceTo(latlngs[j + 1]);
+                    if (accDist + segDist >= targetDist) {
+                        const t = (targetDist - accDist) / segDist;
+                        samplePoints.push({
+                            lat: latlngs[j].lat + t * (latlngs[j + 1].lat - latlngs[j].lat),
+                            lng: latlngs[j].lng + t * (latlngs[j + 1].lng - latlngs[j].lng)
+                        });
+                        break;
+                    }
+                    accDist += segDist;
+                }
+            }
+            
+            // Also include actual vertices
+            latlngs.forEach(ll => samplePoints.push({ lat: ll.lat, lng: ll.lng }));
+            
+            // Fetch all elevations (tiles are cached, so this is fast)
+            const elevations = await Promise.all(
+                samplePoints.map(p => getElevationAtPoint(p.lat, p.lng))
+            );
+            
+            const validElevations = elevations.filter(e => e !== null && !isNaN(e));
+            
+            if (validElevations.length < 2) return null;
+            
+            const minElev = Math.min(...validElevations);
+            const maxElev = Math.max(...validElevations);
+            const heightDiff = maxElev - minElev;
+            
+            // Round to nearest 0.1m
+            return {
+                heightDiff: Math.round(heightDiff * 10) / 10,
+                minElev: Math.round(minElev * 10) / 10,
+                maxElev: Math.round(maxElev * 10) / 10,
+                samples: validElevations.length
+            };
+        }
+        
+        // ==========================================
         // WALL DRAWING FUNCTIONS
         // ==========================================
         
@@ -2673,6 +2788,42 @@
 
             // Show walls container
             document.getElementById('drawn-walls-container').style.display = 'block';
+
+            // Auto-estimate wall height from terrain elevation
+            const currentWallId = wallCounter;
+            estimateWallHeight(latlngs).then(result => {
+                if (result && result.heightDiff >= 0.2) {
+                    const wall = drawnWalls.find(w => w.id === currentWallId);
+                    if (wall) {
+                        // Set low/high as a smart range around the measured difference
+                        const estLow = Math.max(0.3, Math.round((result.heightDiff * 0.8) * 10) / 10);
+                        const estHigh = Math.round((result.heightDiff * 1.3) * 10) / 10;
+                        wall.heightLow = estLow;
+                        wall.heightHigh = estHigh;
+                        wall.elevationData = result;
+                        
+                        // Update the input fields if they exist
+                        const lowInput = document.getElementById('wall-height-low-' + currentWallId);
+                        const highInput = document.getElementById('wall-height-high-' + currentWallId);
+                        if (lowInput) lowInput.value = estLow;
+                        if (highInput) highInput.value = estHigh;
+                        
+                        // Show elevation info badge
+                        const elevBadge = document.getElementById('elev-badge-' + currentWallId);
+                        if (elevBadge) {
+                            elevBadge.innerHTML = `📐 Terrain: ${result.minElev}m → ${result.maxElev}m (${result.heightDiff}m drop)`;
+                            elevBadge.style.display = 'block';
+                        }
+                        
+                        updateQuoteSummary();
+                        console.log(`✓ Wall #${currentWallId} elevation: ${result.minElev}m–${result.maxElev}m, est. height: ${estLow}–${estHigh}m`);
+                    }
+                } else {
+                    console.log(`Wall #${currentWallId}: terrain is flat (${result?.heightDiff || 0}m diff) — no auto-fill`);
+                }
+            }).catch(err => {
+                console.warn('Elevation estimate failed for wall #' + currentWallId, err);
+            });
 
             // Auto-capture map snapshot
             setTimeout(() => captureMapSnapshot(), 500);
@@ -2801,6 +2952,9 @@
                                         onchange="updateWallHeightRange(${wall.id})">
                                     <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">m</span>
                                 </div>
+                                <span class="elev-badge" id="elev-badge-${wall.id}" style="display: ${wall.elevationData ? 'block' : 'none'}; font-size: 0.78rem; color: #2d7d6e; background: rgba(45,125,110,0.08); border-left: 3px solid #2d7d6e; padding: 3px 8px; border-radius: 4px; margin-top: 2px;">
+                                    ${wall.elevationData ? `📐 Terrain: ${wall.elevationData.minElev}m → ${wall.elevationData.maxElev}m (${wall.elevationData.heightDiff}m drop)` : ''}
+                                </span>
                                 <span class="height-optional-tag"><strong>Optional</strong> — a rough estimate is fine. We'll confirm exact heights during the site assessment.</span>
                             </div>
                         </div>
