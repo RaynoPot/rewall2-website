@@ -631,6 +631,29 @@
             font-weight: 600;
         }
         
+        /* Elevation toast notification */
+        .elev-toast {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(45, 125, 110, 0.95);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 1001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .elev-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
         /* Contour line hover tooltip */
         .contour-tooltip {
             background: rgba(139, 69, 19, 0.85) !important;
@@ -2816,6 +2839,11 @@
                         }
                         
                         updateQuoteSummary();
+                        updateWallsList();
+                        
+                        // Show subtle toast notification
+                        showElevationToast(`📐 Wall #${currentWallId} — estimated height: ${estLow}m – ${estHigh}m`);
+                        
                         console.log(`✓ Wall #${currentWallId} elevation: ${result.minElev}m–${result.maxElev}m, est. height: ${estLow}–${estHigh}m`);
                     }
                 } else {
@@ -2827,6 +2855,28 @@
 
             // Auto-capture map snapshot
             setTimeout(() => captureMapSnapshot(), 500);
+        }
+        
+        function showElevationToast(message) {
+            // Remove any existing toast
+            const existing = document.querySelector('.elev-toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'elev-toast';
+            toast.textContent = message;
+            document.getElementById('map-container').appendChild(toast);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+            
+            // Fade out after 3.5s
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 500);
+            }, 3500);
         }
         
         function handleDrawDeleted(e) {
@@ -2955,7 +3005,7 @@
                                 <span class="elev-badge" id="elev-badge-${wall.id}" style="display: ${wall.elevationData ? 'block' : 'none'}; font-size: 0.78rem; color: #2d7d6e; background: rgba(45,125,110,0.08); border-left: 3px solid #2d7d6e; padding: 3px 8px; border-radius: 4px; margin-top: 2px;">
                                     ${wall.elevationData ? `📐 Terrain: ${wall.elevationData.minElev}m → ${wall.elevationData.maxElev}m (${wall.elevationData.heightDiff}m drop)` : ''}
                                 </span>
-                                <span class="height-optional-tag"><strong>Optional</strong> — a rough estimate is fine. We'll confirm exact heights during the site assessment.</span>
+                                <span class="height-optional-tag">${wall.elevationData ? '<strong>Auto-estimated</strong> from terrain data — feel free to adjust if needed.' : '<strong>Optional</strong> — draw your wall on the map and we\'ll estimate heights automatically.'} We confirm all final heights during the site assessment.</span>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
