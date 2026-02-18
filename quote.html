@@ -1287,9 +1287,9 @@
                             <input type="checkbox" id="buildings-toggle" onchange="toggleBuildings()">
                             <span>🏗️ Building Outlines</span>
                         </label>
-                        <label class="layer-toggle-item" id="contours-label" title="LINZ Topo50">
+                        <label class="layer-toggle-item" id="contours-label" title="LINZ LiDAR 1m DEM Hillshade — shows terrain slopes and elevation changes">
                             <input type="checkbox" id="contours-toggle" onchange="toggleContours()">
-                            <span>🗻 Contours (20m)</span>
+                            <span>⛰️ Terrain Hillshade</span>
                         </label>
                         <div class="map-layer-toggle">
                             <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
@@ -2013,20 +2013,20 @@
         }
         
         // ==========================================
-        // LINZ CONTOUR LINES - WFS via Netlify Function
+        // LINZ TERRAIN HILLSHADE - Tile Layer via Proxy
         // ==========================================
 
-        // Initialize contour tile layer
+        // Initialize hillshade tile layer (LINZ 1m DEM Hillshade - layer 121959)
         function initializeContourLayer() {
             if (contourTileLayer) {
                 map.removeLayer(contourTileLayer);
             }
             
-            // Use LINZ tile proxy — contours rendered server-side as image tiles
+            // Use LINZ LiDAR 1m DEM Hillshade (layer 121959) — high-res terrain visualization
             contourTileLayer = L.tileLayer(
-                '/.netlify/functions/linzTiles?layer=50768&z={z}&x={x}&y={y}',
+                '/.netlify/functions/linzTiles?layer=121959&z={z}&x={x}&y={y}',
                 {
-                    opacity: 0.6,
+                    opacity: 0.45,
                     maxZoom: 22,
                     maxNativeZoom: 18
                 }
@@ -2039,7 +2039,7 @@
             const label = document.getElementById('contours-label');
             
             if (checkbox.checked) {
-                console.log('Enabling LINZ contour tile layer...');
+                console.log('Enabling LINZ hillshade tile layer...');
                 
                 if (!contourTileLayer) {
                     initializeContourLayer();
@@ -2053,7 +2053,7 @@
                 }
                 
                 label.classList.add('active');
-                console.log('\u2713 Contour tile layer enabled');
+                console.log('\u2713 Hillshade tile layer enabled');
                 
             } else {
                 if (contourTileLayer) {
@@ -2061,7 +2061,7 @@
                 }
                 
                 label.classList.remove('active');
-                console.log('\u2713 Contour tile layer disabled');
+                console.log('\u2713 Hillshade tile layer disabled');
             }
         }
         
