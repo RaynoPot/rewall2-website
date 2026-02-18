@@ -631,6 +631,20 @@
             font-weight: 600;
         }
         
+        /* Contour line hover tooltip */
+        .contour-tooltip {
+            background: rgba(139, 69, 19, 0.85) !important;
+            color: white !important;
+            border: none !important;
+            padding: 2px 6px !important;
+            font-size: 0.7rem !important;
+            font-weight: 600 !important;
+            border-radius: 3px !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3) !important;
+        }
+        .contour-tooltip::before {
+            border-top-color: rgba(139, 69, 19, 0.85) !important;
+        }
 
         .total-length {
             margin-top: var(--spacing-md);
@@ -1273,6 +1287,11 @@
                             <input type="checkbox" id="buildings-toggle" onchange="toggleBuildings()">
                             <span>🏗️ Building Outlines</span>
                         </label>
+                        <label class="layer-toggle-item" id="contours-label" title="Show/hide contour lines (20m intervals, zoom in for detail)">
+                            <input type="checkbox" id="contours-toggle" onchange="toggleContours()">
+                            <span>🗻 Contours (20m)</span>
+                            <span class="contour-zoom-hint" style="display: none; font-size: 0.7rem; color: #e67e22; margin-left: 4px;">zoom in more</span>
+                        </label>
                         <div class="map-layer-toggle">
                             <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
                             <button id="satellite-btn" onclick="setMapLayer('satellite')">Satellite</button>
@@ -1743,6 +1762,11 @@
         let buildingLoadingState = false;
         let buildingRefreshTimeout = null;
         
+        // LINZ Contour layer variables
+        let contourGeoJson = null;
+        let contourLoadingState = false;
+        let contourRefreshTimeout = null;
+        
         // ==========================================
         // LINZ PROPERTY BOUNDARIES - WFS via Netlify Function
         // ==========================================
@@ -1989,6 +2013,175 @@
             buildingRefreshTimeout = setTimeout(() => {
                 loadBuildingsForView();
             }, 1000);
+        }
+        
+        // ==========================================
+        // LINZ CONTOUR LINES - WFS via Netlify Function
+        // ==========================================
+
+        // Initialize contour layer (empty at start)
+        function initializeContourLayer() {
+            if (contourGeoJson) {
+                map.removeLayer(contourGeoJson);
+            }
+            
+            contourGeoJson = L.geoJSON(null, {
+                style: function(feature) {
+                    const elevation = feature.properties?.elevation || feature.properties?.altitude || 0;
+                    // Bolder style for major contours (every 100m)
+                    const isMajor = (elevation % 100 === 0);
+                    return {
+                        color: '#8B4513',
+                        weight: isMajor ? 2 : 0.8,
+                        opacity: isMajor ? 0.7 : 0.45,
+                        fillOpacity: 0
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties) {
+                        const elev = feature.properties.elevation || feature.properties.altitude || '';
+                        if (elev) {
+                            layer.bindTooltip(elev + 'm', {
+                                permanent: false,
+                                direction: 'center',
+                                className: 'contour-tooltip'
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load LINZ contours for current map view
+        async function loadContoursForView() {
+            if (contourLoadingState) {
+                console.log('Contour load already in progress...');
+                return;
+            }
+            
+            const zoom = map.getZoom();
+            
+            // Only load contours at zoom >= 13 (otherwise too much data)
+            if (zoom < 13) {
+                console.log('Zoom too low for contours (need >= 13), current:', zoom);
+                if (contourGeoJson) contourGeoJson.clearLayers();
+                const label = document.getElementById('contours-label');
+                if (label) {
+                    const hint = label.querySelector('.contour-zoom-hint');
+                    if (hint) hint.style.display = 'inline';
+                }
+                return;
+            } else {
+                const label = document.getElementById('contours-label');
+                if (label) {
+                    const hint = label.querySelector('.contour-zoom-hint');
+                    if (hint) hint.style.display = 'none';
+                }
+            }
+            
+            contourLoadingState = true;
+            
+            try {
+                const bounds = map.getBounds();
+                const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+                
+                // Use Topo50 contours (layer-50768) - reliable 20m intervals
+                const contourLayerId = 'layer-50768';
+                const featureLimit = zoom >= 16 ? 5000 : 3000;
+                
+                console.log(`Fetching LINZ contours (Topo50 20m) for bbox:`, bbox, 'zoom:', zoom);
+                
+                const response = await fetch(
+                    `/.netlify/functions/linzApi?bbox=${encodeURIComponent(bbox)}&layer=${contourLayerId}&count=${featureLimit}`
+                );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.message || data.error);
+                }
+                
+                console.log(`Loaded ${data.features?.length || 0} contour lines`);
+                
+                if (contourGeoJson) {
+                    contourGeoJson.clearLayers();
+                    contourGeoJson.addData(data);
+                }
+                
+            } catch (error) {
+                console.error('Error loading contours:', error);
+                throw error;
+            } finally {
+                contourLoadingState = false;
+            }
+        }
+
+        // Toggle contour lines with WFS loading
+        async function toggleContours() {
+            const checkbox = document.getElementById('contours-toggle');
+            const label = document.getElementById('contours-label');
+            
+            if (checkbox.checked) {
+                label.classList.add('loading');
+                
+                try {
+                    console.log('Enabling LINZ contour layer...');
+                    
+                    if (!contourGeoJson) {
+                        initializeContourLayer();
+                    }
+                    
+                    contourGeoJson.addTo(map);
+                    
+                    await loadContoursForView();
+                    
+                    // Keep drawn items on top
+                    if (drawnItems) {
+                        drawnItems.bringToFront();
+                    }
+                    
+                    label.classList.remove('loading');
+                    label.classList.add('active');
+                    console.log('\u2713 Contour layer enabled');
+                    
+                    map.on('moveend', scheduleContourRefresh);
+                    map.on('zoomend', scheduleContourRefresh);
+                    
+                } catch (error) {
+                    console.error('Error enabling contours:', error);
+                    label.classList.remove('loading');
+                    label.classList.add('error');
+                    checkbox.checked = false;
+                    setTimeout(() => label.classList.remove('error'), 3000);
+                    alert(`Failed to enable contour lines: ${error.message}. Please try again.`);
+                }
+            } else {
+                if (contourGeoJson) {
+                    map.removeLayer(contourGeoJson);
+                }
+                
+                label.classList.remove('active', 'loading', 'error');
+                console.log('\u2713 Contour layer disabled');
+                
+                map.off('moveend', scheduleContourRefresh);
+                map.off('zoomend', scheduleContourRefresh);
+            }
+        }
+
+        // Auto-refresh contours when map moves (debounced)
+        function scheduleContourRefresh() {
+            if (!document.getElementById('contours-toggle')?.checked) {
+                return;
+            }
+            
+            clearTimeout(contourRefreshTimeout);
+            contourRefreshTimeout = setTimeout(() => {
+                loadContoursForView();
+            }, 1200);
         }
         
         // Initialize when page loads
@@ -2351,6 +2544,9 @@
             
             // Initialize building outlines layer
             initializeBuildingLayer();
+            
+            // Initialize contour layer
+            initializeContourLayer();
             
             // Add drawing controls
             drawControl = new L.Control.Draw({
