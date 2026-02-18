@@ -26,12 +26,12 @@ exports.handler = async function (event, context) {
   }
 
   // ---------- ENV ----------
-  const API_URL    = process.env.API_URL;     // e.g. https://xyz.supabase.co
-  const API_KEY    = process.env.API_KEY;      // anon / public key
-  const SECRET_KEY = process.env.SECRET_KEY;   // service_role key
+  const API_URL        = process.env.API_URL;         // e.g. https://xyz.supabase.co
+  const API_KEY        = process.env.API_KEY;          // publishable (anon) key
+  const API_SECRET_KEY = process.env.API_SECRET_KEY;   // new secret API key (replaces legacy service_role)
 
-  if (!API_URL || !API_KEY || !SECRET_KEY) {
-    console.error('[supabaseUpload] Missing environment variables. Ensure API_URL, API_KEY and SECRET_KEY are set.');
+  if (!API_URL || !API_KEY || !API_SECRET_KEY) {
+    console.error('[supabaseUpload] Missing environment variables. Ensure API_URL, API_KEY and API_SECRET_KEY are set.');
     return {
       statusCode: 500,
       headers,
@@ -78,7 +78,7 @@ exports.handler = async function (event, context) {
 
     const response = await axios.post(uploadUrl, fileBuffer, {
       headers: {
-        'Authorization': `Bearer ${SECRET_KEY}`,
+        'Authorization': `Bearer ${API_SECRET_KEY}`,
         'apikey': API_KEY,
         'Content-Type': fileType || 'application/octet-stream',
         'x-upsert': 'true',           // overwrite if same name
