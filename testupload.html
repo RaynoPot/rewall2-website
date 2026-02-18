@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReWall – Supabase Upload Test</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f1923;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #4a90a4;
+            margin-bottom: 6px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: #1a2733;
+            border: 1px solid #2a3a4a;
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 640px;
+            margin-bottom: 20px;
+        }
+
+        .session-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .session-bar label {
+            font-weight: 600;
+            color: #4a90a4;
+            white-space: nowrap;
+        }
+
+        .session-bar code {
+            background: #0d1520;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #8bc6d8;
+            word-break: break-all;
+        }
+
+        .session-bar button {
+            margin-left: auto;
+        }
+
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed #3a5060;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+            margin-bottom: 16px;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: #4a90a4;
+            background: rgba(74, 144, 164, .08);
+        }
+
+        .drop-zone p { color: #8899aa; margin-bottom: 8px; }
+        .drop-zone .hint { font-size: .8rem; color: #556; }
+
+        input[type="file"] { display: none; }
+
+        /* File list */
+        .file-list {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+
+        .file-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0d1520;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .file-list li .name {
+            color: #cde;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 70%;
+        }
+
+        .file-list li .size { color: #6a8; font-size: .8rem; }
+
+        .file-list li .remove {
+            background: none;
+            border: none;
+            color: #c55;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 4px;
+        }
+
+        /* Buttons */
+        button, .btn {
+            background: #4a90a4;
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: .92rem;
+            font-weight: 600;
+            transition: background .2s;
+        }
+
+        button:hover { background: #3a7a8e; }
+        button:disabled { opacity: .45; cursor: not-allowed; }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: #2a3a4a;
+        }
+
+        .btn-secondary:hover { background: #3a4a5a; }
+
+        /* Progress */
+        .progress-wrap {
+            display: none;
+            margin-top: 14px;
+        }
+
+        .progress-wrap.show { display: block; }
+
+        .progress-bar-outer {
+            background: #0d1520;
+            border-radius: 6px;
+            height: 22px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4a90a4, #6bb8d0);
+            border-radius: 6px;
+            transition: width .3s ease;
+        }
+
+        .progress-text {
+            font-size: .82rem;
+            color: #8899aa;
+        }
+
+        /* Console log */
+        .console-card {
+            background: #0a0f14;
+            border: 1px solid #1e2e3e;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .console-header h3 {
+            color: #4a90a4;
+            font-size: 1rem;
+        }
+
+        #logOutput {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            max-height: 360px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #b0c4d0;
+            padding: 10px;
+            background: #060b10;
+            border-radius: 6px;
+        }
+
+        .log-info  { color: #6bb8d0; }
+        .log-ok    { color: #6c6; }
+        .log-warn  { color: #ec6; }
+        .log-error { color: #e66; }
+
+        /* Results */
+        .result-item {
+            background: #0d1520;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: .85rem;
+            word-break: break-all;
+        }
+
+        .result-item a { color: #6bb8d0; }
+    </style>
+</head>
+<body>
+
+<h1>📦 Supabase Upload Test</h1>
+<p class="subtitle">Upload files to <strong>ReWallClientBucket</strong> via Netlify Function</p>
+
+<!-- Session -->
+<div class="card">
+    <div class="session-bar">
+        <label>Session ID:</label>
+        <code id="sessionId">—</code>
+        <button class="btn-secondary" onclick="regenerateSession()">New Session</button>
+    </div>
+    <p style="font-size:.78rem;color:#667;margin-top:6px;">
+        Files are stored under <code>web_app_uploads/{sessionId}/</code>
+    </p>
+</div>
+
+<!-- Upload area -->
+<div class="card">
+    <div class="drop-zone" id="dropZone">
+        <p>Drag &amp; drop files here</p>
+        <p class="hint">or click to browse</p>
+    </div>
+    <input type="file" id="fileInput" multiple />
+
+    <ul class="file-list" id="fileList"></ul>
+
+    <div class="btn-row">
+        <button id="uploadBtn" onclick="uploadAll()" disabled>Upload All</button>
+        <button class="btn-secondary" onclick="clearFiles()">Clear</button>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar-outer">
+            <div class="progress-bar-inner" id="progressBar"></div>
+        </div>
+        <p class="progress-text" id="progressText">0 / 0 files uploaded</p>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="card" id="resultsCard" style="display:none;">
+    <h3 style="color:#4a90a4;margin-bottom:10px;">Upload Results</h3>
+    <div id="resultsBody"></div>
+</div>
+
+<!-- Console -->
+<div class="card console-card">
+    <div class="console-header">
+        <h3>Console Log</h3>
+        <button class="btn-secondary" style="padding:5px 12px;font-size:.78rem;" onclick="clearLog()">Clear</button>
+    </div>
+    <div id="logOutput"></div>
+</div>
+
+<script>
+// ─── Globals ───────────────────────────
+let selectedFiles = [];
+let sessionId = '';
+
+const FUNCTION_URL = '/.netlify/functions/supabaseUpload';
+
+// ─── Helpers ───────────────────────────
+function generateUID() {
+    // crypto.randomUUID where available, fallback to manual
+    if (crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+// ─── Logging ───────────────────────────
+function log(msg, level = 'info') {
+    const el = document.getElementById('logOutput');
+    const ts = new Date().toLocaleTimeString();
+    const span = document.createElement('span');
+    span.className = 'log-' + level;
+    span.textContent = `[${ts}] ${msg}\n`;
+    el.appendChild(span);
+    el.scrollTop = el.scrollHeight;
+
+    // Mirror to real console
+    const consoleFn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+    consoleFn(`[UploadTest] ${msg}`);
+}
+
+function clearLog() {
+    document.getElementById('logOutput').innerHTML = '';
+    log('Console cleared', 'info');
+}
+
+// ─── Session ───────────────────────────
+function initSession() {
+    sessionId = generateUID();
+    document.getElementById('sessionId').textContent = sessionId;
+    log(`Session initialised: ${sessionId}`, 'info');
+    log(`Upload path will be: web_app_uploads/${sessionId}/`, 'info');
+}
+
+function regenerateSession() {
+    initSession();
+    log('Session regenerated by user', 'warn');
+}
+
+// ─── File Selection ────────────────────
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+});
+
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    addFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => {
+    addFiles(fileInput.files);
+    fileInput.value = '';          // allow re-selecting same file
+});
+
+function addFiles(fileListObj) {
+    const newFiles = Array.from(fileListObj);
+    log(`Selected ${newFiles.length} file(s)`, 'info');
+
+    newFiles.forEach(f => {
+        log(`  → ${f.name}  (${formatBytes(f.size)}, ${f.type || 'unknown type'})`, 'info');
+        selectedFiles.push(f);
+    });
+
+    renderFileList();
+}
+
+function removeFile(index) {
+    const removed = selectedFiles.splice(index, 1)[0];
+    log(`Removed file: ${removed.name}`, 'warn');
+    renderFileList();
+}
+
+function clearFiles() {
+    selectedFiles = [];
+    log('File list cleared', 'warn');
+    renderFileList();
+    document.getElementById('resultsCard').style.display = 'none';
+    document.getElementById('progressWrap').classList.remove('show');
+}
+
+function renderFileList() {
+    const ul = document.getElementById('fileList');
+    ul.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span class="name">${f.name}</span>
+            <span class="size">${formatBytes(f.size)}</span>
+            <button class="remove" title="Remove" onclick="removeFile(${i})">&times;</button>
+        `;
+        ul.appendChild(li);
+    });
+    document.getElementById('uploadBtn').disabled = selectedFiles.length === 0;
+}
+
+// ─── File → Base64 ────────────────────
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // result is "data:<type>;base64,XXXXX" – strip the prefix
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = err => reject(err);
+        reader.readAsDataURL(file);
+    });
+}
+
+// ─── Upload ────────────────────────────
+async function uploadAll() {
+    if (selectedFiles.length === 0) return;
+
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = true;
+
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar  = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    progressWrap.classList.add('show');
+
+    const resultsCard = document.getElementById('resultsCard');
+    const resultsBody = document.getElementById('resultsBody');
+    resultsCard.style.display = 'block';
+    resultsBody.innerHTML = '';
+
+    const total = selectedFiles.length;
+    let completed = 0;
+
+    log(`──── Starting upload of ${total} file(s) ────`, 'info');
+    log(`Session  : ${sessionId}`, 'info');
+    log(`Endpoint : ${FUNCTION_URL}`, 'info');
+
+    for (const file of selectedFiles) {
+        const idx = completed + 1;
+        log(`[${idx}/${total}] Preparing "${file.name}" …`, 'info');
+
+        try {
+            // Convert to base64
+            log(`[${idx}/${total}] Reading file as base64 …`, 'info');
+            const t0 = performance.now();
+            const base64 = await fileToBase64(file);
+            const readMs = (performance.now() - t0).toFixed(0);
+            log(`[${idx}/${total}] Base64 ready – ${base64.length} chars (${readMs} ms)`, 'ok');
+
+            // Build payload
+            const payload = {
+                sessionId,
+                fileName: file.name,
+                fileType: file.type || 'application/octet-stream',
+                fileBase64: base64,
+            };
+
+            log(`[${idx}/${total}] Sending POST to ${FUNCTION_URL} …`, 'info');
+            const tUp = performance.now();
+
+            const res = await fetch(FUNCTION_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const upMs = (performance.now() - tUp).toFixed(0);
+            const data = await res.json();
+
+            if (res.ok) {
+                log(`[${idx}/${total}] ✅ SUCCESS (${res.status}) in ${upMs} ms`, 'ok');
+                log(`[${idx}/${total}]   path : ${data.path}`, 'ok');
+                log(`[${idx}/${total}]   url  : ${data.publicUrl}`, 'ok');
+
+                resultsBody.innerHTML += `
+                    <div class="result-item">
+                        ✅ <strong>${file.name}</strong><br>
+                        Path: ${data.path}<br>
+                        <a href="${data.publicUrl}" target="_blank">Public URL</a>
+                    </div>`;
+            } else {
+                log(`[${idx}/${total}] ❌ FAILED (${res.status}) in ${upMs} ms`, 'error');
+                log(`[${idx}/${total}]   error: ${JSON.stringify(data)}`, 'error');
+
+                resultsBody.innerHTML += `
+                    <div class="result-item" style="border-left:3px solid #e66;">
+                        ❌ <strong>${file.name}</strong> – ${data.error || res.statusText}
+                    </div>`;
+            }
+        } catch (err) {
+            log(`[${idx}/${total}] ❌ EXCEPTION: ${err.message}`, 'error');
+            console.error(err);
+
+            resultsBody.innerHTML += `
+                <div class="result-item" style="border-left:3px solid #e66;">
+                    ❌ <strong>${file.name}</strong> – ${err.message}
+                </div>`;
+        }
+
+        completed++;
+        const pct = Math.round((completed / total) * 100);
+        progressBar.style.width = pct + '%';
+        progressText.textContent = `${completed} / ${total} files uploaded`;
+    }
+
+    log(`──── Upload batch finished (${completed}/${total}) ────`, completed === total ? 'ok' : 'warn');
+    btn.disabled = false;
+}
+
+// ─── Init ──────────────────────────────
+initSession();
+log('Test page ready. Select files to upload.', 'ok');
+</script>
+</body>
+</html>
