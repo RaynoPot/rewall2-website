@@ -1,7 +1,6 @@
-// netlify/functions/supabaseUpload.js - Supabase Storage Upload
+// netlify/functions/supabaseUpload.js - Supabase Storage Upload (SDK version)
 
-const axios = require('axios');
-const { randomUUID } = require('crypto');
+const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async function (event, context) {
   // ---------- CORS ----------
@@ -26,29 +25,41 @@ exports.handler = async function (event, context) {
   }
 
   // ---------- ENV ----------
-  const API_URL        = process.env.API_URL;         // e.g. https://xyz.supabase.co
-  const API_KEY        = process.env.API_KEY;          // publishable (anon) key
-  const API_SECRET_KEY = process.env.API_SECRET_KEY;   // new secret API key (replaces legacy service_role)
+  // API_URL         → Supabase project URL  (https://xxx.supabase.co)
+  // API_KEY         → publishable / anon key
+  // API_SECRET_KEY  → secret key (service-role level, bypasses RLS)
+  const API_URL        = process.env.API_URL;
+  const API_KEY        = process.env.API_KEY;
+  const API_SECRET_KEY = process.env.API_SECRET_KEY;
 
-  if (!API_URL || !API_KEY || !API_SECRET_KEY) {
-    console.error('[supabaseUpload] Missing environment variables. Ensure API_URL, API_KEY and API_SECRET_KEY are set.');
+  console.log('[supabaseUpload] Checking ENV vars …');
+  console.log(`[supabaseUpload]   API_URL          : ${API_URL ? API_URL : '*** MISSING ***'}`);
+  console.log(`[supabaseUpload]   API_KEY          : ${API_KEY ? API_KEY.substring(0, 12) + '…' : '*** MISSING ***'}`);
+  console.log(`[supabaseUpload]   API_SECRET_KEY   : ${API_SECRET_KEY ? API_SECRET_KEY.substring(0, 12) + '…' : '*** MISSING ***'}`);
+
+  if (!API_URL || !API_SECRET_KEY) {
+    console.error('[supabaseUpload] Missing required env vars (API_URL and/or API_SECRET_KEY).');
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Server misconfiguration – missing env vars.' }),
+      body: JSON.stringify({ error: 'Server misconfiguration – missing env vars (API_URL, API_SECRET_KEY).' }),
     };
   }
 
-  console.log('[supabaseUpload] ENV check passed');
-  console.log(`[supabaseUpload] API_URL = ${API_URL}`);
+  // ---------- Initialise Supabase client with the secret key ----------
+  // Using the secret key as both the "anon" key gives full service-role access
+  // and lets the SDK handle auth headers correctly for new + legacy key formats.
+  const supabase = createClient(API_URL, API_SECRET_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  console.log('[supabaseUpload] Supabase client initialised');
 
   // ---------- Parse body ----------
   try {
-    // Expect JSON: { sessionId, fileName, fileType, fileBase64 }
     const body = JSON.parse(event.body);
     const { sessionId, fileName, fileType, fileBase64 } = body;
 
-    console.log(`[supabaseUpload] Received upload request`);
+    console.log('[supabaseUpload] Received upload request');
     console.log(`[supabaseUpload]   sessionId : ${sessionId}`);
     console.log(`[supabaseUpload]   fileName  : ${fileName}`);
     console.log(`[supabaseUpload]   fileType  : ${fileType}`);
@@ -72,26 +83,37 @@ exports.handler = async function (event, context) {
     const fileBuffer = Buffer.from(fileBase64, 'base64');
     console.log(`[supabaseUpload] Decoded buffer size: ${fileBuffer.length} bytes`);
 
-    // ---------- Upload via Supabase Storage REST API ----------
-    const uploadUrl = `${API_URL}/storage/v1/object/${BUCKET}/${storagePath}`;
-    console.log(`[supabaseUpload] Upload URL: ${uploadUrl}`);
+    // ---------- Upload via Supabase JS SDK ----------
+    console.log('[supabaseUpload] Uploading via Supabase SDK …');
 
-    const response = await axios.post(uploadUrl, fileBuffer, {
-      headers: {
-        'Authorization': `Bearer ${API_SECRET_KEY}`,
-        'apikey': API_KEY,
-        'Content-Type': fileType || 'application/octet-stream',
-        'x-upsert': 'true',           // overwrite if same name
-      },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-    });
+    const { data, error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(storagePath, fileBuffer, {
+        contentType: fileType || 'application/octet-stream',
+        upsert: true,           // overwrite if same name
+        duplex: 'half',         // required for Node stream/buffer uploads
+      });
 
-    console.log(`[supabaseUpload] Supabase response status: ${response.status}`);
-    console.log(`[supabaseUpload] Supabase response data:`, JSON.stringify(response.data));
+    if (uploadError) {
+      console.error('[supabaseUpload] SDK upload error:', JSON.stringify(uploadError));
+      return {
+        statusCode: uploadError.statusCode ? parseInt(uploadError.statusCode, 10) : 400,
+        headers,
+        body: JSON.stringify({
+          error: 'Upload failed',
+          details: uploadError.message || uploadError,
+        }),
+      };
+    }
 
-    // ---------- Build public URL (optional – works if bucket is public) ----------
-    const publicUrl = `${API_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
+    console.log('[supabaseUpload] Upload successful:', JSON.stringify(data));
+
+    // ---------- Build public URL ----------
+    const { data: urlData } = supabase.storage
+      .from(BUCKET)
+      .getPublicUrl(storagePath);
+
+    const publicUrl = urlData?.publicUrl || `${API_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
     console.log(`[supabaseUpload] Public URL: ${publicUrl}`);
 
     return {
@@ -101,21 +123,18 @@ exports.handler = async function (event, context) {
         message: 'File uploaded successfully',
         path: storagePath,
         publicUrl,
-        supabaseResponse: response.data,
+        supabaseData: data,
       }),
     };
   } catch (err) {
-    console.error('[supabaseUpload] ERROR:', err.message);
-    if (err.response) {
-      console.error('[supabaseUpload] Supabase status:', err.response.status);
-      console.error('[supabaseUpload] Supabase body  :', JSON.stringify(err.response.data));
-    }
+    console.error('[supabaseUpload] UNHANDLED ERROR:', err.message);
+    console.error('[supabaseUpload] Stack:', err.stack);
     return {
-      statusCode: err.response?.status || 500,
+      statusCode: 500,
       headers,
       body: JSON.stringify({
-        error: 'Upload failed',
-        details: err.response?.data || err.message,
+        error: 'Upload failed (unhandled)',
+        details: err.message,
       }),
     };
   }
