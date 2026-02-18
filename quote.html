@@ -613,14 +613,22 @@
         }
         
         .height-optional-tag {
-            font-size: 0.85rem;
+            display: block;
+            font-size: 0.8rem;
+            color: var(--slate);
+            background: rgba(74, 144, 164, 0.08);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 6px;
+            font-weight: 400;
+            line-height: 1.45;
+            letter-spacing: 0;
+            border-left: 3px solid var(--teal-accent);
+        }
+        
+        .height-optional-tag strong {
             color: var(--teal-accent);
-            background: rgba(74, 144, 164, 0.15);
-            padding: 4px 10px;
-            border-radius: 4px;
-            margin-left: 6px;
             font-weight: 600;
-            letter-spacing: 0.3px;
         }
         
 
@@ -1261,6 +1269,10 @@
                             <input type="checkbox" id="boundaries-toggle" onchange="toggleBoundaries()">
                             <span>🏠 Property Boundaries</span>
                         </label>
+                        <label class="layer-toggle-item" id="buildings-label" title="Show/hide NZ building outlines (dwelling footprints)">
+                            <input type="checkbox" id="buildings-toggle" onchange="toggleBuildings()">
+                            <span>🏗️ Building Outlines</span>
+                        </label>
                         <div class="map-layer-toggle">
                             <button id="map-btn" class="active" onclick="setMapLayer('map')">Map</button>
                             <button id="satellite-btn" onclick="setMapLayer('satellite')">Satellite</button>
@@ -1726,6 +1738,11 @@
         let boundaryRefreshTimeout = null;
         let selectedParcelInfo = null; // Stores clicked property parcel data
         
+        // LINZ Building Outlines layer variables
+        let buildingGeoJson = null;
+        let buildingLoadingState = false;
+        let buildingRefreshTimeout = null;
+        
         // ==========================================
         // LINZ PROPERTY BOUNDARIES - WFS via Netlify Function
         // ==========================================
@@ -1828,6 +1845,150 @@
             boundaryRefreshTimeout = setTimeout(() => {
                 loadBoundariesForView();
             }, 1000); // Wait 1 second after map stops moving
+        }
+        
+        // ==========================================
+        // LINZ BUILDING OUTLINES - WFS via Netlify Function
+        // ==========================================
+
+        // Initialize building outlines layer (empty at start)
+        function initializeBuildingLayer() {
+            if (buildingGeoJson) {
+                map.removeLayer(buildingGeoJson);
+            }
+            
+            buildingGeoJson = L.geoJSON(null, {
+                style: {
+                    color: '#3388ff',        // Blue for building outlines
+                    weight: 1.5,
+                    opacity: 0.8,
+                    fillColor: '#3388ff',
+                    fillOpacity: 0.15
+                },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties) {
+                        const props = feature.properties;
+                        let popupContent = '<div style="font-size: 12px;">';
+                        popupContent += '<strong>Building Outline</strong><br>';
+                        if (props.name) popupContent += `Name: ${props.name}<br>`;
+                        if (props.use) popupContent += `Use: ${props.use}<br>`;
+                        if (props.suburb_locality) popupContent += `Suburb: ${props.suburb_locality}<br>`;
+                        if (props.town_city) popupContent += `City: ${props.town_city}<br>`;
+                        popupContent += '</div>';
+                        layer.bindPopup(popupContent);
+                    }
+                }
+            });
+        }
+
+        // Load LINZ building outlines for current map view
+        async function loadBuildingsForView() {
+            if (buildingLoadingState) {
+                console.log('Building outlines load already in progress...');
+                return;
+            }
+            
+            buildingLoadingState = true;
+            
+            try {
+                const bounds = map.getBounds();
+                const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+                
+                console.log('Fetching LINZ building outlines for bbox:', bbox);
+                
+                // Call Netlify function with NZ Building Outlines layer (layer-101290)
+                const response = await fetch(
+                    `/.netlify/functions/linzApi?bbox=${encodeURIComponent(bbox)}&layer=layer-101290&count=3000`
+                );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.message || data.error);
+                }
+                
+                console.log(`Loaded ${data.features?.length || 0} building outlines`);
+                
+                // Clear existing buildings and add new ones
+                if (buildingGeoJson) {
+                    buildingGeoJson.clearLayers();
+                    buildingGeoJson.addData(data);
+                }
+                
+            } catch (error) {
+                console.error('Error loading building outlines:', error);
+                throw error;
+            } finally {
+                buildingLoadingState = false;
+            }
+        }
+
+        // Toggle building outlines with WFS loading
+        async function toggleBuildings() {
+            const checkbox = document.getElementById('buildings-toggle');
+            const label = document.getElementById('buildings-label');
+            
+            if (checkbox.checked) {
+                label.classList.add('loading');
+                
+                try {
+                    console.log('Enabling LINZ building outlines layer...');
+                    
+                    if (!buildingGeoJson) {
+                        initializeBuildingLayer();
+                    }
+                    
+                    buildingGeoJson.addTo(map);
+                    
+                    await loadBuildingsForView();
+                    
+                    // Keep drawn items on top
+                    if (drawnItems) {
+                        drawnItems.bringToFront();
+                    }
+                    
+                    label.classList.remove('loading');
+                    label.classList.add('active');
+                    console.log('\u2713 Building outlines layer enabled');
+                    
+                    map.on('moveend', scheduleBuildingRefresh);
+                    map.on('zoomend', scheduleBuildingRefresh);
+                    
+                } catch (error) {
+                    console.error('Error enabling building outlines:', error);
+                    label.classList.remove('loading');
+                    label.classList.add('error');
+                    checkbox.checked = false;
+                    setTimeout(() => label.classList.remove('error'), 3000);
+                    alert(`Failed to enable building outlines: ${error.message}. Please try again.`);
+                }
+            } else {
+                if (buildingGeoJson) {
+                    map.removeLayer(buildingGeoJson);
+                }
+                
+                label.classList.remove('active', 'loading', 'error');
+                console.log('\u2713 Building outlines layer disabled');
+                
+                map.off('moveend', scheduleBuildingRefresh);
+                map.off('zoomend', scheduleBuildingRefresh);
+            }
+        }
+
+        // Auto-refresh building outlines when map moves (debounced)
+        function scheduleBuildingRefresh() {
+            if (!document.getElementById('buildings-toggle')?.checked) {
+                return;
+            }
+            
+            clearTimeout(buildingRefreshTimeout);
+            buildingRefreshTimeout = setTimeout(() => {
+                loadBuildingsForView();
+            }, 1000);
         }
         
         // Initialize when page loads
@@ -2161,6 +2322,9 @@
                 maxZoom: 22
             });
             
+            // Add LINZ data acknowledgment
+            map.attributionControl.addAttribution('Boundaries & buildings data sourced from <a href="https://data.linz.govt.nz/" target="_blank" rel="noopener">LINZ</a> CC BY 4.0');
+            
             // Map tile layer (OpenStreetMap)
             mapTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -2184,6 +2348,9 @@
             
             // Initialize boundary layer
             initializeBoundaryLayer();
+            
+            // Initialize building outlines layer
+            initializeBuildingLayer();
             
             // Add drawing controls
             drawControl = new L.Control.Draw({
@@ -2556,8 +2723,8 @@
                                         step="0.1"
                                         onchange="updateWallHeightRange(${wall.id})">
                                     <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">m</span>
-                                    <span class="height-optional-tag">optional</span>
                                 </div>
+                                <span class="height-optional-tag"><strong>Optional</strong> — a rough estimate is fine. We'll confirm exact heights during the site assessment.</span>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">

@@ -235,9 +235,9 @@ nav.sidebar .cta-group button {
     margin-bottom: var(--spacing-sm);
 }
 
-/* Subtle breathing glow on Plan & Quote button */
+/* Prominent breathing glow on Plan & Quote button */
 nav.sidebar .cta-group button:first-child {
-    animation: btnBreathe 4s ease-in-out infinite;
+    animation: btnBreathe 2.5s ease-in-out infinite;
     position: relative;
 }
 
@@ -247,13 +247,17 @@ nav.sidebar .cta-group button:first-child:hover {
 
 @keyframes btnBreathe {
     0%, 100% {
-        box-shadow: 0 0 4px rgba(74, 144, 164, 0.15);
+        box-shadow: 0 0 6px rgba(74, 144, 164, 0.3),
+                    0 0 12px rgba(74, 144, 164, 0.1);
         background-color: var(--teal-accent);
+        transform: scale(1);
     }
     50% {
-        box-shadow: 0 0 18px rgba(74, 144, 164, 0.55),
-                    0 0 40px rgba(74, 144, 164, 0.15);
-        background-color: #5aa3b8;
+        box-shadow: 0 0 20px rgba(74, 144, 164, 0.8),
+                    0 0 50px rgba(74, 144, 164, 0.35),
+                    0 0 80px rgba(74, 144, 164, 0.12);
+        background-color: #5fbdd6;
+        transform: scale(1.05);
     }
 }
 
@@ -2355,7 +2359,8 @@ footer a:hover {
     }
     
     nav.sidebar.active {
-        max-height: 500px;
+        max-height: 100vh;
+        overflow-y: auto;
     }
     
     form {
