@@ -7,3 +7,12 @@
 
 [functions.linzApi]
   timeout = 26
+
+[functions.submitQuote]
+  timeout = 15
+
+[functions.sendNotification]
+  timeout = 15
+
+[functions.supabaseUpload]
+  timeout = 20

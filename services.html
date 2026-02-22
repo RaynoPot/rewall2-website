@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,1020 +11,6 @@
     
     <title>Services - ReWall NZ</title>
     <link rel="stylesheet" href="css/styles.css">
-    
-    <!-- Leaflet CSS for Map -->
-    <style>
-        /* Quote Builder Styles */
-        .quote-builder {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: var(--spacing-xxl) 0;
-            border-top: 3px solid var(--teal-accent);
-        }
-        
-        .quote-step {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-xl);
-            margin-bottom: var(--spacing-xl);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border-left: 4px solid var(--teal-accent);
-        }
-        
-        .quote-step-header {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .step-number {
-            width: 40px;
-            height: 40px;
-            background: var(--teal-accent);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-        
-        .step-number.completed {
-            background: #28a745;
-        }
-        
-        .quote-step h3 {
-            margin: 0;
-            color: var(--primary-black);
-        }
-        
-        .quote-step-description {
-            color: var(--slate);
-            margin-bottom: var(--spacing-lg);
-            line-height: 1.6;
-        }
-        
-        /* Map Container */
-        #map-container {
-            height: 500px;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            border: 2px solid var(--border-gray);
-            margin-bottom: var(--spacing-md);
-            position: relative;
-        }
-        
-        #site-map {
-            height: 100%;
-            width: 100%;
-        }
-        
-        /* Drawing Tool Enhancement - Pulsing Animation */
-        .leaflet-draw-toolbar {
-            animation: none;
-        }
-
-        @keyframes drawButtonGlow {
-            0%, 100% {
-                box-shadow: 0 0 8px rgba(255, 107, 53, 0.4), 0 2px 8px rgba(0,0,0,0.2);
-            }
-            50% {
-                box-shadow: 0 0 20px rgba(255, 107, 53, 0.7), 0 2px 12px rgba(0,0,0,0.3);
-            }
-        }
-        
-        /* Floating Tooltip Prompt for Drawing Tool */
-        .draw-prompt-tooltip {
-            position: absolute;
-            left: 70px;
-            top: 75px;
-            background: linear-gradient(135deg, #4A90A4 0%, #2C7A99 100%);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 20px rgba(74, 144, 164, 0.4);
-            z-index: 1000;
-            animation: tooltipBounce 2s ease-in-out infinite;
-            pointer-events: none;
-            max-width: 250px;
-        }
-        
-        .draw-prompt-tooltip::before {
-            content: '';
-            position: absolute;
-            left: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-top: 8px solid transparent;
-            border-bottom: 8px solid transparent;
-            border-right: 8px solid #4A90A4;
-        }
-        
-        .draw-prompt-tooltip .prompt-icon {
-            display: inline-block;
-            margin-right: 6px;
-            animation: pointFinger 1s ease-in-out infinite;
-        }
-        
-        @keyframes tooltipBounce {
-            0%, 100% {
-                transform: translateX(0);
-            }
-            50% {
-                transform: translateX(8px);
-            }
-        }
-        
-        @keyframes pointFinger {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.2);
-            }
-        }
-        
-        /* Hide tooltip when drawing starts */
-        .draw-prompt-tooltip.hidden {
-            display: none;
-        }
-        
-        /* Enhanced draw button styling - large and obvious */
-        .leaflet-draw-draw-polyline {
-            width: 52px !important;
-            height: 52px !important;
-            background-color: #FF6B35 !important;
-            border: 3px solid white !important;
-            border-radius: 12px !important;
-            transition: all 0.3s ease !important;
-            animation: drawButtonGlow 2s ease-in-out infinite !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpolyline points='4,24 10,10 18,16 24,4' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='24' r='2.5' fill='white'/%3E%3Ccircle cx='10' cy='10' r='2.5' fill='white'/%3E%3Ccircle cx='18' cy='16' r='2.5' fill='white'/%3E%3Ccircle cx='24' cy='4' r='2.5' fill='white'/%3E%3C/svg%3E") !important;
-            background-size: 28px 28px !important;
-            background-position: center !important;
-            background-repeat: no-repeat !important;
-            position: relative;
-        }
-
-        .leaflet-draw-draw-polyline:hover {
-            background-color: #E55A2B !important;
-            transform: scale(1.1);
-        }
-
-        /* "Draw Wall" label next to button */
-        .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
-            content: '📐 Draw Wall — Click here to start marking your wall';
-            position: absolute;
-            left: 58px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #FF6B35;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        /* After user has clicked draw tool, hide the label and only show on hover */
-        .leaflet-draw-draw-polyline.draw-used::after {
-            content: '📐 Draw Wall' !important;
-            opacity: 0 !important;
-        }
-        .leaflet-draw-draw-polyline.draw-used:hover::after {
-            opacity: 1 !important;
-        }
-
-        /* While actively drawing, always hide even on hover */
-        .leaflet-draw-draw-polyline.drawing-active::after {
-            opacity: 0 !important;
-        }
-        
-        .map-controls {
-            display: flex;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        /* Enhanced Address Search with Autocomplete */
-        .address-search {
-            flex: 1;
-            min-width: 300px;
-            position: relative;
-        }
-        
-        .address-search-wrapper {
-            display: flex;
-            gap: var(--spacing-sm);
-            align-items: stretch;
-        }
-        
-        .address-search input {
-            flex: 1;
-            padding: 0 16px;
-            height: 48px;
-            border: 2px solid var(--border-gray);
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-        
-        .address-search input:focus {
-            border-color: var(--teal-accent);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.2);
-        }
-        
-        .address-search button {
-            padding: 0 24px;
-            height: 48px;
-            background: var(--teal-accent);
-            color: white;
-            border: none;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            box-sizing: border-box;
-        }
-        
-        .address-search button:hover {
-            background: #3a8a9a;
-        }
-        
-        .address-search button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        /* Autocomplete Dropdown */
-        .address-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid var(--teal-accent);
-            border-top: none;
-            border-radius: 0 0 var(--radius-md) var(--radius-md);
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 2000;
-            display: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-        
-        .address-suggestions.active {
-            display: block;
-        }
-        
-        .address-suggestion {
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-gray);
-            transition: all 0.2s ease;
-        }
-        
-        .address-suggestion:last-child {
-            border-bottom: none;
-        }
-        
-        .address-suggestion:hover {
-            background: var(--soft-blue);
-        }
-        
-        .address-suggestion .suggestion-main {
-            font-weight: 600;
-            color: var(--primary-black);
-        }
-        
-        .address-suggestion .suggestion-secondary {
-            font-size: 0.85rem;
-            color: var(--slate);
-            margin-top: 2px;
-        }
-        
-        .address-searching {
-            padding: 16px;
-            text-align: center;
-            color: var(--slate);
-        }
-        
-        .address-searching::before {
-            content: "🔍 ";
-        }
-        
-        .map-layer-toggle {
-            display: flex;
-            gap: var(--spacing-xs);
-            background: white;
-            padding: 4px;
-            border-radius: var(--radius-md);
-            border: 2px solid var(--border-gray);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .map-layer-toggle button {
-            padding: 10px 20px;
-            border: none;
-            background: transparent;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: var(--charcoal);
-        }
-        
-        .map-layer-toggle button:hover {
-            background: var(--light-gray);
-        }
-        
-        .map-layer-toggle button.active {
-            background: var(--teal-accent);
-            color: white;
-            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.3);
-        }
-        
-        /* Layer toggles - Enhanced styling */
-        .layer-toggles {
-            display: flex;
-            gap: var(--spacing-md);
-            flex-wrap: wrap;
-        }
-        
-        .layer-toggle-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            padding: 10px 16px;
-            background: white;
-            border: 2px solid var(--border-gray);
-            border-radius: var(--radius-md);
-            transition: all 0.3s ease;
-            font-weight: 500;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .layer-toggle-item:hover {
-            background: var(--soft-blue);
-            border-color: var(--teal-accent);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(74, 144, 164, 0.15);
-        }
-        
-        .layer-toggle-item.active {
-            background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%);
-            color: white;
-            border-color: var(--teal-accent);
-            box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
-        }
-        
-        .layer-toggle-item.active:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(74, 144, 164, 0.4);
-        }
-        
-        .layer-toggle-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--teal-accent);
-            cursor: pointer;
-        }
-        
-        .layer-toggle-item.active input[type="checkbox"] {
-            accent-color: white;
-        }
-        
-        .layer-toggle-item span {
-            user-select: none;
-        }
-        
-        /* Boundary loading indicator */
-        .layer-toggle-item.loading {
-            opacity: 0.6;
-            cursor: wait;
-        }
-
-        .layer-toggle-item.loading::after {
-            content: ' ⏳';
-            animation: pulse 1s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .layer-toggle-item.error {
-            border-color: #e74c3c;
-            color: #e74c3c;
-        }
-        
-        .drawing-info {
-            background: #e3f2fd;
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-            margin-top: var(--spacing-md);
-            border-left: 4px solid #2196f3;
-        }
-        
-        .drawing-info h4 {
-            margin: 0 0 var(--spacing-sm) 0;
-            color: #1976d2;
-        }
-        
-        .drawing-info p {
-            margin: 0;
-            color: var(--slate);
-            font-size: 0.95rem;
-        }
-        
-        .drawn-walls-list {
-            margin-top: var(--spacing-md);
-            background: linear-gradient(135deg, var(--soft-blue) 0%, rgba(232, 244, 248, 0.5) 100%);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-lg);
-            border: 2px solid rgba(74, 144, 164, 0.15);
-        }
-        
-        .drawn-walls-list h4 {
-            margin: 0 0 var(--spacing-md) 0;
-            color: var(--primary-black);
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .wall-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--spacing-md);
-            background: white;
-            border-radius: var(--radius-md);
-            margin-bottom: var(--spacing-md);
-            border-left: 5px solid var(--teal-accent);
-            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .wall-item:hover {
-            box-shadow: 0 4px 16px rgba(74, 144, 164, 0.2);
-            transform: translateX(4px);
-        }
-        
-        .wall-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .wall-item .wall-info {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            flex: 1;
-        }
-        
-        .wall-item .wall-label {
-            font-weight: 700;
-            color: var(--primary-black);
-            min-width: 60px;
-        }
-        
-        .wall-item .wall-length {
-            font-weight: 600;
-            color: var(--teal-accent);
-            font-size: 1.1rem;
-        }
-        
-        .wall-item button {
-            background: var(--teal-accent);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-left: var(--spacing-md);
-        }
-        
-        .wall-item button:hover {
-            background: #2C5F7F;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
-        }
-
-        .wall-item .wall-delete-btn {
-            background: var(--slate) !important;
-            font-size: 0.8rem;
-        }
-
-        .wall-item .wall-delete-btn:hover {
-            background: #1a252f !important;
-            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3) !important;
-        }
-
-        /* Wall number labels on map */
-        .wall-map-label {
-            background: var(--teal-accent);
-            color: white;
-            font-weight: 700;
-            font-size: 13px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        
-        .total-length {
-            background: white;
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-            margin-top: var(--spacing-md);
-            border-top: 3px solid var(--teal-accent);
-            font-weight: 600;
-            color: var(--primary-black);
-            line-height: 1.6;
-        }
-        
-        .walls-info-note {
-            background: rgba(74, 144, 164, 0.1);
-            border-left: 4px solid var(--teal-accent);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-            margin-top: var(--spacing-md);
-            font-size: 0.9rem;
-            color: var(--slate);
-        }
-        
-        .walls-info-note strong {
-            color: var(--primary-black);
-        }
-        
-        .height-input-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--light-gray);
-            padding: 10px;
-            border-radius: var(--radius-sm);
-            margin-top: var(--spacing-sm);
-            flex-wrap: wrap;
-        }
-        
-        .height-input-group input {
-            max-width: 80px;
-            padding: 6px 10px;
-            border: 1px solid var(--border-gray);
-            border-radius: 4px;
-            font-size: 0.9rem;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-        
-        .height-input-group input:focus {
-            outline: none;
-            border-color: var(--teal-accent);
-            box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
-        }
-        
-        .height-optional-tag {
-            font-size: 0.85rem;
-            color: var(--teal-accent);
-            background: rgba(74, 144, 164, 0.15);
-            padding: 4px 10px;
-            border-radius: 4px;
-            margin-left: 6px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-        
-
-        .total-length {
-            margin-top: var(--spacing-md);
-            padding: var(--spacing-md);
-            background: var(--teal-accent);
-            color: white;
-            border-radius: var(--radius-md);
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        
-        /* Wall Type Selection - Enhanced Card Design */
-        .wall-type-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .wall-type-card {
-            display: flex;
-            flex-direction: column;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid #e8eef2;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-            position: relative;
-        }
-        
-        .wall-type-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(74, 144, 164, 0.12);
-            border-color: var(--teal-accent);
-        }
-        
-        .wall-type-card.selected {
-            border-color: var(--teal-accent);
-            background: linear-gradient(180deg, #f0f9fb 0%, #ffffff 100%);
-            box-shadow: 0 8px 24px rgba(74, 144, 164, 0.2);
-        }
-        
-        .wall-type-card.selected::after {
-            content: '✓';
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            width: 28px;
-            height: 28px;
-            background: var(--teal-accent);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            box-shadow: 0 2px 8px rgba(74, 144, 164, 0.4);
-        }
-        
-        .wall-card-image {
-            height: 160px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(180deg, #f8fafb 0%, #eef3f6 100%);
-            position: relative;
-        }
-        
-        .wall-card-image .icon-circle {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 3px solid #e8eef2;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        
-        .wall-type-card:hover .icon-circle {
-            border-color: var(--teal-accent);
-            box-shadow: 0 6px 24px rgba(74, 144, 164, 0.15);
-            transform: scale(1.05);
-        }
-        
-        .wall-type-card.selected .icon-circle {
-            border-color: var(--teal-accent);
-            box-shadow: 0 6px 24px rgba(74, 144, 164, 0.2);
-        }
-        
-        .wall-card-image .icon-circle img {
-            width: 85%;
-            height: 85%;
-            object-fit: contain;
-        }
-        
-        .wall-card-content {
-            padding: var(--spacing-lg);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .wall-card-title {
-            font-weight: 700;
-            color: var(--primary-black);
-            margin-bottom: var(--spacing-md);
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: block;
-        }
-        
-        .wall-checkbox {
-            display: none;
-        }
-        
-        .wall-pros-cons {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--slate);
-            line-height: 1.6;
-        }
-        
-        .wall-pros-cons li {
-            margin-bottom: 6px;
-            padding-left: 0;
-        }
-        
-        .wall-pros-cons strong {
-            color: var(--teal-accent);
-            margin-right: 4px;
-            min-width: 20px;
-            display: inline-block;
-        }
-
-        .wall-pros-cons .limitation {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            background: #FFF3E0;
-            border: 1.5px solid #FFB74D;
-            border-radius: 4px;
-            color: #F5A623;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-right: 6px;
-            vertical-align: middle;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-        
-        /* Original wall-type-option for backward compatibility */
-        .wall-type-option {
-            display: flex;
-            align-items: center;
-            padding: var(--spacing-md);
-            background: var(--light-gray);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .wall-type-option:hover {
-            border-color: var(--teal-accent);
-            background: white;
-        }
-        
-        .wall-type-option input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-right: var(--spacing-sm);
-            accent-color: var(--teal-accent);
-        }
-        
-        .wall-type-option.selected {
-            border-color: var(--teal-accent);
-            background: #e8f4f5;
-        }
-        
-        .wall-type-option label {
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .other-input {
-            margin-top: var(--spacing-md);
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border-gray);
-            border-radius: var(--radius-md);
-            display: none;
-            font-size: 1rem;
-            font-family: var(--font-primary);
-            transition: all 0.3s ease;
-        }
-        
-        .other-input:focus {
-            outline: none;
-            border-color: var(--teal-accent);
-            box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
-        }
-        
-        @media (max-width: 768px) {
-            .wall-type-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .other-input.visible {
-            display: block;
-        }
-        
-        /* Quote Summary */
-        .quote-summary {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            padding: var(--spacing-xl);
-            border-radius: var(--radius-lg);
-            margin-top: var(--spacing-xl);
-        }
-        
-        .quote-summary h3 {
-            color: var(--teal-accent);
-            margin-bottom: var(--spacing-lg);
-            text-align: center;
-        }
-        
-        .summary-section {
-            margin-bottom: var(--spacing-lg);
-            padding-bottom: var(--spacing-lg);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .summary-section:last-of-type {
-            border-bottom: none;
-        }
-        
-        .summary-section h4 {
-            color: var(--baby-blue);
-            margin-bottom: var(--spacing-sm);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .summary-section p, .summary-section ul {
-            margin: 0;
-            color: rgba(255,255,255,0.9);
-        }
-        
-        .summary-section ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .summary-section li {
-            padding: 4px 0;
-        }
-        
-        .submit-quote-btn {
-            width: 100%;
-            padding: 16px 32px;
-            background: var(--teal-accent);
-            color: white;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .submit-quote-btn:hover {
-            background: #3a8a9a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(74, 144, 164, 0.4);
-        }
-        
-        .submit-quote-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .optional-badge {
-            display: inline-block;
-            background: #ffc107;
-            color: #333;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: var(--spacing-sm);
-        }
-        
-        /* Live distance tooltip */
-        .distance-tooltip {
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        
-        /* Service Tags */
-        .service-tag {
-            display: inline-block;
-            background: var(--teal-accent);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        
-        /* Search Marker */
-        .search-marker {
-            font-size: 24px;
-            text-align: center;
-        }
-        
-        /* Leaflet custom styling */
-        .leaflet-draw-toolbar a {
-            background-color: var(--teal-accent) !important;
-            width: 36px !important;
-            height: 36px !important;
-            line-height: 36px !important;
-            border: none !important;
-        }
-
-        .leaflet-draw-toolbar {
-            border: none !important;
-            box-shadow: none !important;
-        }
-
-        .leaflet-draw-section {
-            border: none !important;
-        }
-
-        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline {
-            width: 52px !important;
-            height: 52px !important;
-            line-height: 52px !important;
-        }
-        
-        .leaflet-draw-actions a {
-            background-color: #333 !important;
-        }
-        
-        /* Loading spinner */
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Map snapshot preview */
-        #map-snapshot-preview {
-            margin-top: var(--spacing-md);
-            display: none;
-        }
-        
-        #map-snapshot-preview img {
-            max-width: 100%;
-            border-radius: var(--radius-md);
-            border: 2px solid var(--teal-accent);
-        }
-        
-        #map-snapshot-preview .snapshot-label {
-            font-size: 0.85rem;
-            color: var(--slate);
-            margin-top: var(--spacing-sm);
-        }
-        
-        /* Responsive summary grid */
-        @media (max-width: 768px) {
-            .quote-summary > div[style*="grid-template-columns"] {
-                grid-template-columns: 1fr !important;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Navigation Sidebar -->
@@ -1038,6 +24,7 @@
             <li><a href="#services" class="active">Services</a></li>
             <li><a href="gallery.html">Gallery</a></li>
             <li><a href="blog.html">Blog</a></li>
+            <li><a href="quote.html">Plan & Quote</a></li>
         </ul>
         
         <div class="divider"></div>
@@ -1144,63 +131,63 @@
                 
                 <div class="grid" style="grid-template-columns: repeat(2, 1fr); margin-top: var(--spacing-xl);">
                     <div class="card">
-                        <h3>📋 Project Management</h3>
+                        <h3>ðŸ“‹ Project Management</h3>
                         <p>We coordinate every aspect of your retaining wall project:</p>
                         <ul style="list-style: none; padding: 0;">
-                            <li>✓ Initial site assessment</li>
-                            <li>✓ Scope definition & budgeting</li>
-                            <li>✓ Timeline planning</li>
-                            <li>✓ Stakeholder communication</li>
+                            <li>âœ“ Initial site assessment</li>
+                            <li>âœ“ Scope definition & budgeting</li>
+                            <li>âœ“ Timeline planning</li>
+                            <li>âœ“ Stakeholder communication</li>
                         </ul>
                     </div>
                     <div class="card">
-                        <h3>📐 Engineering Design</h3>
+                        <h3>ðŸ“ Engineering Design</h3>
                         <p>Expert structural and geotechnical engineering:</p>
                         <ul style="list-style: none; padding: 0;">
-                            <li>✓ Wall type selection</li>
-                            <li>✓ Detailed design drawings</li>
-                            <li>✓ Soil analysis & calculations</li>
-                            <li>✓ Safety certifications</li>
+                            <li>âœ“ Wall type selection</li>
+                            <li>âœ“ Detailed design drawings</li>
+                            <li>âœ“ Soil analysis & calculations</li>
+                            <li>âœ“ Safety certifications</li>
                         </ul>
                     </div>
                     <div class="card">
-                        <h3>� Cost Estimation</h3>
+                        <h3>ï¿½ Cost Estimation</h3>
                         <p>Transparent pricing based on your project scope:</p>
                         <ul style="list-style: none; padding: 0;">
-                            <li>✓ Detailed cost breakdown</li>
-                            <li>✓ Materials & labor quotes</li>
-                            <li>✓ Timeline & budget planning</li>
-                            <li>✓ No hidden costs</li>
+                            <li>âœ“ Detailed cost breakdown</li>
+                            <li>âœ“ Materials & labor quotes</li>
+                            <li>âœ“ Timeline & budget planning</li>
+                            <li>âœ“ No hidden costs</li>
                         </ul>
                     </div>
                     <div class="card">
-                        <h3>📜 Council Consent</h3>
+                        <h3>ðŸ“œ Council Consent</h3>
                         <p>Seamless consent and compliance process:</p>
                         <ul style="list-style: none; padding: 0;">
-                            <li>✓ Resource consent preparation</li>
-                            <li>✓ Building consent documentation</li>
-                            <li>✓ Authority liaison & follow-up</li>
-                            <li>✓ Permit coordination</li>
+                            <li>âœ“ Resource consent preparation</li>
+                            <li>âœ“ Building consent documentation</li>
+                            <li>âœ“ Authority liaison & follow-up</li>
+                            <li>âœ“ Permit coordination</li>
                         </ul>
                     </div>
                     <div class="card">
-                        <h3>🏗️ Construction</h3>
+                        <h3>ðŸ—ï¸ Construction</h3>
                         <p>Quality construction execution with professional oversight:</p>
                         <ul style="list-style: none; padding: 0;">
-                            <li>✓ Expert construction partners</li>
-                            <li>✓ Quality assurance inspections</li>
-                            <li>✓ Safety compliance</li>
-                            <li>✓ Regular progress updates</li>
+                            <li>âœ“ Expert construction partners</li>
+                            <li>âœ“ Quality assurance inspections</li>
+                            <li>âœ“ Safety compliance</li>
+                            <li>âœ“ Regular progress updates</li>
                         </ul>
                     </div>
                     <div class="card">
-                        <h3>✓ Final Sign-Off</h3>
+                        <h3>âœ“ Final Sign-Off</h3>
                         <p>Complete project handover with full documentation:</p>
                         <ul style="list-style: none; padding: 0;">
-                            <li>✓ Final inspections & testing</li>
-                            <li>✓ Authority sign-offs obtained</li>
-                            <li>✓ Complete documentation package</li>
-                            <li>✓ Warranty & maintenance guide</li>
+                            <li>âœ“ Final inspections & testing</li>
+                            <li>âœ“ Authority sign-offs obtained</li>
+                            <li>âœ“ Complete documentation package</li>
+                            <li>âœ“ Warranty & maintenance guide</li>
                         </ul>
                     </div>
                 </div>
@@ -1229,9 +216,9 @@
                         <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Mechanically Stabilized Earth</p>
                         <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">High-performance solutions for large spans and heavy loads. Ideal for commercial and industrial applications.</p>
                         <ul class="wall-pros-cons">
-                            <li><strong>✅</strong> Cost-effective for high walls</li>
-                            <li><strong>✅</strong> Excellent load-bearing capacity</li>
-                            <li><strong>✅</strong> Flexible design options</li>
+                            <li><strong>âœ…</strong> Cost-effective for high walls</li>
+                            <li><strong>âœ…</strong> Excellent load-bearing capacity</li>
+                            <li><strong>âœ…</strong> Flexible design options</li>
                         </ul>
                     </div>
                 </div>
@@ -1248,9 +235,9 @@
                         <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Classic Concrete & Masonry</p>
                         <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Solid, reliable structures using the weight of the wall itself. Perfect for residential and smaller projects.</p>
                         <ul class="wall-pros-cons">
-                            <li><strong>✅</strong> Simple, proven design</li>
-                            <li><strong>✅</strong> Minimal maintenance</li>
-                            <li><strong>✅</strong> Custom finishes available</li>
+                            <li><strong>âœ…</strong> Simple, proven design</li>
+                            <li><strong>âœ…</strong> Minimal maintenance</li>
+                            <li><strong>âœ…</strong> Custom finishes available</li>
                         </ul>
                     </div>
                 </div>
@@ -1267,9 +254,9 @@
                         <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Natural & Aesthetic</p>
                         <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Environmentally-friendly timber solutions that blend seamlessly with landscaping. Ideal for gardens and residential areas.</p>
                         <ul class="wall-pros-cons">
-                            <li><strong>✅</strong> Natural appearance</li>
-                            <li><strong>✅</strong> Sustainable materials</li>
-                            <li><strong>✅</strong> Lower height restrictions</li>
+                            <li><strong>âœ…</strong> Natural appearance</li>
+                            <li><strong>âœ…</strong> Sustainable materials</li>
+                            <li><strong>âœ…</strong> Lower height restrictions</li>
                         </ul>
                     </div>
                 </div>
@@ -1286,9 +273,9 @@
                         <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Durable & Long-lasting</p>
                         <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Precast and cast-in-place concrete options for maximum durability and architectural flexibility.</p>
                         <ul class="wall-pros-cons">
-                            <li><strong>✅</strong> Superior longevity</li>
-                            <li><strong>✅</strong> Design flexibility</li>
-                            <li><strong>✅</strong> Weather resistant</li>
+                            <li><strong>âœ…</strong> Superior longevity</li>
+                            <li><strong>âœ…</strong> Design flexibility</li>
+                            <li><strong>âœ…</strong> Weather resistant</li>
                         </ul>
                     </div>
                 </div>
@@ -1305,9 +292,9 @@
                         <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Aesthetic Soil Retention</p>
                         <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Decorative solutions for smaller-scale projects that enhance landscape design while retaining soil.</p>
                         <ul class="wall-pros-cons">
-                            <li><strong>✅</strong> Design-focused</li>
-                            <li><strong>✅</strong> Varied material options</li>
-                            <li><strong>✅</strong> Quick installation</li>
+                            <li><strong>âœ…</strong> Design-focused</li>
+                            <li><strong>âœ…</strong> Varied material options</li>
+                            <li><strong>âœ…</strong> Quick installation</li>
                         </ul>
                     </div>
                 </div>
@@ -1324,9 +311,9 @@
                         <p style="font-size: 0.85rem; font-weight: 600; color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Tailored to Your Needs</p>
                         <p style="font-size: 0.85rem; color: var(--slate); margin-bottom: var(--spacing-sm);">Unique projects require unique solutions. We design custom systems for complex site conditions.</p>
                         <ul class="wall-pros-cons">
-                            <li><strong>✅</strong> Site-specific engineering</li>
-                            <li><strong>✅</strong> Innovative approaches</li>
-                            <li><strong>✅</strong> Specialized expertise</li>
+                            <li><strong>âœ…</strong> Site-specific engineering</li>
+                            <li><strong>âœ…</strong> Innovative approaches</li>
+                            <li><strong>âœ…</strong> Specialized expertise</li>
                         </ul>
                     </div>
                 </div>
@@ -1342,33 +329,33 @@
                 
                 <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg);">
                     <div class="card" style="border-left: 5px solid var(--teal-accent); border-radius: var(--radius-lg);">
-                        <h3 style="color: var(--teal-accent);">🎯 Engineering Design Only</h3>
+                        <h3 style="color: var(--teal-accent);">ðŸŽ¯ Engineering Design Only</h3>
                         <p style="font-size: 0.95rem; color: var(--slate); margin-bottom: var(--spacing-md);"><strong>Perfect for:</strong> Builders with their own project management</p>
                         <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
-                            <li>✓ Complete structural design</li>
-                            <li>✓ Technical drawings & specs</li>
-                            <li>✓ Engineering certification</li>
-                            <li>✓ Consultation & support</li>
+                            <li>âœ“ Complete structural design</li>
+                            <li>âœ“ Technical drawings & specs</li>
+                            <li>âœ“ Engineering certification</li>
+                            <li>âœ“ Consultation & support</li>
                         </ul>
                     </div>
                     <div class="card" style="border-left: 5px solid var(--teal-accent); border-radius: var(--radius-lg);">
-                        <h3 style="color: var(--teal-accent);">📋 Council Submission Support</h3>
+                        <h3 style="color: var(--teal-accent);">ðŸ“‹ Council Submission Support</h3>
                         <p style="font-size: 0.95rem; color: var(--slate); margin-bottom: var(--spacing-md);"><strong>Perfect for:</strong> Designers needing consent expertise</p>
                         <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
-                            <li>✓ Consent application prep</li>
-                            <li>✓ Authority liaison</li>
-                            <li>✓ Documentation support</li>
-                            <li>✓ Follow-up & amendments</li>
+                            <li>âœ“ Consent application prep</li>
+                            <li>âœ“ Authority liaison</li>
+                            <li>âœ“ Documentation support</li>
+                            <li>âœ“ Follow-up & amendments</li>
                         </ul>
                     </div>
                     <div class="card" style="border-left: 5px solid var(--teal-accent); border-radius: var(--radius-lg);">
-                        <h3 style="color: var(--teal-accent);">🏗️ Construction Supervision</h3>
+                        <h3 style="color: var(--teal-accent);">ðŸ—ï¸ Construction Supervision</h3>
                         <p style="font-size: 0.95rem; color: var(--slate); margin-bottom: var(--spacing-md);"><strong>Perfect for:</strong> Those managing their own design phase</p>
                         <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
-                            <li>✓ Quality inspections</li>
-                            <li>✓ Safety oversight</li>
-                            <li>✓ Progress monitoring</li>
-                            <li>✓ Final certification</li>
+                            <li>âœ“ Quality inspections</li>
+                            <li>âœ“ Safety oversight</li>
+                            <li>âœ“ Progress monitoring</li>
+                            <li>âœ“ Final certification</li>
                         </ul>
                     </div>
                 </div>
@@ -1382,7 +369,7 @@
         <!-- Service Selection Popup Modal -->
         <div id="service-popup" class="service-popup">
             <div class="service-popup-content">
-                <button class="popup-close" onclick="closeServicePopup()">×</button>
+                <button class="popup-close" onclick="closeServicePopup()">Ã—</button>
                 <h3>Ready to Get Started?</h3>
                 <p id="popup-selection-summary" style="font-size: 1.1rem; margin: var(--spacing-md) 0; color: var(--slate);"></p>
                 <p style="color: var(--slate); margin-bottom: var(--spacing-lg);">
@@ -1399,14 +386,14 @@
         <section>
             <div class="container">
             <div class="card" style="background: linear-gradient(135deg, var(--soft-blue) 0%, #dbe8f0 100%); border-left: 4px solid var(--teal-accent);">
-                <h3 style="color: var(--teal-accent);">🔮 Coming Soon: DIY Planning Tool</h3>
+                <h3 style="color: var(--teal-accent);">ðŸ”® Coming Soon: DIY Planning Tool</h3>
                 <p><strong>Transform the way you plan retaining walls</strong></p>
                 <p>Our next-generation digital tool (powered by Data Bloc) will enable you to:</p>
                 <ul style="list-style: none; padding: 0; columns: 2;">
-                    <li>✓ Visualize your wall in 3D</li>
-                    <li>✓ Run automated calculations</li>
-                    <li>✓ Generate preliminary scopes</li>
-                    <li>✓ Export pre-quote data</li>
+                    <li>âœ“ Visualize your wall in 3D</li>
+                    <li>âœ“ Run automated calculations</li>
+                    <li>âœ“ Generate preliminary scopes</li>
+                    <li>âœ“ Export pre-quote data</li>
                 </ul>
                 <p style="margin-top: var(--spacing-lg);"><em>Want early access? Contact us to join the beta program.</em></p>
             </div>
@@ -1421,8 +408,8 @@
                         <img src="images/Logos/re wall logo WHITE.png" alt="ReWall Logo" style="width: 180px; height: auto; margin-bottom: var(--spacing-md);">
                         <p>Premium retaining wall solutions with expert engineering, smart digital tools, and trusted construction partners.</p>
                         <div class="footer-contact-inline">
-                            <a href="mailto:info@rewall.nz">📧 info@rewall.nz</a>
-                            <a href="tel:+64273941127">📞 027 394 1127</a>
+                            <a href="mailto:info@rewall.nz">ðŸ“§ info@rewall.nz</a>
+                            <a href="tel:+64273941127">ðŸ“ž 027 394 1127</a>
                         </div>
                     </div>
                     <div class="footer-links-group">
@@ -1434,6 +421,7 @@
                                 <li><a href="services.html">Services</a></li>
                                 <li><a href="gallery.html">Gallery</a></li>
                                 <li><a href="blog.html">Blog</a></li>
+            <li><a href="quote.html">Plan & Quote</a></li>
                             </ul>
                         </div>
                         <div class="footer-col">
@@ -1466,11 +454,11 @@
             <div class="design-portal-content">
                 <button class="design-portal-close" onclick="closeDesignPortal()">&times;</button>
                 <div class="design-portal-header">
-                    <h2>🔐 Design Portal</h2>
+                    <h2>ðŸ” Design Portal</h2>
                     <p>Professional wall design tools for clients</p>
                 </div>
                 <div class="design-portal-body">
-                    <span class="coming-soon-badge">🚀 Coming Soon</span>
+                    <span class="coming-soon-badge">ðŸš€ Coming Soon</span>
                     <h3>We're Building Something Amazing</h3>
                     <p class="portal-message">Our interactive Design Portal is currently under development. Soon you'll be able to visualize your retaining wall, explore materials, and collaborate with our engineers in real-time.</p>
                     
@@ -1493,7 +481,7 @@
                         <button type="submit">Notify Me</button>
                     </form>
                     
-                    <p class="design-portal-alt">Ready to start now? <a href="quote.html">Get a quote today →</a></p>
+                    <p class="design-portal-alt">Ready to start now? <a href="quote.html">Get a quote today â†’</a></p>
                 </div>
             </div>
         </div>

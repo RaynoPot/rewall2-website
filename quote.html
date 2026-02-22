@@ -3836,13 +3836,98 @@
         });
         
         // ==========================================
+        // VISIT TRACKING — records page visit to Supabase
+        // ==========================================
+        
+        let currentVisitId = null;
+        
+        async function trackPageVisit() {
+            const existingId = sessionStorage.getItem('rewall_current_visit_id');
+            if (existingId) {
+                currentVisitId = parseInt(existingId, 10);
+                console.log('[trackVisit] Using existing visit id:', currentVisitId);
+                return;
+            }
+            try {
+                const res = await fetch('/.netlify/functions/trackVisit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pages_visited: window.location.pathname,
+                        user_agent: navigator.userAgent,
+                        referrer: document.referrer || null,
+                    }),
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    currentVisitId = data.visitId;
+                    sessionStorage.setItem('rewall_current_visit_id', data.visitId);
+                    console.log('[trackVisit] Visit recorded — id:', currentVisitId);
+                }
+            } catch (err) {
+                console.warn('[trackVisit] Error:', err.message);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', trackPageVisit);
+        
+        // ==========================================
+        // BUILD GEOJSON — Leaflet-ready FeatureCollection
+        // ==========================================
+        
+        function buildWallGeoJSON() {
+            if (!drawnWalls || drawnWalls.length === 0) return null;
+            const features = drawnWalls.map(wall => {
+                const coordinates = wall.latlngs.map(ll => [ll.lng, ll.lat]);
+                let heightFormatted = 'Not specified';
+                if (wall.heightLow && wall.heightHigh) {
+                    heightFormatted = `est. ${wall.heightLow}m – ${wall.heightHigh}m`;
+                } else if (wall.heightLow) {
+                    heightFormatted = `est. ~${wall.heightLow}m`;
+                } else if (wall.heightHigh) {
+                    heightFormatted = `est. ~${wall.heightHigh}m`;
+                }
+                return {
+                    type: 'Feature',
+                    geometry: { type: 'LineString', coordinates },
+                    properties: {
+                        wallId: wall.id,
+                        lengthMetres: Math.round(wall.distance * 100) / 100,
+                        lengthFormatted: formatDistance(wall.distance),
+                        heightLow: wall.heightLow || null,
+                        heightHigh: wall.heightHigh || null,
+                        heightFormatted,
+                        elevationData: wall.elevationData || null,
+                        style: { color: '#FF6B35', weight: 4, opacity: 0.9 },
+                    },
+                };
+            });
+            const totalLength = drawnWalls.reduce((sum, w) => sum + w.distance, 0);
+            return {
+                type: 'FeatureCollection',
+                metadata: {
+                    generatedAt: new Date().toISOString(),
+                    source: 'ReWall NZ Quote Builder',
+                    siteAddress: selectedAddress || null,
+                    siteCoordinates: selectedCoordinates
+                        ? { lat: selectedCoordinates.lat, lng: selectedCoordinates.lon || selectedCoordinates.lng }
+                        : null,
+                    totalWalls: drawnWalls.length,
+                    totalLengthMetres: Math.round(totalLength * 100) / 100,
+                    totalLengthFormatted: formatDistance(totalLength),
+                    crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:EPSG::4326' } },
+                },
+                features,
+            };
+        }
+        
+        // ==========================================
         // SUBMIT QUOTE REQUEST
         // ==========================================
         
         function submitQuoteRequest() {
             console.log('Submit button clicked - starting submitQuoteRequest');
             
-            // Validate required fields
             const name = document.getElementById('client-name')?.value?.trim() || '';
             const email = document.getElementById('client-email')?.value?.trim() || '';
             
@@ -3857,7 +3942,6 @@
                 return;
             }
             
-            // Basic email validation
             if (!email.includes('@') || !email.includes('.')) {
                 validationMsg.style.display = 'block';
                 validationMsg.textContent = 'Please enter a valid email address';
@@ -3866,7 +3950,6 @@
             
             validationMsg.style.display = 'none';
             
-            // Gather all data
             const services = [];
             document.querySelectorAll('.stage-checkbox:checked').forEach(checkbox => {
                 const stage = checkbox.closest('.journey-stage');
@@ -3878,9 +3961,13 @@
                 wallTypes.push(input.value);
             });
             
-            // Get geotechnical report status
+            const wallTypeCSV = wallTypes.join(', ');
+            const wallGeoJSON = buildWallGeoJSON();
+            
             const geotechRadio = document.querySelector('input[name="geotech-status"]:checked');
             let geotechStatus = 'Not specified';
+            let haveGeos = null;
+            let wantGeos = null;
             if (geotechRadio) {
                 const geotechValues = {
                     'have-report': 'Yes, I have a geotechnical report',
@@ -3888,6 +3975,8 @@
                     'not-sure': 'Not sure - please advise'
                 };
                 geotechStatus = geotechValues[geotechRadio.value] || geotechRadio.value;
+                haveGeos = geotechRadio.value === 'have-report';
+                wantGeos = geotechRadio.value === 'need-report';
             }
             
             const quoteData = {
@@ -3926,8 +4015,12 @@
                 totalWallLength: drawnWalls.reduce((sum, w) => sum + w.distance, 0),
                 totalWallLengthFormatted: formatDistance(drawnWalls.reduce((sum, w) => sum + w.distance, 0)),
                 wallTypes: wallTypes,
+                wallTypeCSV: wallTypeCSV,
+                wallGeoJSON: wallGeoJSON,
                 otherWallType: document.getElementById('other-wall-type')?.value || '',
                 geotech: geotechStatus,
+                haveGeos: haveGeos,
+                wantGeos: wantGeos,
                 notes: document.getElementById('client-notes')?.value || '',
                 attachments: uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })),
                 mapSnapshot: mapSnapshot
@@ -3935,16 +4028,12 @@
             
             console.log('Quote data prepared:', quoteData);
             
-            // Store in sessionStorage
             sessionStorage.setItem('quoteRequestData', JSON.stringify(quoteData));
-            sessionStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
             
-            // Create email content
             const emailBody = generateEmailBody(quoteData);
             
             console.log('Opening submission modal...');
             
-            // Show success modal and options
             showSubmissionModal(quoteData, emailBody);
         }
         
@@ -4095,151 +4184,161 @@
             return new Blob([u8arr], { type: mime });
         }
         
-        // Main send function using FormSubmit.co with hidden form for reliable attachment support
+        // Main send function — DB first, then file uploads, then email notification
         async function sendWithAttachments() {
             const btn = document.getElementById('direct-send-btn');
             const data = window.currentQuoteData;
             
-            btn.innerHTML = '⏳ Preparing submission...';
+            btn.innerHTML = '⏳ Saving to database...';
             btn.disabled = true;
             
             try {
-                // Create a hidden form for submission (more reliable for attachments)
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'https://formsubmit.co/info@rewall.nz';
-                form.enctype = 'multipart/form-data';
-                form.style.display = 'none';
-                
-                // Helper to add hidden field
-                const addField = (name, value) => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = name;
-                    input.value = value;
-                    form.appendChild(input);
-                };
-                
-                // FormSubmit configuration
-                addField('_subject', 'ReWall Quote Request - ' + (data.location.address || 'New Project'));
-                addField('_captcha', 'false');
-                addField('_template', 'table');
-                addField('_cc', data.client.email);
-                addField('_next', window.location.href.split('?')[0] + '?submitted=true');
-                
-                // Client details
-                addField('Client Name', data.client.name);
-                addField('Client Email', data.client.email);
-                addField('Client Phone', data.client.phone || 'Not provided');
-                addField('Company/Project', data.client.company || 'Not specified');
-                
-                // Location
-                addField('Site Address', data.location.address || 'Not specified');
-                if (data.location.coordinates) {
-                    addField('Coordinates', `${data.location.coordinates.lat}, ${data.location.coordinates.lon || data.location.coordinates.lng}`);
+                // ---- Step 1: Ensure we have a visit ID ----
+                if (!currentVisitId) {
+                    btn.innerHTML = '⏳ Registering visit...';
+                    await trackPageVisit();
+                }
+                if (!currentVisitId) {
+                    throw new Error('Could not register site visit. Please try again.');
                 }
                 
-                // Services
-                addField('Selected Services', data.services.join(', ') || 'None selected');
+                // ---- Step 2: Upload files to Supabase Storage ----
+                const attachmentUrls = [];
+                const bucketSessionId = `quote_${currentVisitId}_${Date.now()}`;
+                let hasAttachments = false;
                 
-                // Wall details
-                addField('Number of Walls', data.numberOfWalls || 0);
-                if (data.walls && data.walls.length > 0) {
-                    let wallDetails = data.walls.map((w) => 
-                        `Wall ${w.id}: ${w.lengthFormatted} long` + (w.heightFormatted !== 'Not specified' ? `, ${w.heightFormatted}` : '')
-                    ).join(' | ');
-                    addField('Wall Measurements', wallDetails);
-                    addField('Total Wall Length', data.totalWallLengthFormatted || 'Not measured');
-                } else {
-                    addField('Wall Measurements', 'No walls drawn on map');
-                    addField('Total Wall Length', 'N/A');
-                }
-                
-                // Wall types
-                addField('Wall Types', data.wallTypes.join(', ') || 'Not specified');
-                if (data.otherWallType) {
-                    addField('Other Wall Type Details', data.otherWallType);
-                }
-                
-                // Geotechnical
-                addField('Geotechnical Report', data.geotech || 'Not specified');
-                
-                // Notes
-                addField('Project Notes', data.notes || 'None');
-                
-                // Add map snapshot as base64 attachment (FormSubmit accepts this format)
-                let attachmentCount = 0;
                 if (data.mapSnapshot) {
-                    btn.innerHTML = '⏳ Preparing map image...';
-                    // Add as hidden field with special naming for FormSubmit attachment
-                    addField('_attachment[ReWall-Site-Map.png]', data.mapSnapshot);
-                    attachmentCount++;
-                    console.log('Map snapshot added to form');
+                    btn.innerHTML = '⏳ Uploading map snapshot...';
+                    try {
+                        const base64Data = data.mapSnapshot.split(',')[1];
+                        const res = await fetch('/.netlify/functions/supabaseUpload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sessionId: bucketSessionId,
+                                fileName: 'ReWall-Site-Map.png',
+                                fileType: 'image/png',
+                                fileBase64: base64Data,
+                            }),
+                        });
+                        if (res.ok) {
+                            const result = await res.json();
+                            attachmentUrls.push({ name: 'ReWall-Site-Map.png', url: result.publicUrl, sizeFormatted: 'Map snapshot' });
+                            hasAttachments = true;
+                        }
+                    } catch (e) { console.warn('[submit] Map snapshot upload failed:', e.message); }
                 }
                 
-                // Add uploaded files - need to convert to base64 for FormSubmit
                 if (uploadedFiles && uploadedFiles.length > 0) {
+                    hasAttachments = true;
                     for (let i = 0; i < uploadedFiles.length; i++) {
-                        btn.innerHTML = `⏳ Preparing file ${i + 1}/${uploadedFiles.length}...`;
+                        btn.innerHTML = `⏳ Uploading file ${i + 1}/${uploadedFiles.length}...`;
                         if (uploadedFiles[i].file) {
-                            // Read file as base64
-                            const reader = new FileReader();
-                            await new Promise((resolve) => {
-                                reader.onload = function(e) {
-                                    const base64Data = e.target.result;
-                                    addField(`_attachment[${uploadedFiles[i].name}]`, base64Data);
-                                    attachmentCount++;
-                                    console.log(`File ${uploadedFiles[i].name} added to form`);
-                                    resolve();
-                                };
-                                reader.readAsDataURL(uploadedFiles[i].file);
-                            });
+                            try {
+                                const base64 = await new Promise((resolve, reject) => {
+                                    const reader = new FileReader();
+                                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                                    reader.onerror = () => reject(new Error('File read failed'));
+                                    reader.readAsDataURL(uploadedFiles[i].file);
+                                });
+                                const res = await fetch('/.netlify/functions/supabaseUpload', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        sessionId: bucketSessionId,
+                                        fileName: uploadedFiles[i].name,
+                                        fileType: uploadedFiles[i].type,
+                                        fileBase64: base64,
+                                    }),
+                                });
+                                if (res.ok) {
+                                    const result = await res.json();
+                                    attachmentUrls.push({ name: uploadedFiles[i].name, url: result.publicUrl, sizeFormatted: `${(uploadedFiles[i].size / 1024).toFixed(1)} KB` });
+                                }
+                            } catch (e) { console.warn(`[submit] File upload failed: ${uploadedFiles[i].name}`, e.message); }
                         }
                     }
                 }
                 
-                console.log(`Total attachments: ${attachmentCount}`);
+                // ---- Step 3: Save quote data to Supabase ----
+                btn.innerHTML = '⏳ Saving quote data...';
+                const quotePayload = {
+                    visitId: currentVisitId,
+                    address: data.location.address || '',
+                    name: data.client.name,
+                    email: data.client.email,
+                    phone: data.client.phone || '',
+                    company_project: data.client.company || '',
+                    notes: data.notes || '',
+                    have_geos: data.haveGeos,
+                    want_geos: data.wantGeos,
+                    attachments: hasAttachments,
+                    wall_type: data.wallTypeCSV || '',
+                    wall_data: data.wallGeoJSON || null,
+                };
                 
-                btn.innerHTML = '⏳ Sending to ReWall...';
+                const quoteRes = await fetch('/.netlify/functions/submitQuote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(quotePayload),
+                });
                 
-                // Append form to body and submit
-                document.body.appendChild(form);
+                let quoteId = currentVisitId;
+                if (quoteRes.ok) {
+                    const quoteResult = await quoteRes.json();
+                    quoteId = quoteResult.quoteId || currentVisitId;
+                } else {
+                    console.error('[submit] Quote save failed');
+                }
                 
-                // Show submitting message
+                // ---- Step 4: Send email notification ----
+                btn.innerHTML = '⏳ Sending notification...';
+                try {
+                    await fetch('/.netlify/functions/sendNotification', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            quoteId, clientName: data.client.name, clientEmail: data.client.email,
+                            clientPhone: data.client.phone, companyProject: data.client.company,
+                            address: data.location.address, services: data.services,
+                            wallTypes: data.wallTypeCSV || data.wallTypes.join(', '),
+                            numberOfWalls: data.numberOfWalls, totalWallLength: data.totalWallLengthFormatted,
+                            walls: data.walls, geotechStatus: data.geotech, notes: data.notes,
+                            hasAttachments, attachmentUrls, bucketSessionId,
+                        }),
+                    });
+                } catch (e) { console.warn('[submit] Email notification error:', e.message); }
+                
+                // ---- Step 5: Show success ----
                 const modalContent = document.querySelector('#submission-modal > div > div');
                 if (modalContent) {
                     modalContent.innerHTML = `
-                        <div style="background: linear-gradient(135deg, var(--teal-accent) 0%, #3a8a9a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
-                            <div style="font-size: 4rem; margin-bottom: 10px;">📤</div>
-                            <h2 style="color: white; margin: 0;">Sending...</h2>
+                        <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
+                            <h2 style="color: white; margin: 0;">Quote Request Submitted!</h2>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">Reference #${quoteId}</p>
                         </div>
                         <div style="padding: 30px; text-align: center;">
-                            <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;">
-                                <strong>Submitting your quote request with ${attachmentCount} attachment(s)...</strong>
-                            </p>
-                            <div style="display: flex; justify-content: center; margin: 20px 0;">
-                                <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--teal-accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;"><strong>Thank you, ${data.client.name}!</strong></p>
+                            <p style="color: var(--slate); margin-bottom: 20px;">Your quote request has been saved and we've been notified.<br>We'll review it and get back to you within <strong>24-48 hours</strong>.</p>
+                            ${hasAttachments ? `<p style="color: var(--slate); font-size: 0.9rem;">📎 ${attachmentUrls.length} file(s) uploaded successfully</p>` : ''}
+                            <div style="margin-top: 20px; padding: 15px; background: var(--soft-blue); border-radius: 8px;">
+                                <p style="margin: 0; font-size: 0.9rem; color: var(--slate);"><strong>📞 Need urgent help?</strong><br>Ring us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a></p>
                             </div>
-                            <p style="color: var(--slate);">Please wait, do not close this page...</p>
-                            <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+                            <button onclick="closeSubmissionModal()" style="margin-top: 20px; padding: 12px 24px; background: var(--light-gray); color: var(--primary-black); border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 100%;">← Back to Site</button>
                         </div>
                     `;
                 }
                 
-                // Submit the form
-                form.submit();
-                
             } catch (error) {
                 console.error('Submission Error:', error);
-                btn.innerHTML = '❌ Error';
+                btn.innerHTML = '❌ Error — ' + error.message;
                 btn.style.background = '#dc3545';
-                
                 setTimeout(() => {
-                    alert('There was an error preparing your submission. Please try the "Download All" option instead.');
                     btn.innerHTML = '🚀 Send Quote Request Now';
                     btn.style.background = '';
                     btn.disabled = false;
-                }, 500);
+                }, 3000);
             }
         }
         

@@ -770,3 +770,35 @@ document.addEventListener('keydown', function(event) {
 console.log('ReWall NZ Website - Initialized Successfully');
 console.log('Version: 1.0');
 console.log('Last Updated: January 2026');
+
+// ===================================
+// VISIT TRACKING — All Pages
+// Records page visit to Supabase via Netlify function
+// ===================================
+(function() {
+    // Skip tracking if already tracked this session for this page
+    const trackingKey = 'rewall_visit_' + window.location.pathname;
+    if (sessionStorage.getItem(trackingKey)) return;
+
+    fetch('/.netlify/functions/trackVisit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            pages_visited: window.location.pathname,
+            user_agent: navigator.userAgent,
+            referrer: document.referrer || null,
+        }),
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.visitId) {
+            sessionStorage.setItem(trackingKey, data.visitId);
+            // Also store the latest visit ID globally for quote builder
+            sessionStorage.setItem('rewall_current_visit_id', data.visitId);
+            console.log('[ReWall] Visit tracked — id:', data.visitId);
+        }
+    })
+    .catch(function(err) {
+        console.warn('[ReWall] Visit tracking skipped:', err.message);
+    });
+})();
