@@ -4291,10 +4291,11 @@
                     console.error('[submit] Quote save failed');
                 }
                 
-                // ---- Step 4: Send email notification ----
+                // ---- Step 4: Send email notification (fallback — Supabase webhook is primary) ----
                 btn.innerHTML = '⏳ Sending notification...';
+                let emailSent = false;
                 try {
-                    await fetch('/.netlify/functions/sendNotification', {
+                    const notifRes = await fetch('/.netlify/functions/sendNotification', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -4307,11 +4308,22 @@
                             hasAttachments, attachmentUrls, bucketSessionId,
                         }),
                     });
-                } catch (e) { console.warn('[submit] Email notification error:', e.message); }
+                    const notifResult = await notifRes.json();
+                    console.log('[submit] Notification response:', notifRes.status, notifResult);
+                    emailSent = notifRes.ok && notifResult.success;
+                    if (!emailSent) {
+                        console.warn('[submit] Direct email fallback may not have sent:', notifResult);
+                    }
+                } catch (e) {
+                    console.warn('[submit] Direct email fallback error (Supabase webhook will handle it):', e.message);
+                }
                 
                 // ---- Step 5: Show success ----
                 const modalContent = document.querySelector('#submission-modal > div > div');
                 if (modalContent) {
+                    const emailNote = emailSent
+                        ? '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>'
+                        : '<p style="color: #28a745; font-size: 0.9rem;">✅ Your quote is saved — our team has been notified automatically</p>';
                     modalContent.innerHTML = `
                         <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
                             <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
@@ -4322,6 +4334,7 @@
                             <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;"><strong>Thank you, ${data.client.name}!</strong></p>
                             <p style="color: var(--slate); margin-bottom: 20px;">Your quote request has been saved and we've been notified.<br>We'll review it and get back to you within <strong>24-48 hours</strong>.</p>
                             ${hasAttachments ? `<p style="color: var(--slate); font-size: 0.9rem;">📎 ${attachmentUrls.length} file(s) uploaded successfully</p>` : ''}
+                            ${emailNote}
                             <div style="margin-top: 20px; padding: 15px; background: var(--soft-blue); border-radius: 8px;">
                                 <p style="margin: 0; font-size: 0.9rem; color: var(--slate);"><strong>📞 Need urgent help?</strong><br>Ring us at <a href="tel:+64273941127" style="color: var(--teal-accent); font-weight: 600;">027 394 1127</a></p>
                             </div>
