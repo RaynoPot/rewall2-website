@@ -4292,34 +4292,45 @@
                     console.error('[submit] Quote save failed');
                 }
                 
-                // ---- Step 4: Send email notification (fallback — Supabase webhook is primary) ----
-                btn.innerHTML = '⏳ Sending notification...';
+                // ---- Step 4: Send email notification (separate from database — uses Resend) ----
+                btn.innerHTML = '⏳ Sending email notification...';
                 let emailSent = false;
                 let emailError = '';
                 try {
+                    const emailPayload = {
+                        quoteId,
+                        clientName: data.client.name,
+                        clientEmail: data.client.email,
+                        clientPhone: data.client.phone || '',
+                        companyProject: data.client.company || '',
+                        address: data.location.address || '',
+                        services: data.services || [],
+                        wallTypes: data.wallTypeCSV || (data.wallTypes ? data.wallTypes.join(', ') : ''),
+                        numberOfWalls: data.numberOfWalls || 0,
+                        totalWallLength: data.totalWallLengthFormatted || '',
+                        walls: data.walls || [],
+                        geotechStatus: data.geotech || '',
+                        notes: data.notes || '',
+                        hasAttachments: hasAttachments,
+                        attachmentUrls: attachmentUrls,
+                    };
+                    console.log('[submit] Sending email notification payload:', JSON.stringify(emailPayload).substring(0, 200));
+
                     const notifRes = await fetch('/.netlify/functions/sendNotification', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            quoteId, clientName: data.client.name, clientEmail: data.client.email,
-                            clientPhone: data.client.phone, companyProject: data.client.company,
-                            address: data.location.address, services: data.services,
-                            wallTypes: data.wallTypeCSV || data.wallTypes.join(', '),
-                            numberOfWalls: data.numberOfWalls, totalWallLength: data.totalWallLengthFormatted,
-                            walls: data.walls, geotechStatus: data.geotech, notes: data.notes,
-                            hasAttachments, attachmentUrls, bucketSessionId,
-                        }),
+                        body: JSON.stringify(emailPayload),
                     });
                     const notifResult = await notifRes.json();
-                    console.log('[submit] Notification response:', notifRes.status, notifResult);
+                    console.log('[submit] Email notification response:', notifRes.status, JSON.stringify(notifResult));
                     emailSent = notifRes.ok && notifResult.success;
                     if (!emailSent) {
-                        emailError = notifResult.error || notifResult.details?.message || JSON.stringify(notifResult);
+                        emailError = notifResult.details?.message || notifResult.error || JSON.stringify(notifResult);
                         console.warn('[submit] Email notification failed:', emailError);
                     }
                 } catch (e) {
                     emailError = e.message;
-                    console.warn('[submit] Email notification error:', e.message);
+                    console.error('[submit] Email notification error:', e.message);
                 }
                 
                 // ---- Step 5: Show success ----

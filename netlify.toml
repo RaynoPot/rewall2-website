@@ -12,7 +12,7 @@
   timeout = 15
 
 [functions.sendNotification]
-  timeout = 15
+  timeout = 26
 
 [functions.supabaseUpload]
   timeout = 20
