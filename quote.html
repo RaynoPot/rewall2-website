@@ -4275,6 +4275,7 @@
                     attachments: hasAttachments,
                     wall_type: data.wallTypeCSV || '',
                     wall_data: data.wallGeoJSON || null,
+                    services: data.services.join(', ') || '',
                 };
                 
                 const quoteRes = await fetch('/.netlify/functions/submitQuote', {

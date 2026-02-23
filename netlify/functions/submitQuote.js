@@ -44,6 +44,7 @@ exports.handler = async function (event) {
       attachments,    // boolean — true if files were uploaded
       wall_type,      // CSV string of selected wall types
       wall_data,      // GeoJSON object
+      services,       // CSV string of selected services
     } = body;
 
     console.log('[submitQuote] Received quote submission');
@@ -78,6 +79,7 @@ exports.handler = async function (event) {
       attachments:     typeof attachments === 'boolean' ? attachments : false,
       wall_type:       wall_type || null,
       wall_data:       wall_data || null,
+      services:        services || null,
     };
 
     console.log('[submitQuote] Inserting row:', JSON.stringify(row, null, 2));

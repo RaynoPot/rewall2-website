@@ -443,9 +443,104 @@ section.hero .subheadline {
     font-size: 1.5rem;
 }
 
-/* Wall type showcase card headings */
+/* Wall type showcase — grid, cards, icons, pros */
+.wall-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.wall-type-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid #e8eef2;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    position: relative;
+}
+
+.wall-type-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(74, 144, 164, 0.12);
+    border-color: var(--teal-accent);
+}
+
+.wall-card-image {
+    height: 160px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #f8fafb 0%, #eef3f6 100%);
+    position: relative;
+}
+
+.wall-card-image .icon-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 3px solid #e8eef2;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.wall-type-card:hover .icon-circle {
+    border-color: var(--teal-accent);
+    box-shadow: 0 6px 24px rgba(74, 144, 164, 0.15);
+    transform: scale(1.05);
+}
+
+.wall-card-image .icon-circle img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+}
+
+.wall-card-content {
+    padding: var(--spacing-lg);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .wall-card-content h3.wall-card-title {
     font-size: 1.1rem;
+}
+
+.wall-pros-cons {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--slate);
+    line-height: 1.6;
+}
+
+.wall-pros-cons li {
+    margin-bottom: 6px;
+    padding-left: 0;
+}
+
+.wall-pros-cons strong {
+    color: var(--teal-accent);
+    margin-right: 4px;
+    min-width: 20px;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .wall-type-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 section.hero .cta-container {
