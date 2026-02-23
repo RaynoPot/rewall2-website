@@ -45,9 +45,8 @@ exports.handler = async function (event) {
   const WEBHOOK_SECRET     = process.env.WEBHOOK_SECRET || '';
 
   const useSmtp   = !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
-  const useResend = !useSmtp && !!RESEND_API_KEY;
 
-  if (!useSmtp && !useResend) {
+  if (!useSmtp && !RESEND_API_KEY) {
     console.error('[sendNotification] No email transport configured. Set SMTP_HOST/SMTP_USER/SMTP_PASS or RESEND_API_KEY.');
     return {
       statusCode: 500,
@@ -56,7 +55,7 @@ exports.handler = async function (event) {
     };
   }
 
-  console.log(`[sendNotification] Email transport: ${useSmtp ? 'SMTP (' + SMTP_HOST + ')' : 'Resend API (fallback)'}`);
+  console.log(`[sendNotification] Transports available: SMTP=${useSmtp}, Resend=${!!RESEND_API_KEY}`);
 
   try {
     const body = JSON.parse(event.body);
@@ -260,67 +259,87 @@ exports.handler = async function (event) {
       </div>`;
 
     // ==================================================================
-    // SEND EMAIL — SMTP (primary) or Resend (fallback)
+    // SEND EMAIL — Try SMTP first, fall back to Resend if SMTP fails
     // ==================================================================
     let emailResult;
+    let smtpError = null;
 
+    // ---- Attempt 1: SMTP (direct, no middleman) ----
     if (useSmtp) {
-      // ---- Nodemailer SMTP — direct, no middleman ----
-      console.log(`[sendNotification] Sending via SMTP → ${SMTP_HOST}:${SMTP_PORT}`);
+      try {
+        console.log(`[sendNotification] Attempting SMTP → ${SMTP_HOST}:${SMTP_PORT}`);
 
-      const transporter = nodemailer.createTransport({
-        host: SMTP_HOST,
-        port: SMTP_PORT,
-        secure: SMTP_PORT === 465,       // SSL on 465, STARTTLS on 587
-        auth: { user: SMTP_USER, pass: SMTP_PASS },
-        tls: { rejectUnauthorized: false },  // allow self-signed certs
-      });
+        const transporter = nodemailer.createTransport({
+          host: SMTP_HOST,
+          port: SMTP_PORT,
+          secure: SMTP_PORT === 465,
+          auth: { user: SMTP_USER, pass: SMTP_PASS },
+          tls: { rejectUnauthorized: false },
+          requireTLS: SMTP_PORT === 587,
+        });
 
-      const info = await transporter.sendMail({
-        from:    `"ReWall Quotes" <${NOTIFICATION_EMAIL}>`,
-        sender:  SMTP_USER,
-        to:      NOTIFICATION_EMAIL,
-        replyTo: d.clientEmail,
-        subject: emailSubject,
-        html:    htmlBody,
-      });
+        const fromAddr = SMTP_USER;
 
-      console.log('[sendNotification] SMTP email sent — messageId:', info.messageId);
-      emailResult = { messageId: info.messageId, transport: 'smtp' };
-
-    } else {
-      // ---- Resend API fallback ----
-      console.log('[sendNotification] Sending via Resend API (fallback)…');
-      const axios = require('axios');
-
-      const response = await axios.post(
-        'https://api.resend.com/emails',
-        {
-          from: 'ReWall Quotes <notifications@rewall.nz>',
-          to: [NOTIFICATION_EMAIL],
-          reply_to: d.clientEmail,
+        const info = await transporter.sendMail({
+          from:    `"ReWall Quotes" <${fromAddr}>`,
+          to:      NOTIFICATION_EMAIL,
+          replyTo: d.clientEmail,
           subject: emailSubject,
-          html: htmlBody,
-        },
-        {
-          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-          timeout: 12000,
-        }
-      );
+          html:    htmlBody,
+        });
 
-      console.log('[sendNotification] Resend response:', response.status, JSON.stringify(response.data));
-      emailResult = { emailId: response.data.id, transport: 'resend' };
+        console.log('[sendNotification] SMTP SUCCESS — messageId:', info.messageId);
+        emailResult = { messageId: info.messageId, transport: 'smtp' };
+      } catch (smtpErr) {
+        smtpError = smtpErr;
+        console.error('[sendNotification] SMTP FAILED:', smtpErr.message, smtpErr.code || '');
+        console.error('[sendNotification] Will try Resend fallback if available…');
+      }
     }
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        message: `Notification email sent to ${NOTIFICATION_EMAIL}`,
-        ...emailResult,
-      }),
-    };
+    // ---- Attempt 2: Resend API (fallback if SMTP failed or not configured) ----
+    if (!emailResult && RESEND_API_KEY) {
+      try {
+        console.log('[sendNotification] Sending via Resend API (fallback)…');
+        const axios = require('axios');
+
+        const response = await axios.post(
+          'https://api.resend.com/emails',
+          {
+            from: 'ReWall Quotes <onboarding@resend.dev>',
+            to: [NOTIFICATION_EMAIL],
+            reply_to: d.clientEmail,
+            subject: emailSubject,
+            html: htmlBody,
+          },
+          {
+            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            timeout: 12000,
+          }
+        );
+
+        console.log('[sendNotification] Resend SUCCESS:', response.status, JSON.stringify(response.data));
+        emailResult = { emailId: response.data.id, transport: 'resend', smtpFailed: !!smtpError };
+      } catch (resendErr) {
+        console.error('[sendNotification] Resend ALSO FAILED:', resendErr.message);
+      }
+    }
+
+    // ---- Result ----
+    if (emailResult) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          message: `Notification email sent to ${NOTIFICATION_EMAIL}`,
+          ...emailResult,
+        }),
+      };
+    }
+
+    // Both failed
+    throw new Error(`All email transports failed. SMTP: ${smtpError?.message || 'not configured'}`);
 
   } catch (err) {
     const errDetails = err.response
