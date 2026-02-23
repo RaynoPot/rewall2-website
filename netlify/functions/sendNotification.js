@@ -1,21 +1,211 @@
 // netlify/functions/sendNotification.js — Email notification to info@rewall.nz
-// Uses Resend API via axios — lightweight HTTP-based email (no native modules, bundles with esbuild)
+//
+// PRIMARY: Raw SMTP via Node.js built-in net/tls (zero external deps, bundles with esbuild)
+//   → Sends through your own O365 mail server — no middleman
+// FALLBACK: Resend API via axios (if SMTP fails and RESEND_API_KEY is set)
 //
 // TWO trigger modes:
-//   A) Supabase Database Webhook (primary) — fires on INSERT to Re_wall_anon_users
-//      Payload shape: { type: "INSERT", table: "Re_wall_anon_users", record: { ... } }
-//   B) Direct client call (fallback) — from quote.html after submission
-//      Payload shape: { quoteId, clientName, clientEmail, ... }
+//   A) Supabase Database Webhook — fires on INSERT to Re_wall_anon_users
+//   B) Direct client call — from quote.html after submission
 //
-// Required env vars:
-//   RESEND_API_KEY     — Resend API key
+// Required env vars (SMTP):
+//   SMTP_HOST          — e.g. smtp.office365.com
+//   SMTP_PORT          — e.g. 587
+//   SMTP_USER          — e.g. info@databloc.nz
+//   SMTP_PASS          — SMTP password
 //   NOTIFICATION_EMAIL — Target email (default: info@rewall.nz)
 //
 // Optional env vars:
+//   RESEND_API_KEY     — Resend API key (fallback only)
 //   API_URL            — Supabase project URL (for storage links)
 //   WEBHOOK_SECRET     — Shared secret to verify Supabase webhook calls
 
+const net = require('net');
+const tls = require('tls');
 const axios = require('axios');
+
+// ======================================================================
+// RAW SMTP SENDER — uses only Node.js built-ins (net + tls)
+// Handles: EHLO → STARTTLS → AUTH LOGIN → MAIL FROM → RCPT TO → DATA
+// ======================================================================
+function sendViaSmtp({ host, port, user, pass, from, to, replyTo, subject, html }) {
+  return new Promise((resolve, reject) => {
+    let step = 'connect';
+    let buffer = '';
+    let activeSocket = null;
+    let done = false;
+
+    const timer = setTimeout(() => {
+      if (!done) { done = true; cleanup(); reject(new Error('SMTP timeout after 20 seconds')); }
+    }, 20000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      try { if (activeSocket) activeSocket.destroy(); } catch (e) { /* ignore */ }
+    }
+
+    function finish(err, result) {
+      if (done) return;
+      done = true;
+      cleanup();
+      if (err) reject(err); else resolve(result);
+    }
+
+    function write(cmd) {
+      const logCmd = cmd.length > 60 ? cmd.substring(0, 60) + '…' : cmd;
+      // Don't log credentials
+      if (step === 'auth-user' || step === 'auth-pass') {
+        console.log('[SMTP] > [credentials hidden]');
+      } else {
+        console.log(`[SMTP] > ${logCmd}`);
+      }
+      activeSocket.write(cmd + '\r\n');
+    }
+
+    function buildRawMessage() {
+      const msgHeaders = [
+        `From: "ReWall Quotes" <${from}>`,
+        `To: <${to}>`,
+        replyTo ? `Reply-To: <${replyTo}>` : null,
+        `Subject: ${subject}`,
+        `Date: ${new Date().toUTCString()}`,
+        `MIME-Version: 1.0`,
+        `Content-Type: text/html; charset=utf-8`,
+        `Content-Transfer-Encoding: 7bit`,
+        `Message-ID: <rewall-${Date.now()}@rewall.nz>`,
+      ].filter(Boolean).join('\r\n');
+
+      // Dot-stuff: any line starting with "." must be doubled
+      const safebody = html.split('\n').map(line => {
+        const l = line.replace(/\r$/, '');
+        return l.startsWith('.') ? '.' + l : l;
+      }).join('\r\n');
+
+      return msgHeaders + '\r\n\r\n' + safebody;
+    }
+
+    function handleLine(line) {
+      if (!line.trim()) return;
+      const code = parseInt(line.substring(0, 3), 10);
+      const isMulti = line.charAt(3) === '-';
+
+      console.log(`[SMTP] < ${line.substring(0, 120)}`);
+
+      // Multi-line response: wait for the final line (space after code)
+      if (isMulti) return;
+
+      switch (step) {
+        case 'greeting':
+          if (code !== 220) return finish(new Error(`SMTP greeting failed (${code}): ${line}`));
+          step = 'ehlo1';
+          write('EHLO rewall.nz');
+          break;
+
+        case 'ehlo1':
+          if (code !== 250) return finish(new Error(`EHLO failed (${code}): ${line}`));
+          step = 'starttls';
+          write('STARTTLS');
+          break;
+
+        case 'starttls':
+          if (code !== 220) return finish(new Error(`STARTTLS failed (${code}): ${line}`));
+          // Upgrade the plain socket to TLS
+          step = 'upgrading';
+          buffer = ''; // clear any leftover data
+          const secureSocket = tls.connect(
+            { socket: activeSocket, servername: host, rejectUnauthorized: false },
+            () => {
+              console.log('[SMTP] TLS handshake complete');
+              activeSocket = secureSocket;
+              step = 'ehlo2';
+              write('EHLO rewall.nz');
+            }
+          );
+          secureSocket.on('data', onData);
+          secureSocket.on('error', (err) => finish(new Error(`TLS error: ${err.message}`)));
+          break;
+
+        case 'ehlo2':
+          if (code !== 250) return finish(new Error(`EHLO2 failed (${code}): ${line}`));
+          step = 'auth-start';
+          write('AUTH LOGIN');
+          break;
+
+        case 'auth-start':
+          if (code !== 334) return finish(new Error(`AUTH LOGIN not supported (${code}). Ask your host to enable Authenticated SMTP. Response: ${line}`));
+          step = 'auth-user';
+          write(Buffer.from(user).toString('base64'));
+          break;
+
+        case 'auth-user':
+          if (code !== 334) return finish(new Error(`AUTH username rejected (${code}): ${line}`));
+          step = 'auth-pass';
+          write(Buffer.from(pass).toString('base64'));
+          break;
+
+        case 'auth-pass':
+          if (code !== 235) return finish(new Error(`AUTH failed — wrong password or account locked (${code}): ${line}`));
+          console.log('[SMTP] Authenticated successfully');
+          step = 'mail-from';
+          write(`MAIL FROM:<${from}>`);
+          break;
+
+        case 'mail-from':
+          if (code !== 250) return finish(new Error(`MAIL FROM rejected (${code}): ${line}`));
+          step = 'rcpt-to';
+          write(`RCPT TO:<${to}>`);
+          break;
+
+        case 'rcpt-to':
+          if (code !== 250) return finish(new Error(`RCPT TO rejected (${code}): ${line}`));
+          step = 'data-cmd';
+          write('DATA');
+          break;
+
+        case 'data-cmd':
+          if (code !== 354) return finish(new Error(`DATA rejected (${code}): ${line}`));
+          step = 'data-sent';
+          const msg = buildRawMessage();
+          activeSocket.write(msg + '\r\n.\r\n'); // end-of-message marker
+          break;
+
+        case 'data-sent':
+          if (code !== 250) return finish(new Error(`Message delivery rejected (${code}): ${line}`));
+          step = 'quit';
+          write('QUIT');
+          finish(null, { messageId: `rewall-${Date.now()}`, smtpResponse: line, transport: 'smtp' });
+          break;
+
+        case 'quit':
+          // Server acknowledged QUIT, connection closing — nothing to do
+          break;
+
+        default:
+          console.log(`[SMTP] Unexpected response in step "${step}": ${line}`);
+      }
+    }
+
+    function onData(chunk) {
+      buffer += chunk.toString();
+      const lines = buffer.split('\r\n');
+      buffer = lines.pop(); // keep any incomplete line
+      for (const line of lines) {
+        handleLine(line);
+      }
+    }
+
+    // --- Open TCP connection ---
+    console.log(`[SMTP] Connecting to ${host}:${port}…`);
+    activeSocket = net.createConnection({ host, port }, () => {
+      console.log(`[SMTP] Connected to ${host}:${port}`);
+      step = 'greeting';
+    });
+
+    activeSocket.on('data', onData);
+    activeSocket.on('error', (err) => finish(new Error(`SMTP connection error: ${err.message}`)));
+    activeSocket.on('close', () => { if (!done) finish(new Error('SMTP connection closed unexpectedly')); });
+  });
+}
 
 exports.handler = async function (event) {
   const headers = {
@@ -30,21 +220,28 @@ exports.handler = async function (event) {
   }
 
   // ---- Email transport config ----
+  const SMTP_HOST          = process.env.SMTP_HOST;
+  const SMTP_PORT          = parseInt(process.env.SMTP_PORT || '587', 10);
+  const SMTP_USER          = process.env.SMTP_USER;
+  const SMTP_PASS          = process.env.SMTP_PASS;
   const RESEND_API_KEY     = process.env.RESEND_API_KEY;
   const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || 'info@rewall.nz';
   const SUPABASE_URL       = process.env.API_URL || '';
   const WEBHOOK_SECRET     = process.env.WEBHOOK_SECRET || '';
 
-  if (!RESEND_API_KEY) {
-    console.error('[sendNotification] RESEND_API_KEY is not set. Add it in Netlify → Site settings → Environment variables.');
+  const hasSmtp   = !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
+  const hasResend = !!RESEND_API_KEY;
+
+  if (!hasSmtp && !hasResend) {
+    console.error('[sendNotification] No email transport configured.');
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Email service not configured. Set RESEND_API_KEY env var.' }),
+      body: JSON.stringify({ error: 'No email transport. Set SMTP_HOST/USER/PASS or RESEND_API_KEY.' }),
     };
   }
 
-  console.log(`[sendNotification] Resend API configured. Target: ${NOTIFICATION_EMAIL}`);
+  console.log(`[sendNotification] Transports: SMTP=${hasSmtp} (${SMTP_HOST || 'n/a'}:${SMTP_PORT}), Resend=${hasResend}. Target: ${NOTIFICATION_EMAIL}`);
 
   try {
     const body = JSON.parse(event.body);
@@ -241,58 +438,103 @@ exports.handler = async function (event) {
 
           <div style="margin-top:24px;padding:16px;background:#f0f4f8;border-radius:8px;font-size:13px;color:#666;">
             <p style="margin:0 0 4px;"><strong>Submitted:</strong> ${timestamp}</p>
-            <p style="margin:0 0 4px;"><strong>Transport:</strong> Resend API</p>
+            <p style="margin:0 0 4px;"><strong>Transport:</strong> ${hasSmtp ? 'SMTP (direct)' : 'Resend API'}</p>
             ${dashboardLink ? `<p style="margin:0;"><a href="${dashboardLink}" style="color:#4A90A4;">Open Supabase Dashboard →</a></p>` : ''}
           </div>
         </div>
       </div>`;
 
     // ==================================================================
-    // SEND EMAIL via Resend API
+    // SEND EMAIL — Try SMTP first (direct), fall back to Resend API
     // ==================================================================
-    let emailResult;
+    let emailResult = null;
+    let smtpError = null;
+    let resendError = null;
 
-    try {
-      console.log(`[sendNotification] Sending via Resend API to ${NOTIFICATION_EMAIL}…`);
-
-      const response = await axios.post(
-        'https://api.resend.com/emails',
-        {
-          from: 'ReWall Quotes <onboarding@resend.dev>',
-          to: [NOTIFICATION_EMAIL],
-          reply_to: d.clientEmail,
+    // ---- Attempt 1: Raw SMTP (no middleman) ----
+    if (hasSmtp) {
+      try {
+        console.log(`[sendNotification] Attempting SMTP → ${SMTP_HOST}:${SMTP_PORT} as ${SMTP_USER}`);
+        emailResult = await sendViaSmtp({
+          host: SMTP_HOST,
+          port: SMTP_PORT,
+          user: SMTP_USER,
+          pass: SMTP_PASS,
+          from: SMTP_USER,
+          to:   NOTIFICATION_EMAIL,
+          replyTo: d.clientEmail,
           subject: emailSubject,
           html: htmlBody,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: 15000,
-        }
-      );
+        });
+        console.log('[sendNotification] SMTP SUCCESS:', JSON.stringify(emailResult));
+      } catch (err) {
+        smtpError = err;
+        console.error('[sendNotification] SMTP FAILED:', err.message);
+      }
+    }
 
-      console.log('[sendNotification] Resend SUCCESS:', response.status, JSON.stringify(response.data));
-      emailResult = { emailId: response.data.id, transport: 'resend' };
-    } catch (resendErr) {
-      const errInfo = resendErr.response
-        ? { status: resendErr.response.status, data: resendErr.response.data }
-        : { message: resendErr.message };
-      console.error('[sendNotification] Resend FAILED:', JSON.stringify(errInfo));
-      throw new Error(`Resend API error: ${JSON.stringify(errInfo)}`);
+    // ---- Attempt 2: Resend API (fallback) ----
+    if (!emailResult && hasResend) {
+      try {
+        console.log('[sendNotification] Falling back to Resend API…');
+        const response = await axios.post(
+          'https://api.resend.com/emails',
+          {
+            from: 'ReWall Quotes <onboarding@resend.dev>',
+            to: [NOTIFICATION_EMAIL],
+            reply_to: d.clientEmail,
+            subject: emailSubject,
+            html: htmlBody,
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${RESEND_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 15000,
+          }
+        );
+        console.log('[sendNotification] Resend SUCCESS:', response.status, JSON.stringify(response.data));
+        emailResult = { emailId: response.data.id, transport: 'resend', smtpFailed: smtpError?.message || null };
+      } catch (err) {
+        resendError = err;
+        const errInfo = err.response
+          ? { status: err.response.status, data: err.response.data }
+          : { message: err.message };
+        console.error('[sendNotification] Resend ALSO FAILED:', JSON.stringify(errInfo));
+      }
     }
 
     // ---- Result ----
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        message: `Notification email sent to ${NOTIFICATION_EMAIL}`,
-        ...emailResult,
-      }),
+    if (emailResult) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          message: `Notification email sent to ${NOTIFICATION_EMAIL}`,
+          ...emailResult,
+        }),
+      };
+    }
+
+    // Both transports failed — return detailed diagnostics
+    const diagnostics = {
+      smtp: smtpError ? smtpError.message : 'not configured',
+      resend: resendError
+        ? (resendError.response ? { status: resendError.response.status, data: resendError.response.data } : resendError.message)
+        : 'not configured',
+      envCheck: {
+        SMTP_HOST: !!SMTP_HOST,
+        SMTP_PORT: SMTP_PORT,
+        SMTP_USER: SMTP_USER ? SMTP_USER.substring(0, 4) + '***' : 'NOT SET',
+        SMTP_PASS: SMTP_PASS ? '***set***' : 'NOT SET',
+        RESEND_API_KEY: RESEND_API_KEY ? RESEND_API_KEY.substring(0, 6) + '***' : 'NOT SET',
+        NOTIFICATION_EMAIL,
+      },
     };
+    console.error('[sendNotification] ALL TRANSPORTS FAILED:', JSON.stringify(diagnostics));
+    throw new Error(`All email transports failed. Details: ${JSON.stringify(diagnostics)}`);
 
   } catch (err) {
     const errDetails = err.response

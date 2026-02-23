@@ -4295,6 +4295,7 @@
                 // ---- Step 4: Send email notification (fallback — Supabase webhook is primary) ----
                 btn.innerHTML = '⏳ Sending notification...';
                 let emailSent = false;
+                let emailError = '';
                 try {
                     const notifRes = await fetch('/.netlify/functions/sendNotification', {
                         method: 'POST',
@@ -4313,18 +4314,23 @@
                     console.log('[submit] Notification response:', notifRes.status, notifResult);
                     emailSent = notifRes.ok && notifResult.success;
                     if (!emailSent) {
-                        console.warn('[submit] Direct email fallback may not have sent:', notifResult);
+                        emailError = notifResult.error || notifResult.details?.message || JSON.stringify(notifResult);
+                        console.warn('[submit] Email notification failed:', emailError);
                     }
                 } catch (e) {
-                    console.warn('[submit] Direct email fallback error (Supabase webhook will handle it):', e.message);
+                    emailError = e.message;
+                    console.warn('[submit] Email notification error:', e.message);
                 }
                 
                 // ---- Step 5: Show success ----
                 const modalContent = document.querySelector('#submission-modal > div > div');
                 if (modalContent) {
-                    const emailNote = emailSent
-                        ? '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>'
-                        : '<p style="color: #28a745; font-size: 0.9rem;">✅ Your quote is saved — our team has been notified automatically</p>';
+                    let emailNote;
+                    if (emailSent) {
+                        emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>';
+                    } else {
+                        emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email notification issue — quote IS saved. <br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
+                    }
                     modalContent.innerHTML = `
                         <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
                             <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
