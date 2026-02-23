@@ -1,6 +1,5 @@
 // netlify/functions/sendNotification.js — Email notification to info@rewall.nz
-// Uses Nodemailer + SMTP — sends directly through your own email server (no middleman)
-// Falls back to Resend API if SMTP is not configured (optional)
+// Uses Resend API via axios — lightweight HTTP-based email (no native modules, bundles with esbuild)
 //
 // TWO trigger modes:
 //   A) Supabase Database Webhook (primary) — fires on INSERT to Re_wall_anon_users
@@ -8,19 +7,15 @@
 //   B) Direct client call (fallback) — from quote.html after submission
 //      Payload shape: { quoteId, clientName, clientEmail, ... }
 //
-// Required env vars (SMTP — preferred, no middleman):
-//   SMTP_HOST          — SMTP server (e.g. mail.rewall.nz, smtp.gmail.com)
-//   SMTP_PORT          — SMTP port (587 for TLS, 465 for SSL)
-//   SMTP_USER          — SMTP login (usually your full email, e.g. info@rewall.nz)
-//   SMTP_PASS          — SMTP password or app password
+// Required env vars:
+//   RESEND_API_KEY     — Resend API key
+//   NOTIFICATION_EMAIL — Target email (default: info@rewall.nz)
 //
 // Optional env vars:
-//   RESEND_API_KEY     — Resend API key (fallback only, used if SMTP vars are missing)
-//   NOTIFICATION_EMAIL — Target email (default: info@rewall.nz)
 //   API_URL            — Supabase project URL (for storage links)
 //   WEBHOOK_SECRET     — Shared secret to verify Supabase webhook calls
 
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 exports.handler = async function (event) {
   const headers = {
@@ -35,27 +30,21 @@ exports.handler = async function (event) {
   }
 
   // ---- Email transport config ----
-  const SMTP_HOST          = process.env.SMTP_HOST;
-  const SMTP_PORT          = parseInt(process.env.SMTP_PORT || '587', 10);
-  const SMTP_USER          = process.env.SMTP_USER;
-  const SMTP_PASS          = process.env.SMTP_PASS;
-  const RESEND_API_KEY     = process.env.RESEND_API_KEY;     // fallback only
+  const RESEND_API_KEY     = process.env.RESEND_API_KEY;
   const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || 'info@rewall.nz';
   const SUPABASE_URL       = process.env.API_URL || '';
   const WEBHOOK_SECRET     = process.env.WEBHOOK_SECRET || '';
 
-  const useSmtp   = !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
-
-  if (!useSmtp && !RESEND_API_KEY) {
-    console.error('[sendNotification] No email transport configured. Set SMTP_HOST/SMTP_USER/SMTP_PASS or RESEND_API_KEY.');
+  if (!RESEND_API_KEY) {
+    console.error('[sendNotification] RESEND_API_KEY is not set. Add it in Netlify → Site settings → Environment variables.');
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Email service not configured. Set SMTP or RESEND_API_KEY env vars.' }),
+      body: JSON.stringify({ error: 'Email service not configured. Set RESEND_API_KEY env var.' }),
     };
   }
 
-  console.log(`[sendNotification] Transports available: SMTP=${useSmtp}, Resend=${!!RESEND_API_KEY}`);
+  console.log(`[sendNotification] Resend API configured. Target: ${NOTIFICATION_EMAIL}`);
 
   try {
     const body = JSON.parse(event.body);
@@ -252,94 +241,58 @@ exports.handler = async function (event) {
 
           <div style="margin-top:24px;padding:16px;background:#f0f4f8;border-radius:8px;font-size:13px;color:#666;">
             <p style="margin:0 0 4px;"><strong>Submitted:</strong> ${timestamp}</p>
-            <p style="margin:0 0 4px;"><strong>Transport:</strong> ${useSmtp ? 'SMTP (direct)' : 'Resend API'}</p>
+            <p style="margin:0 0 4px;"><strong>Transport:</strong> Resend API</p>
             ${dashboardLink ? `<p style="margin:0;"><a href="${dashboardLink}" style="color:#4A90A4;">Open Supabase Dashboard →</a></p>` : ''}
           </div>
         </div>
       </div>`;
 
     // ==================================================================
-    // SEND EMAIL — Try SMTP first, fall back to Resend if SMTP fails
+    // SEND EMAIL via Resend API
     // ==================================================================
     let emailResult;
-    let smtpError = null;
 
-    // ---- Attempt 1: SMTP (direct, no middleman) ----
-    if (useSmtp) {
-      try {
-        console.log(`[sendNotification] Attempting SMTP → ${SMTP_HOST}:${SMTP_PORT}`);
+    try {
+      console.log(`[sendNotification] Sending via Resend API to ${NOTIFICATION_EMAIL}…`);
 
-        const transporter = nodemailer.createTransport({
-          host: SMTP_HOST,
-          port: SMTP_PORT,
-          secure: SMTP_PORT === 465,
-          auth: { user: SMTP_USER, pass: SMTP_PASS },
-          tls: { rejectUnauthorized: false },
-          requireTLS: SMTP_PORT === 587,
-        });
-
-        const fromAddr = SMTP_USER;
-
-        const info = await transporter.sendMail({
-          from:    `"ReWall Quotes" <${fromAddr}>`,
-          to:      NOTIFICATION_EMAIL,
-          replyTo: d.clientEmail,
+      const response = await axios.post(
+        'https://api.resend.com/emails',
+        {
+          from: 'ReWall Quotes <onboarding@resend.dev>',
+          to: [NOTIFICATION_EMAIL],
+          reply_to: d.clientEmail,
           subject: emailSubject,
-          html:    htmlBody,
-        });
-
-        console.log('[sendNotification] SMTP SUCCESS — messageId:', info.messageId);
-        emailResult = { messageId: info.messageId, transport: 'smtp' };
-      } catch (smtpErr) {
-        smtpError = smtpErr;
-        console.error('[sendNotification] SMTP FAILED:', smtpErr.message, smtpErr.code || '');
-        console.error('[sendNotification] Will try Resend fallback if available…');
-      }
-    }
-
-    // ---- Attempt 2: Resend API (fallback if SMTP failed or not configured) ----
-    if (!emailResult && RESEND_API_KEY) {
-      try {
-        console.log('[sendNotification] Sending via Resend API (fallback)…');
-        const axios = require('axios');
-
-        const response = await axios.post(
-          'https://api.resend.com/emails',
-          {
-            from: 'ReWall Quotes <onboarding@resend.dev>',
-            to: [NOTIFICATION_EMAIL],
-            reply_to: d.clientEmail,
-            subject: emailSubject,
-            html: htmlBody,
+          html: htmlBody,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
           },
-          {
-            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-            timeout: 12000,
-          }
-        );
+          timeout: 15000,
+        }
+      );
 
-        console.log('[sendNotification] Resend SUCCESS:', response.status, JSON.stringify(response.data));
-        emailResult = { emailId: response.data.id, transport: 'resend', smtpFailed: !!smtpError };
-      } catch (resendErr) {
-        console.error('[sendNotification] Resend ALSO FAILED:', resendErr.message);
-      }
+      console.log('[sendNotification] Resend SUCCESS:', response.status, JSON.stringify(response.data));
+      emailResult = { emailId: response.data.id, transport: 'resend' };
+    } catch (resendErr) {
+      const errInfo = resendErr.response
+        ? { status: resendErr.response.status, data: resendErr.response.data }
+        : { message: resendErr.message };
+      console.error('[sendNotification] Resend FAILED:', JSON.stringify(errInfo));
+      throw new Error(`Resend API error: ${JSON.stringify(errInfo)}`);
     }
 
     // ---- Result ----
-    if (emailResult) {
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          message: `Notification email sent to ${NOTIFICATION_EMAIL}`,
-          ...emailResult,
-        }),
-      };
-    }
-
-    // Both failed
-    throw new Error(`All email transports failed. SMTP: ${smtpError?.message || 'not configured'}`);
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: `Notification email sent to ${NOTIFICATION_EMAIL}`,
+        ...emailResult,
+      }),
+    };
 
   } catch (err) {
     const errDetails = err.response
