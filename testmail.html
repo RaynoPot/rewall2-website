@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ReWall - Email Test</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #1a2a3a; }
+        button { padding: 16px 32px; font-size: 18px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 10px 0; display: block; width: 100%; }
+        button:hover { background: #218838; }
+        button:disabled { background: #999; cursor: not-allowed; }
+        #result { margin-top: 20px; padding: 16px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; font-size: 13px; display: none; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #fff3cd; border: 1px solid #ffc107; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>ReWall Email Test</h1>
+    <p>This page tests whether the email notification function works. It sends a test email to <strong>info@rewall.nz</strong> via Resend API.</p>
+    <p style="color:#666;">No data is saved to the database. This only tests the email.</p>
+
+    <button id="test-btn" onclick="sendTest()">Send Test Email Now</button>
+    <div id="result"></div>
+
+    <script>
+        async function sendTest() {
+            const btn = document.getElementById('test-btn');
+            const result = document.getElementById('result');
+
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            result.style.display = 'block';
+            result.className = 'info';
+            result.textContent = 'Calling /.netlify/functions/sendNotification ...\n';
+
+            const testPayload = {
+                quoteId: 'TEST-' + Date.now(),
+                clientName: 'Test User',
+                clientEmail: 'test@example.com',
+                clientPhone: '027 000 0000',
+                companyProject: 'Email Test',
+                address: '123 Test Street, Auckland',
+                services: ['Engineering Design', 'Consent Documentation'],
+                wallTypes: 'Timber Pole, Concrete',
+                numberOfWalls: 2,
+                totalWallLength: '15.5m',
+                walls: [
+                    { id: 1, lengthFormatted: '8.2m', heightFormatted: '1.5m' },
+                    { id: 2, lengthFormatted: '7.3m', heightFormatted: '2.0m' }
+                ],
+                geotechStatus: 'want',
+                notes: 'This is a TEST email to verify the notification system works.',
+                hasAttachments: true,
+                attachmentUrls: [
+                    { name: 'test-plan.pdf', sizeFormatted: '2.1 MB' },
+                    { name: 'site-photo.jpg', sizeFormatted: '850 KB' }
+                ],
+            };
+
+            result.textContent += 'Payload: ' + JSON.stringify(testPayload, null, 2).substring(0, 300) + '...\n\n';
+
+            try {
+                const startTime = Date.now();
+                const res = await fetch('/.netlify/functions/sendNotification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testPayload),
+                });
+
+                const elapsed = Date.now() - startTime;
+                const data = await res.json();
+
+                result.textContent += 'Status: ' + res.status + ' (' + elapsed + 'ms)\n';
+                result.textContent += 'Response:\n' + JSON.stringify(data, null, 2);
+
+                if (res.ok && data.success) {
+                    result.className = 'success';
+                    result.textContent += '\n\n--- SUCCESS! Check info@rewall.nz inbox (and spam/junk folder) ---';
+                    btn.textContent = 'Email Sent! Check your inbox';
+                } else {
+                    result.className = 'error';
+                    result.textContent += '\n\n--- FAILED: See error details above ---';
+                    btn.textContent = 'Failed - See details below';
+                }
+            } catch (err) {
+                result.className = 'error';
+                result.textContent += 'NETWORK ERROR: ' + err.message;
+                result.textContent += '\n\nThis means the function could not be reached at all.';
+                result.textContent += '\nPossible causes:';
+                result.textContent += '\n  1. The site has not been deployed yet (commit + push first)';
+                result.textContent += '\n  2. The function failed to build (check Netlify deploy logs)';
+                result.textContent += '\n  3. Network issue';
+                btn.textContent = 'Network Error - See details';
+            }
+
+            setTimeout(() => { btn.disabled = false; btn.textContent = 'Send Test Email Again'; }, 3000);
+        }
+    </script>
+</body>
+</html>
