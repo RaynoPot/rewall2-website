@@ -3950,6 +3950,20 @@
             
             validationMsg.style.display = 'none';
 
+            // ---- Rate limit: max 5 submissions per 30-minute window ----
+            const WINDOW_MS = 30 * 60 * 1000;
+            const LIMIT = 5;
+            const stored = JSON.parse(localStorage.getItem('rewallSubmits') || '[]');
+            const now = Date.now();
+            const recent = stored.filter(t => now - t < WINDOW_MS);
+            if (recent.length >= LIMIT) {
+                const oldestExpiry = Math.ceil((WINDOW_MS - (now - Math.min(...recent))) / 60000);
+                validationMsg.style.display = 'block';
+                validationMsg.textContent = `You've submitted ${LIMIT} quotes in the last 30 minutes. Please wait ${oldestExpiry} more minute${oldestExpiry !== 1 ? 's' : ''}, or call us on 027 394 1127.`;
+                document.getElementById('step-details').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
             const services = [];
             document.querySelectorAll('.stage-checkbox:checked').forEach(checkbox => {
                 const stage = checkbox.closest('.journey-stage');
@@ -4382,6 +4396,11 @@
                 }
 
                 // ---- Step 4: Show success ----
+                // Record this submission timestamp for client-side rate limiting
+                const _stored = JSON.parse(localStorage.getItem('rewallSubmits') || '[]');
+                _stored.push(Date.now());
+                localStorage.setItem('rewallSubmits', JSON.stringify(_stored));
+
                 let emailNote = '';
                 if (emailSent) {
                     emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>';

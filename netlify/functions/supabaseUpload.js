@@ -34,18 +34,20 @@ exports.handler = async function (event) {
     const body = JSON.parse(event.body);
     const { sessionId, fileName, fileType, fileSize } = body;
 
-    // ---- IP rate limit: max 20 upload sessions per IP ----
+    // ---- IP rate limit: max 25 uploads per IP per 30-minute window ----
     const upload_ip =
       event.headers['x-nf-client-connection-ip'] ||
       event.headers['x-forwarded-for']?.split(',')[0]?.trim() || null;
     if (upload_ip) {
       const TABLE_USERS = 'Re_wall_anon_users';
+      const windowStart = new Date(Date.now() - 30 * 60 * 1000).toISOString();
       const { count, error: countErr } = await supabase
         .from(TABLE_USERS)
         .select('*', { count: 'exact', head: true })
-        .eq('ip_address', upload_ip);
-      if (!countErr && count !== null && count >= 20) {
-        console.warn(`[supabaseUpload] Rate limit hit — IP ${upload_ip} has ${count} submissions`);
+        .eq('ip_address', upload_ip)
+        .gte('created_at', windowStart);
+      if (!countErr && count !== null && count >= 25) {
+        console.warn(`[supabaseUpload] Rate limit hit — IP ${upload_ip} has ${count} uploads in last 30 min`);
         return {
           statusCode: 429,
           headers,

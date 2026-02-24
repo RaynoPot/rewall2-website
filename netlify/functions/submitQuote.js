@@ -64,18 +64,20 @@ exports.handler = async function (event) {
       event.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
       null;
 
-    // ---- IP rate limit: max 5 submissions per IP ----
+    // ---- IP rate limit: max 5 submissions per 30-minute window ----
     if (ip_address) {
+      const windowStart = new Date(Date.now() - 30 * 60 * 1000).toISOString();
       const { count, error: countErr } = await supabase
         .from(TABLE_USERS)
         .select('*', { count: 'exact', head: true })
-        .eq('ip_address', ip_address);
+        .eq('ip_address', ip_address)
+        .gte('created_at', windowStart);
       if (!countErr && count !== null && count >= 5) {
-        console.warn(`[submitQuote] Rate limit hit — IP ${ip_address} has ${count} submissions`);
+        console.warn(`[submitQuote] Rate limit hit — IP ${ip_address} has ${count} submissions in last 30 min`);
         return {
           statusCode: 429,
           headers,
-          body: JSON.stringify({ error: 'Too many submissions from this location. Please contact us directly at info@rewall.nz or call 027 394 1127.' }),
+          body: JSON.stringify({ error: 'Too many submissions in the last 30 minutes. Please wait a bit or contact us at info@rewall.nz / 027 394 1127.' }),
         };
       }
     }
