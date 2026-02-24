@@ -477,7 +477,7 @@
         .wall-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             padding: var(--spacing-md);
             background: white;
             border-radius: var(--radius-md);
@@ -498,7 +498,7 @@
         
         .wall-item .wall-info {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: var(--spacing-md);
             flex: 1;
         }
@@ -588,11 +588,11 @@
         .height-input-group {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             background: var(--light-gray);
-            padding: 10px;
+            padding: 8px 12px;
             border-radius: var(--radius-sm);
-            margin-top: var(--spacing-sm);
+            margin-top: 4px;
             flex-wrap: wrap;
         }
         
@@ -1557,12 +1557,12 @@
                     <div style="margin-top: var(--spacing-lg);">
                         <label style="display: block; font-weight: 600; margin-bottom: 8px;">📎 Attach Site Photos or Documents</label>
                         <p style="color: var(--slate); font-size: 0.9rem; margin-bottom: var(--spacing-sm);">Upload photos of your site, existing plans, or any relevant documents</p>
-                        <p style="color: #e74c3c; font-size: 0.85rem; margin-bottom: var(--spacing-sm);"><strong>Limits:</strong> Max 5MB per file, up to 5 files. Accepted: Images (JPG, PNG), PDFs, Word docs</p>
+                        <p style="color: #e74c3c; font-size: 0.85rem; margin-bottom: var(--spacing-sm);"><strong>Limits:</strong> Max 20MB per file, up to 5 files. Accepted: Images (JPG, PNG), PDFs, Word docs</p>
                         <div id="file-upload-area" style="border: 2px dashed var(--border-gray); border-radius: var(--radius-md); padding: var(--spacing-xl); text-align: center; cursor: pointer; transition: all 0.3s ease; background: var(--light-gray);">
                             <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx" style="display: none;">
                             <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📁</div>
                             <p style="margin: 0; font-weight: 500;">Drop files here or click to browse</p>
-                            <p style="margin: var(--spacing-xs) 0 0; font-size: 0.85rem; color: var(--slate);">JPG, PNG, PDF, Word documents (max 5MB each)</p>
+                            <p style="margin: var(--spacing-xs) 0 0; font-size: 0.85rem; color: var(--slate);">JPG, PNG, PDF, Word documents (max 20MB each)</p>
                         </div>
                         <div id="file-list" style="margin-top: var(--spacing-md);"></div>
                         <div id="file-size-warning" style="display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; color: #856404; font-size: 0.9rem;"></div>
@@ -2982,7 +2982,7 @@
                             <div style="display: flex; flex-direction: column; gap: 6px;">
                                 <span style="color: var(--slate); font-size: 0.9rem;">📏 Est. Length: <strong style="color: var(--teal-accent); font-size: 1rem;">~${formatDistance(wall.distance)}</strong></span>
                                 <div class="height-input-group">
-                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Est. height:</span>
+                                    <span style="color: var(--slate); font-size: 0.85rem; white-space: nowrap;">Est. Wall Height:</span>
                                     <input type="number" 
                                         id="wall-height-low-${wall.id}" 
                                         value="${currentHeightLow}" 
@@ -3008,7 +3008,7 @@
                                 <span class="height-optional-tag">${wall.elevationData ? '<strong>Auto-estimated</strong> from terrain data — feel free to adjust if needed.' : '<strong>Optional</strong> — draw your wall on the map and we\'ll estimate heights automatically.'} We confirm all final heights during the site assessment.</span>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0; margin-top: 6px;">
                             <button onclick="focusOnWall(${wall.id})">📍 View</button>
                             <button class="wall-delete-btn" onclick="deleteWall(${wall.id})">🗑️ Delete</button>
                         </div>
@@ -3562,7 +3562,7 @@
         
         function handleFiles(files) {
             const maxFiles = 5;
-            const maxSize = 5 * 1024 * 1024; // 5MB per file for FormSubmit
+            const maxSize = 20 * 1024 * 1024; // 20MB per file
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             const warningEl = document.getElementById('file-size-warning');
             
@@ -3579,9 +3579,9 @@
                     return;
                 }
                 
-                // Check file size (5MB limit for FormSubmit)
+                // Check file size (20MB limit)
                 if (file.size > maxSize) {
-                    alert(`${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)}MB).\n\nMaximum size is 5MB per file.\n\nTip: Compress images or use a PDF optimizer.`);
+                    alert(`${file.name} is too large (${(file.size / 1024 / 1024).toFixed(1)}MB).\n\nMaximum size is 20MB per file.\n\nTip: Compress images or use a PDF optimizer.`);
                     return;
                 }
                 
@@ -4184,7 +4184,7 @@
             return new Blob([u8arr], { type: mime });
         }
         
-        // Main send function — DB first, then file uploads, then email notification
+        // Main send function — DB first, then file uploads
         async function sendWithAttachments() {
             const btn = document.getElementById('direct-send-btn');
             const data = window.currentQuoteData;
@@ -4202,30 +4202,46 @@
                     throw new Error('Could not register site visit. Please try again.');
                 }
                 
-                // ---- Step 2: Upload files to Supabase Storage ----
+                // ---- Step 2: Upload files to Supabase Storage (direct browser upload) ----
                 const attachmentUrls = [];
                 const bucketSessionId = `quote_${currentVisitId}_${Date.now()}`;
                 let hasAttachments = false;
+
+                // Helper: get signed URL from our function, then PUT file directly to Supabase
+                async function uploadToSupabase(sessionId, fileName, fileType, fileBlob) {
+                    // Step A: Get signed upload URL
+                    const urlRes = await fetch('/.netlify/functions/supabaseUpload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionId, fileName, fileType, fileSize: fileBlob.size }),
+                    });
+                    if (!urlRes.ok) {
+                        const err = await urlRes.json().catch(() => ({}));
+                        throw new Error(err.error || 'Failed to get upload URL');
+                    }
+                    const { signedUrl, token, publicUrl } = await urlRes.json();
+
+                    // Step B: Upload file directly from browser to Supabase Storage
+                    const uploadRes = await fetch(signedUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': fileType || 'application/octet-stream',
+                        },
+                        body: fileBlob,
+                    });
+                    if (!uploadRes.ok) {
+                        throw new Error(`Direct upload failed: HTTP ${uploadRes.status}`);
+                    }
+                    return publicUrl;
+                }
                 
                 if (data.mapSnapshot) {
                     btn.innerHTML = '⏳ Uploading map snapshot...';
                     try {
-                        const base64Data = data.mapSnapshot.split(',')[1];
-                        const res = await fetch('/.netlify/functions/supabaseUpload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                sessionId: bucketSessionId,
-                                fileName: 'ReWall-Site-Map.png',
-                                fileType: 'image/png',
-                                fileBase64: base64Data,
-                            }),
-                        });
-                        if (res.ok) {
-                            const result = await res.json();
-                            attachmentUrls.push({ name: 'ReWall-Site-Map.png', url: result.publicUrl, sizeFormatted: 'Map snapshot' });
-                            hasAttachments = true;
-                        }
+                        const mapBlob = dataURLtoBlob(data.mapSnapshot);
+                        const publicUrl = await uploadToSupabase(bucketSessionId, 'ReWall-Site-Map.png', 'image/png', mapBlob);
+                        attachmentUrls.push({ name: 'ReWall-Site-Map.png', url: publicUrl, sizeFormatted: 'Map snapshot' });
+                        hasAttachments = true;
                     } catch (e) { console.warn('[submit] Map snapshot upload failed:', e.message); }
                 }
                 
@@ -4235,33 +4251,21 @@
                         btn.innerHTML = `⏳ Uploading file ${i + 1}/${uploadedFiles.length}...`;
                         if (uploadedFiles[i].file) {
                             try {
-                                const base64 = await new Promise((resolve, reject) => {
-                                    const reader = new FileReader();
-                                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                                    reader.onerror = () => reject(new Error('File read failed'));
-                                    reader.readAsDataURL(uploadedFiles[i].file);
-                                });
-                                const res = await fetch('/.netlify/functions/supabaseUpload', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        sessionId: bucketSessionId,
-                                        fileName: uploadedFiles[i].name,
-                                        fileType: uploadedFiles[i].type,
-                                        fileBase64: base64,
-                                    }),
-                                });
-                                if (res.ok) {
-                                    const result = await res.json();
-                                    attachmentUrls.push({ name: uploadedFiles[i].name, url: result.publicUrl, sizeFormatted: `${(uploadedFiles[i].size / 1024).toFixed(1)} KB` });
-                                }
+                                const publicUrl = await uploadToSupabase(
+                                    bucketSessionId,
+                                    uploadedFiles[i].name,
+                                    uploadedFiles[i].type,
+                                    uploadedFiles[i].file
+                                );
+                                attachmentUrls.push({ name: uploadedFiles[i].name, url: publicUrl, sizeFormatted: `${(uploadedFiles[i].size / 1024).toFixed(1)} KB` });
                             } catch (e) { console.warn(`[submit] File upload failed: ${uploadedFiles[i].name}`, e.message); }
                         }
                     }
                 }
                 
-                // ---- Step 3: Save quote data to Supabase ----
-                btn.innerHTML = '⏳ Saving quote data...';
+                // ---- Step 3: Save to Supabase + Send email via Web3Forms (parallel) ----
+                btn.innerHTML = '⏳ Saving & notifying...';
+
                 const quotePayload = {
                     visitId: currentVisitId,
                     address: data.location.address || '',
@@ -4277,71 +4281,116 @@
                     wall_data: data.wallGeoJSON || null,
                     services: data.services.join(', ') || '',
                 };
-                
-                const quoteRes = await fetch('/.netlify/functions/submitQuote', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(quotePayload),
-                });
-                
-                let quoteId = currentVisitId;
-                if (quoteRes.ok) {
-                    const quoteResult = await quoteRes.json();
-                    quoteId = quoteResult.quoteId || currentVisitId;
-                } else {
-                    console.error('[submit] Quote save failed');
-                }
-                
-                // ---- Step 4: Send email notification (separate from database — uses Resend) ----
-                btn.innerHTML = '⏳ Sending email notification...';
-                let emailSent = false;
-                let emailError = '';
-                try {
-                    const emailPayload = {
-                        quoteId,
-                        clientName: data.client.name,
-                        clientEmail: data.client.email,
-                        clientPhone: data.client.phone || '',
-                        companyProject: data.client.company || '',
-                        address: data.location.address || '',
-                        services: data.services || [],
-                        wallTypes: data.wallTypeCSV || (data.wallTypes ? data.wallTypes.join(', ') : ''),
-                        numberOfWalls: data.numberOfWalls || 0,
-                        totalWallLength: data.totalWallLengthFormatted || '',
-                        walls: data.walls || [],
-                        geotechStatus: data.geotech || '',
-                        notes: data.notes || '',
-                        hasAttachments: hasAttachments,
-                        attachmentUrls: attachmentUrls,
-                    };
-                    console.log('[submit] Sending email notification payload:', JSON.stringify(emailPayload).substring(0, 200));
 
-                    const notifRes = await fetch('/.netlify/functions/sendNotification', {
+                // -- Build Web3Forms email summary --
+                let wallSummary = 'No walls drawn';
+                if (data.walls && data.walls.length > 0) {
+                    wallSummary = data.walls.map(w => {
+                        const h = w.height ? ` x ${w.heightFormatted} high` : '';
+                        return `Wall #${w.id}: ~${w.lengthFormatted}${h}`;
+                    }).join('\n');
+                    wallSummary += `\nTotal: ${data.numberOfWalls || data.walls.length} wall(s), ~${data.totalWallLengthFormatted || 'N/A'}`;
+                }
+
+                let fileSummary = 'No attachments';
+                if (hasAttachments && attachmentUrls.length > 0) {
+                    fileSummary = attachmentUrls.map(a => `${a.name} (${a.sizeFormatted || '?'})`).join('\n');
+                    fileSummary += `\nFiles stored in Supabase Storage > ReWallClientBucket`;
+                } else if (hasAttachments) {
+                    fileSummary = 'Files uploaded to Supabase Storage';
+                }
+
+                const emailMessage = [
+                    `--- QUOTE REQUEST #${currentVisitId} ---`,
+                    ``,
+                    `CONTACT:`,
+                    `Name: ${data.client.name}`,
+                    `Email: ${data.client.email}`,
+                    `Phone: ${data.client.phone || 'Not provided'}`,
+                    `Company/Project: ${data.client.company || 'Not provided'}`,
+                    ``,
+                    `SERVICES: ${data.services.length > 0 ? data.services.join(', ') : 'None selected'}`,
+                    ``,
+                    `SITE: ${data.location.address || 'Not specified'}`,
+                    data.location.coordinates ? `Coordinates: ${data.location.coordinates.lat.toFixed(6)}, ${data.location.coordinates.lon.toFixed(6)}` : '',
+                    ``,
+                    `WALLS:`,
+                    wallSummary,
+                    ``,
+                    `WALL TYPES: ${data.wallTypeCSV || (data.wallTypes ? data.wallTypes.join(', ') : 'Not specified')}`,
+                    ``,
+                    `GEOTECHNICAL: Have report: ${data.haveGeos ? 'Yes' : 'No'} | Want report: ${data.wantGeos ? 'Yes' : 'No'}`,
+                    ``,
+                    `NOTES: ${data.notes || 'None'}`,
+                    ``,
+                    `ATTACHMENTS:`,
+                    fileSummary,
+                    ``,
+                    `Submitted: ${new Date().toLocaleString('en-NZ', { timeZone: 'Pacific/Auckland' })}`,
+                ].filter(line => line !== undefined).join('\n');
+
+                const web3Payload = {
+                    access_key: '90e6ccce-cfbf-4c84-bf5d-8e57d2aa244a',
+                    subject: `New Quote #${currentVisitId} — ${data.client.name} — ${data.location.address || 'New Project'}`,
+                    from_name: 'ReWall Website',
+                    name: data.client.name,
+                    email: data.client.email,
+                    message: emailMessage,
+                };
+
+                // Fire both in parallel — neither blocks the other
+                const [supabaseResult, emailResult] = await Promise.allSettled([
+                    fetch('/.netlify/functions/submitQuote', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(emailPayload),
-                    });
-                    const notifResult = await notifRes.json();
-                    console.log('[submit] Email notification response:', notifRes.status, JSON.stringify(notifResult));
-                    emailSent = notifRes.ok && notifResult.success;
-                    if (!emailSent) {
-                        emailError = notifResult.details?.message || notifResult.error || JSON.stringify(notifResult);
-                        console.warn('[submit] Email notification failed:', emailError);
-                    }
-                } catch (e) {
-                    emailError = e.message;
-                    console.error('[submit] Email notification error:', e.message);
+                        body: JSON.stringify(quotePayload),
+                    }),
+                    fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(web3Payload),
+                    }),
+                ]);
+
+                // -- Process Supabase result --
+                let quoteId = currentVisitId;
+                if (supabaseResult.status === 'fulfilled' && supabaseResult.value.ok) {
+                    const quoteData = await supabaseResult.value.json();
+                    quoteId = quoteData.quoteId || currentVisitId;
+                    console.log('[submit] Quote saved to Supabase — id:', quoteId);
+                } else {
+                    const reason = supabaseResult.status === 'rejected' ? supabaseResult.reason : 'HTTP ' + supabaseResult.value.status;
+                    console.error('[submit] Supabase save failed:', reason);
                 }
-                
-                // ---- Step 5: Show success ----
+
+                // -- Process Web3Forms email result --
+                let emailSent = false;
+                let emailError = '';
+                if (emailResult.status === 'fulfilled') {
+                    try {
+                        const emailData = await emailResult.value.json();
+                        emailSent = emailResult.value.ok && emailData.success;
+                        if (!emailSent) emailError = emailData.message || JSON.stringify(emailData);
+                        console.log('[submit] Web3Forms response:', emailResult.value.status, JSON.stringify(emailData));
+                    } catch (e) {
+                        emailError = 'Could not parse email response';
+                        console.error('[submit] Web3Forms parse error:', e.message);
+                    }
+                } else {
+                    emailError = emailResult.reason?.message || 'Network error';
+                    console.error('[submit] Web3Forms fetch failed:', emailError);
+                }
+
+                // ---- Step 4: Show success ----
+                let emailNote = '';
+                if (emailSent) {
+                    emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>';
+                } else {
+                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email notification issue — quote IS saved.<br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
+                }
+
                 const modalContent = document.querySelector('#submission-modal > div > div');
                 if (modalContent) {
-                    let emailNote;
-                    if (emailSent) {
-                        emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>';
-                    } else {
-                        emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email notification issue — quote IS saved. <br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
-                    }
                     modalContent.innerHTML = `
                         <div style="background: linear-gradient(135deg, #28a745 0%, #20863a 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
                             <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>

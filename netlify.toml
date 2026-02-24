@@ -11,8 +11,5 @@
 [functions.submitQuote]
   timeout = 15
 
-[functions.sendNotification]
-  timeout = 26
-
 [functions.supabaseUpload]
   timeout = 20
