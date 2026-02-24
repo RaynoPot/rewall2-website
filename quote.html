@@ -3949,7 +3949,20 @@
             }
             
             validationMsg.style.display = 'none';
-            
+
+            // ---- Rate limit: 30-minute cooldown between submissions ----
+            const COOLDOWN_MS = 30 * 60 * 1000;
+            const lastSubmit = localStorage.getItem('rewallQuoteSubmit');
+            if (lastSubmit) {
+                const elapsed = Date.now() - parseInt(lastSubmit, 10);
+                if (elapsed < COOLDOWN_MS) {
+                    const mins = Math.ceil((COOLDOWN_MS - elapsed) / 60000);
+                    validationMsg.style.display = 'block';
+                    validationMsg.textContent = `You've recently submitted a quote. Please wait ${mins} more minute${mins !== 1 ? 's' : ''} before submitting again, or call us on 027 394 1127.`;
+                    return;
+                }
+            }
+
             const services = [];
             document.querySelectorAll('.stage-checkbox:checked').forEach(checkbox => {
                 const stage = checkbox.closest('.journey-stage');
@@ -4382,6 +4395,9 @@
                 }
 
                 // ---- Step 4: Show success ----
+                // Lock out re-submission for 30 minutes
+                localStorage.setItem('rewallQuoteSubmit', Date.now().toString());
+
                 let emailNote = '';
                 if (emailSent) {
                     emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>';

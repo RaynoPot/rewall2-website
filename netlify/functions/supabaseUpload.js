@@ -34,6 +34,26 @@ exports.handler = async function (event) {
     const body = JSON.parse(event.body);
     const { sessionId, fileName, fileType, fileSize } = body;
 
+    // ---- IP rate limit: max 20 upload sessions per IP ----
+    const upload_ip =
+      event.headers['x-nf-client-connection-ip'] ||
+      event.headers['x-forwarded-for']?.split(',')[0]?.trim() || null;
+    if (upload_ip) {
+      const TABLE_USERS = 'Re_wall_anon_users';
+      const { count, error: countErr } = await supabase
+        .from(TABLE_USERS)
+        .select('*', { count: 'exact', head: true })
+        .eq('ip_address', upload_ip);
+      if (!countErr && count !== null && count >= 20) {
+        console.warn(`[supabaseUpload] Rate limit hit — IP ${upload_ip} has ${count} submissions`);
+        return {
+          statusCode: 429,
+          headers,
+          body: JSON.stringify({ error: 'Upload limit reached for this IP address. Contact info@rewall.nz directly.' }),
+        };
+      }
+    }
+
     if (!sessionId || !fileName) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields: sessionId, fileName' }) };
     }

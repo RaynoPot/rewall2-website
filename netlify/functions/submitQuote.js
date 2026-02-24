@@ -64,6 +64,22 @@ exports.handler = async function (event) {
       event.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
       null;
 
+    // ---- IP rate limit: max 5 submissions per IP ----
+    if (ip_address) {
+      const { count, error: countErr } = await supabase
+        .from(TABLE_USERS)
+        .select('*', { count: 'exact', head: true })
+        .eq('ip_address', ip_address);
+      if (!countErr && count !== null && count >= 5) {
+        console.warn(`[submitQuote] Rate limit hit — IP ${ip_address} has ${count} submissions`);
+        return {
+          statusCode: 429,
+          headers,
+          body: JSON.stringify({ error: 'Too many submissions from this location. Please contact us directly at info@rewall.nz or call 027 394 1127.' }),
+        };
+      }
+    }
+
     // Build the row — id is the foreign key to Re_wall_visits
     const row = {
       id: visitId,
