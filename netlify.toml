@@ -1,5 +1,6 @@
 # ReWall NZ — Netlify configuration
 [build]
+  command = "npm install"
   publish = "."
   functions = "netlify/functions"
 
