@@ -15,3 +15,37 @@
 
 [functions.supabaseUpload]
   timeout = 20
+
+# ─── 301 Redirects for SEO-renamed HTML pages ─────────────────────────────────
+# Any old bookmark, indexed URL, or external link is permanently redirected
+# to the new keyword-rich URL so no link-equity is lost.
+
+[[redirects]]
+  from = "/about.html"
+  to   = "/about-rewall.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "/blog.html"
+  to   = "/retaining-wall-blog.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "/gallery.html"
+  to   = "/retaining-wall-gallery.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "/quote.html"
+  to   = "/retaining-wall-quote.html"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "/services.html"
+  to   = "/retaining-wall-services.html"
+  status = 301
+  force  = true
