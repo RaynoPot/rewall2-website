@@ -74,22 +74,22 @@
                         
                         <label for="name">
                             Full Name *
-                            <input type="text" id="name" name="name" required>
+                            <input type="text" id="name" name="name" required autocomplete="name">
                         </label>
                         
                         <label for="email">
                             Email *
-                            <input type="email" id="email" name="email" required>
+                            <input type="email" id="email" name="email" required autocomplete="email">
                         </label>
                         
                         <label for="phone">
                             Phone Number
-                            <input type="tel" id="phone" name="phone">
+                            <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel">
                         </label>
                         
                         <label for="company">
                             Company/Project Name
-                            <input type="text" id="company" name="company">
+                            <input type="text" id="company" name="company" autocomplete="organization">
                         </label>
                         
                         <label for="project-type">
@@ -107,7 +107,7 @@
                         
                         <label for="service-area">
                             Service area or Address
-                            <input type="text" id="service-area" name="service-area" placeholder="Enter your address or area (e.g., Auckland, Waikato, or specific suburb)">
+                            <input type="text" id="service-area" name="service-area" placeholder="Enter your address or area (e.g., Auckland, Waikato, or specific suburb)" autocomplete="street-address">
                         </label>
                         
                         <label for="message">
@@ -172,7 +172,7 @@
                 </p>
                 
                 <div class="grid grid-3" style="gap: var(--spacing-lg); max-width: 1100px; margin: 0 auto;">
-                    <a href="https://www.nemean.nz/" target="_blank" rel="noopener noreferrer" class="card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
+                    <a href="https://www.nemean.nz/" target="_blank" rel="noopener noreferrer" class="card partner-link-card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;">
                         <div style="display: flex; justify-content: center; align-items: center; height: 120px; margin-bottom: var(--spacing-lg);">
                             <img src="images/logos/nemean-engineering-logo.jpg" alt="Nemean Engineering - Structural Engineering Partner" style="max-width: 200px; max-height: 100px; object-fit: contain;">
                         </div>
@@ -181,7 +181,7 @@
                         <p style="font-size: 0.95rem; color: var(--slate); flex-grow: 1;">For engineering design and structural analysis questions.</p>
                         <span style="color: var(--teal-accent); font-size: 0.9rem; margin-top: var(--spacing-sm);">Visit Website →</span>
                     </a>
-                    <a href="https://databloc.nz/" target="_blank" rel="noopener noreferrer" class="card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
+                    <a href="https://databloc.nz/" target="_blank" rel="noopener noreferrer" class="card partner-link-card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;">
                         <div style="display: flex; justify-content: center; align-items: center; height: 120px; margin-bottom: var(--spacing-lg);">
                             <img src="images/logos/data-bloc-logo.png" alt="Data Bloc - ReWall Planning Suite" style="max-width: 200px; max-height: 100px; object-fit: contain;">
                         </div>
@@ -190,8 +190,7 @@
                         <p style="font-size: 0.95rem; color: var(--slate); flex-grow: 1;">For digital planning tools and project visualization.</p>
                         <span style="color: var(--teal-accent); font-size: 0.9rem; margin-top: var(--spacing-sm);">Visit Website →</span>
                     </a>
-                    <a href="https://finewayearthmovers.co.nz/" target="_blank" rel="noopener noreferrer" class="card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
-                        <div style="display: flex; justify-content: center; align-items: center; height: 120px; margin-bottom: var(--spacing-lg);">
+                    <a href="https://finewayearthmovers.co.nz/" target="_blank" rel="noopener noreferrer" class="card partner-link-card" style="text-align: center; padding: var(--spacing-lg); text-decoration: none; display: flex; flex-direction: column; min-height: 320px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;">                        <div style="display: flex; justify-content: center; align-items: center; height: 120px; margin-bottom: var(--spacing-lg);">
                             <img src="images/logos/fineway-earthmovers-logo.png" alt="Fineway Earthmovers - Civil Works Partner" style="max-width: 200px; max-height: 100px; object-fit: contain;">
                         </div>
                         <h3 style="color: var(--teal-accent); margin-bottom: var(--spacing-sm);">Fine Way</h3>

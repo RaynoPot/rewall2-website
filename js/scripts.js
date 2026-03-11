@@ -69,6 +69,7 @@ function openDesignPortal() {
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
     }
 }
 
@@ -77,6 +78,7 @@ function closeDesignPortal() {
     if (modal) {
         modal.classList.remove('active');
         document.body.style.overflow = '';
+        document.body.classList.remove('modal-open');
     }
 }
 
@@ -166,6 +168,8 @@ function openLightbox(imageSrc, caption) {
         lightboxImage.src = imageSrc;
         lightboxCaption.textContent = caption;
         lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Lock scroll
+        document.body.classList.add('modal-open'); // Hide hamburger
 
         // Close on Escape key
         document.addEventListener('keydown', function(event) {
@@ -180,6 +184,8 @@ function closeLightbox() {
     const lightbox = document.getElementById('lightbox');
     if (lightbox) {
         lightbox.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scroll
+        document.body.classList.remove('modal-open');
     }
 }
 
@@ -200,6 +206,7 @@ function openBlogPost(postId) {
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent background scroll
+        document.body.classList.add('modal-open'); // Hide hamburger
         window.scrollTo(0, 0); // Scroll to top of page
     }
 }
@@ -209,6 +216,7 @@ function closeBlogPost(postId) {
     if (modal) {
         modal.classList.remove('active');
         document.body.style.overflow = 'auto'; // Re-enable scroll
+        document.body.classList.remove('modal-open');
     }
 }
 
@@ -571,7 +579,7 @@ function selectServiceMode(mode) {
         });
         
         if (modeDisplay) modeDisplay.textContent = '✓ Complete Journey';
-        if (descEl) descEl.textContent = 'You\'re getting all stages handled by ReWall. Hover over any stage to see details.';
+        if (descEl) descEl.textContent = 'You\'re getting all stages handled by ReWall. Tap or hover over any stage to see details.';
         
         // Enable Request Quote button
         if (requestQuoteBtn) {
@@ -792,6 +800,19 @@ document.addEventListener('keydown', function(event) {
 console.log('ReWall NZ Website - Initialized Successfully');
 console.log('Version: 1.0');
 console.log('Last Updated: January 2026');
+
+// ===================================
+// MOBILE UX ADJUSTMENTS
+// ===================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Swap file upload label text on touch devices
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        var uploadLabel = document.querySelector('.file-upload-label');
+        if (uploadLabel) {
+            uploadLabel.textContent = 'Tap to browse files';
+        }
+    }
+});
 
 // ===================================
 // VISIT TRACKING — All Pages

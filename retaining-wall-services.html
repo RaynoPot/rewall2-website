@@ -60,14 +60,14 @@
         <!-- Our Journey - Interactive Service Wheel -->
         <section class="container" id="our-journey" style="padding-top: var(--spacing-xxl); padding-bottom: var(--spacing-xl);">
             <h2 style="text-align: center; margin-bottom: var(--spacing-sm);">Our 6-Stage Journey</h2>
-            <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-xl); max-width: 650px; margin-left: auto; margin-right: auto;">Hover over each stage to discover how we guide your retaining wall project from start to finish.</p>
+            <p style="text-align: center; color: var(--slate); margin-bottom: var(--spacing-xl); max-width: 650px; margin-left: auto; margin-right: auto;">Explore each stage to discover how we guide your retaining wall project from start to finish.</p>
 
             <div class="journey-circle-container">
                 <!-- Center info box -->
                 <div class="journey-center">
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 8px;">The Complete Journey</div>
                     <h3 id="svc-stage-title">Your Wall, Our Expertise</h3>
-                    <p id="svc-stage-description" style="font-size: 0.8rem;">Hover over any stage to learn more about how we deliver your retaining wall project</p>
+                    <p id="svc-stage-description" style="font-size: 0.8rem;">Tap or hover over any stage to learn more about how we deliver your retaining wall project</p>
                 </div>
 
                 <!-- Stage 1: Planning -->
@@ -483,29 +483,62 @@
 
     <script src="js/scripts.js"></script>
 
-    <!-- Service Wheel Hover Interaction -->
+    <!-- Service Wheel Hover & Touch Interaction -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         var stages = document.querySelectorAll('.svc-wheel-stage');
         var titleEl = document.getElementById('svc-stage-title');
         var descEl = document.getElementById('svc-stage-description');
         var defaultTitle = 'Your Wall, Our Expertise';
-        var defaultDesc = 'Hover over any stage to learn more about how we deliver your retaining wall project';
+        var defaultDesc = 'Tap or hover over any stage to learn more about how we deliver your retaining wall project';
+        var activeStage = null;
+        var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+        function showStage(stage) {
+            titleEl.textContent = stage.getAttribute('data-svc-title');
+            descEl.textContent = stage.getAttribute('data-svc-desc');
+            stages.forEach(function(s) { s.style.opacity = '0.5'; });
+            stage.style.opacity = '1';
+            activeStage = stage;
+        }
+
+        function resetStages() {
+            titleEl.textContent = defaultTitle;
+            descEl.textContent = defaultDesc;
+            stages.forEach(function(s) { s.style.opacity = '1'; });
+            activeStage = null;
+        }
 
         stages.forEach(function(stage) {
-            stage.addEventListener('mouseenter', function() {
-                titleEl.textContent = this.getAttribute('data-svc-title');
-                descEl.textContent = this.getAttribute('data-svc-desc');
-                // Highlight effect
-                stages.forEach(function(s) { s.style.opacity = '0.5'; });
-                this.style.opacity = '1';
+            // Click/tap handler (works on both touch and mouse)
+            stage.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (activeStage === this) {
+                    resetStages();
+                } else {
+                    showStage(this);
+                }
             });
-            stage.addEventListener('mouseleave', function() {
-                titleEl.textContent = defaultTitle;
-                descEl.textContent = defaultDesc;
-                stages.forEach(function(s) { s.style.opacity = '1'; });
-            });
+
+            // Mouse hover (desktop only, skipped on touch devices)
+            if (!isTouchDevice) {
+                stage.addEventListener('mouseenter', function() {
+                    showStage(this);
+                });
+                stage.addEventListener('mouseleave', function() {
+                    resetStages();
+                });
+            }
         });
+
+        // On touch devices, tapping outside the wheel resets
+        if (isTouchDevice) {
+            document.addEventListener('click', function(e) {
+                if (activeStage && !e.target.closest('.journey-circle-container')) {
+                    resetStages();
+                }
+            });
+        }
     });
     </script>
 </body>
