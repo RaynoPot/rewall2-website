@@ -100,18 +100,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.querySelector('nav.sidebar');
 
+    function closeSidebar() {
+        hamburger.classList.remove('active');
+        sidebar.classList.remove('active');
+        document.body.classList.remove('sidebar-open');
+        document.body.style.overflow = '';
+    }
+
+    function openSidebar() {
+        hamburger.classList.add('active');
+        sidebar.classList.add('active');
+        document.body.classList.add('sidebar-open');
+        document.body.style.overflow = 'hidden';
+    }
+
     if (hamburger) {
         hamburger.addEventListener('click', function() {
-            hamburger.classList.toggle('active');
-            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
         });
 
         // Close menu when a link is clicked
         const navLinks = sidebar.querySelectorAll('a');
         navLinks.forEach(link => {
             link.addEventListener('click', function() {
-                hamburger.classList.remove('active');
-                sidebar.classList.remove('active');
+                closeSidebar();
+            });
+        });
+
+        // Close sidebar buttons too
+        const sidebarButtons = sidebar.querySelectorAll('button');
+        sidebarButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                closeSidebar();
             });
         });
     }
@@ -120,12 +144,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(event) {
         if (sidebar && hamburger) {
             const isClickInsideSidebar = sidebar.contains(event.target);
-
             const isClickOnHamburger = hamburger.contains(event.target);
             
             if (!isClickInsideSidebar && !isClickOnHamburger && sidebar.classList.contains('active')) {
-                hamburger.classList.remove('active');
-                sidebar.classList.remove('active');
+                closeSidebar();
             }
         }
     });

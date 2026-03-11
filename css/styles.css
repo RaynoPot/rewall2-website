@@ -2302,15 +2302,19 @@ footer a:hover {
     }
     
     nav.sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        padding: var(--spacing-md);
-        display: none;
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        padding: var(--spacing-lg);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
     }
     
     nav.sidebar.active {
         display: block;
+        transform: translateX(0);
     }
     
     .hamburger {
@@ -2447,14 +2451,13 @@ footer a:hover {
     }
     
     nav.sidebar {
-        width: 100%;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
+        width: 280px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
     }
     
     nav.sidebar.active {
-        max-height: 100vh;
+        transform: translateX(0);
         overflow-y: auto;
     }
     
@@ -2506,6 +2509,279 @@ footer a:hover {
     button, .btn {
         padding: var(--spacing-sm) var(--spacing-md);
         font-size: 0.95rem;
+    }
+}
+
+/* ===================================
+   ENHANCED MOBILE RESPONSIVENESS
+   Overrides for inline styles & mobile UX
+   =================================== */
+
+/* --- Sidebar: proper mobile slide-in --- */
+@media (max-width: 1024px) {
+    nav.sidebar {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        max-height: none;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        display: block;
+        z-index: 1000;
+        padding: var(--spacing-lg);
+    }
+
+    nav.sidebar.active {
+        transform: translateX(0);
+        max-height: none;
+    }
+
+    .hamburger {
+        display: flex;
+        position: fixed;
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        z-index: 1001;
+        background: rgba(255,255,255,0.9);
+        padding: 10px;
+        border-radius: var(--radius-md);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+}
+
+/* --- Hamburger X animation fix --- */
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* --- Mobile overlay when sidebar open --- */
+@media (max-width: 1024px) {
+    body.sidebar-open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 999;
+        animation: fade-in 0.3s ease;
+    }
+}
+
+/* --- Inline grid overrides for mobile --- */
+@media (max-width: 768px) {
+    /* About page: Mission section 2-col grid → 1 col */
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Services page: Full-Service 2-col grid → 1 col */
+    .grid[style*="grid-template-columns: repeat(2, 1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Services page: Wall Types & Mix Match 3-col grid → 1 col */
+    .grid[style*="grid-template-columns: repeat(3, 1fr)"],
+    .wall-type-grid[style*="grid-template-columns: repeat(3, 1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Quote page: Summary section 2-col → 1 col */
+    .quote-summary div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Quote page: Form fields grid → 1 col on small screens */
+    div[style*="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Services: columns: 2 list → single column */
+    ul[style*="columns: 2"] {
+        columns: 1 !important;
+    }
+
+    /* Partner cards: reduce min-height on mobile */
+    .card[style*="min-height: 320px"] {
+        min-height: auto !important;
+    }
+}
+
+/* --- Trust bar partner dividers hide on mobile --- */
+@media (max-width: 768px) {
+    .partner-bar {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: var(--spacing-lg) !important;
+    }
+
+    .partner-divider {
+        display: none !important;
+    }
+
+    .partner-bar > div[style*="width: 200px"] {
+        width: 100% !important;
+        max-width: 250px;
+    }
+}
+
+/* --- Quote page mobile fixes --- */
+@media (max-width: 768px) {
+    .address-search {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .map-controls {
+        flex-direction: column !important;
+    }
+
+    /* Map height reduction on mobile */
+    #map-container {
+        height: 350px !important;
+    }
+
+    /* Leaflet draw button label - shorter text on mobile */
+    .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
+        content: '📐 Draw Wall' !important;
+        font-size: 0.8rem !important;
+        padding: 6px 10px !important;
+        left: 42px !important;
+    }
+
+    /* Draw prompt tooltip - reposition for mobile */
+    .draw-prompt-tooltip {
+        left: 42px !important;
+        max-width: 200px !important;
+        white-space: normal !important;
+    }
+}
+
+/* --- General mobile UX improvements --- */
+@media (max-width: 768px) {
+    /* Ensure touch targets are at least 44px */
+    nav.sidebar a {
+        padding: 12px 0;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Better spacing for mobile hero CTA buttons */
+    section.hero .cta-container button {
+        padding: 14px 24px !important;
+        font-size: 1rem !important;
+        min-height: 48px;
+    }
+
+    /* Prevent horizontal overflow from any source */
+    main {
+        overflow-x: hidden;
+    }
+
+    /* Design portal modal - full width on mobile */
+    .design-portal-content {
+        max-width: 95%;
+        margin: var(--spacing-md);
+    }
+
+    .design-portal-notify {
+        flex-direction: column;
+    }
+
+    .design-portal-notify input,
+    .design-portal-notify button {
+        width: 100%;
+    }
+
+    /* Blog card images taller on mobile for better visual */
+    .blog-card img {
+        height: 160px;
+    }
+
+    /* Lightbox close button larger touch target */
+    .lightbox-close {
+        width: 50px;
+        height: 50px;
+        top: 15px;
+        right: 15px;
+    }
+
+    /* Footer padding cleanup on mobile */
+    footer {
+        padding: var(--spacing-xl) 0;
+    }
+
+    footer .container {
+        padding: 0 var(--spacing-md);
+    }
+
+    /* Project card image height adjustment */
+    .project-card img {
+        height: 220px;
+    }
+
+    /* Project card inline image containers */
+    div[style*="height: 280px"][style*="overflow: hidden"] {
+        height: 220px !important;
+    }
+}
+
+/* --- Small phone (< 480px) additional fixes --- */
+@media (max-width: 480px) {
+    nav.sidebar {
+        width: 100%;
+    }
+
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+
+    section.hero .content {
+        padding: var(--spacing-md) var(--spacing-sm);
+    }
+
+    /* Hero logo smaller on tiny screens */
+    section.hero .content img[alt*="Logo"] {
+        max-width: 250px !important;
+    }
+
+    /* Journey stage icons smaller */
+    .journey-stage-icon {
+        width: 65px;
+        height: 65px;
+    }
+
+    .journey-stage-icon img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .journey-center {
+        height: auto;
+        min-height: 100px;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-lg);
+    }
+
+    /* Quote page how-it-works steps */
+    div[style*="min-width: 170px"][style*="max-width: 195px"] {
+        min-width: 0 !important;
+        max-width: none !important;
+        width: 100%;
+    }
+
+    /* Footer links single column */
+    .footer-links-group {
+        grid-template-columns: 1fr !important;
     }
 }
 

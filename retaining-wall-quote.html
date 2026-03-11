@@ -1072,6 +1072,54 @@
             .quote-summary > div[style*="grid-template-columns"] {
                 grid-template-columns: 1fr !important;
             }
+
+            .address-search {
+                min-width: 0 !important;
+                width: 100% !important;
+            }
+
+            .address-search-wrapper {
+                flex-direction: column;
+            }
+
+            .address-search button {
+                width: 100%;
+            }
+
+            .map-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .map-layer-toggle {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            #map-container {
+                height: 350px !important;
+            }
+
+            .leaflet-draw-toolbar .leaflet-draw-draw-polyline::after {
+                content: '📐 Draw Wall' !important;
+                font-size: 0.8rem !important;
+                padding: 6px 10px !important;
+                left: 42px !important;
+                white-space: nowrap !important;
+            }
+
+            .draw-prompt-tooltip {
+                left: 42px !important;
+                max-width: 200px !important;
+                white-space: normal !important;
+                font-size: 0.85rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #map-container {
+                height: 280px !important;
+            }
         }
     </style>
 </head>
