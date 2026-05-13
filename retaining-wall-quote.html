@@ -3892,7 +3892,9 @@
         async function trackPageVisit() {
             const existingId = sessionStorage.getItem('rewall_current_visit_id');
             if (existingId) {
-                currentVisitId = parseInt(existingId, 10);
+                // Preserve raw value — supports both integer and UUID primary keys
+                const parsed = parseInt(existingId, 10);
+                currentVisitId = isNaN(parsed) ? existingId : parsed;
                 console.log('[trackVisit] Using existing visit id:', currentVisitId);
                 return;
             }
@@ -4260,8 +4262,11 @@
                     btn.innerHTML = '⏳ Registering visit...';
                     await trackPageVisit();
                 }
+                // If trackVisit is unavailable (Supabase down, env vars missing, etc.),
+                // use a local fallback ID so the Web3Forms email still goes through.
                 if (!currentVisitId) {
-                    throw new Error('Could not register site visit. Please try again.');
+                    currentVisitId = `local_${Date.now()}`;
+                    console.warn('[submit] trackVisit unavailable — using fallback ID:', currentVisitId);
                 }
                 
                 // ---- Step 2: Upload files to Supabase Storage (direct browser upload) ----
@@ -4416,9 +4421,11 @@
 
                 // -- Process Supabase result --
                 let quoteId = currentVisitId;
+                let supabaseSaved = false;
                 if (supabaseResult.status === 'fulfilled' && supabaseResult.value.ok) {
                     const quoteData = await supabaseResult.value.json();
                     quoteId = quoteData.quoteId || currentVisitId;
+                    supabaseSaved = true;
                     console.log('[submit] Quote saved to Supabase — id:', quoteId);
                 } else {
                     const reason = supabaseResult.status === 'rejected' ? supabaseResult.reason : 'HTTP ' + supabaseResult.value.status;
@@ -4452,9 +4459,21 @@
                 let emailNote = '';
                 if (emailSent) {
                     emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>';
+                } else if (supabaseSaved) {
+                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email notification issue — quote IS saved to database.<br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
                 } else {
-                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email notification issue — quote IS saved.<br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
+                    // Both Supabase and email failed — provide mailto fallback
+                    const subject = encodeURIComponent('ReWall Quote Request - ' + (data.location.address || 'New Project'));
+                    const emailBody = encodeURIComponent(emailMessage);
+                    emailNote = `<p style="color: #dc3545; font-size: 0.85rem; margin-bottom: 8px;">⚠️ Could not reach our server — please send your request via email:</p>
+                        <a href="mailto:info@rewall.nz?subject=${subject}&body=${emailBody}" style="display:inline-block; padding: 10px 20px; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Send via Email Client</a>`;
                 }
+
+                const savedNote = supabaseSaved
+                    ? 'Your quote request has been saved and we\'ve been notified.<br>We\'ll review it and get back to you within <strong>24-48 hours</strong>.'
+                    : emailSent
+                        ? 'Your quote details have been emailed to our team.<br>We\'ll review it and get back to you within <strong>24-48 hours</strong>.'
+                        : 'Please use the email link below to send your request, or ring us directly.';
 
                 const modalContent = document.querySelector('#submission-modal > div > div');
                 if (modalContent) {
@@ -4466,7 +4485,7 @@
                         </div>
                         <div style="padding: 30px; text-align: center;">
                             <p style="font-size: 1.1rem; color: var(--primary-black); margin-bottom: 15px;"><strong>Thank you, ${data.client.name}!</strong></p>
-                            <p style="color: var(--slate); margin-bottom: 20px;">Your quote request has been saved and we've been notified.<br>We'll review it and get back to you within <strong>24-48 hours</strong>.</p>
+                            <p style="color: var(--slate); margin-bottom: 20px;">${savedNote}</p>
                             ${hasAttachments ? `<p style="color: var(--slate); font-size: 0.9rem;">📎 ${attachmentUrls.length} file(s) uploaded successfully</p>` : ''}
                             ${emailNote}
                             <div style="margin-top: 20px; padding: 15px; background: var(--soft-blue); border-radius: 8px;">

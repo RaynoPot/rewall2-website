@@ -10,6 +10,9 @@
 [functions.linzApi]
   timeout = 26
 
+[functions.trackVisit]
+  timeout = 10
+
 [functions.submitQuote]
   timeout = 15
 
