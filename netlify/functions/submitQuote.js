@@ -104,13 +104,16 @@ exports.handler = async function (event) {
 
     const { data, error } = await supabase
       .from(TABLE_USERS)
-      .insert(row)
+      .upsert(row, { onConflict: 'id' })
       .select()
       .single();
 
     if (error) {
-      console.error('[submitQuote] Supabase error:', JSON.stringify(error));
-      return { statusCode: 400, headers, body: JSON.stringify({ error: error.message, details: error }) };
+      console.error('[submitQuote] Supabase error code:', error.code);
+      console.error('[submitQuote] Supabase error message:', error.message);
+      console.error('[submitQuote] Supabase error details:', error.details);
+      console.error('[submitQuote] Supabase error hint:', error.hint);
+      return { statusCode: 400, headers, body: JSON.stringify({ error: error.message, code: error.code, details: error.details, hint: error.hint }) };
     }
 
     console.log('[submitQuote] Quote saved successfully — id:', data.id);

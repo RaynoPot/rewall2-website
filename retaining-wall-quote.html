@@ -4428,7 +4428,18 @@
                     supabaseSaved = true;
                     console.log('[submit] Quote saved to Supabase — id:', quoteId);
                 } else {
-                    const reason = supabaseResult.status === 'rejected' ? supabaseResult.reason : 'HTTP ' + supabaseResult.value.status;
+                    let reason = 'Unknown error';
+                    if (supabaseResult.status === 'rejected') {
+                        reason = supabaseResult.reason?.message || String(supabaseResult.reason);
+                    } else {
+                        try {
+                            const errBody = await supabaseResult.value.json();
+                            reason = `HTTP ${supabaseResult.value.status}: ${errBody.error || JSON.stringify(errBody)}`;
+                            console.error('[submit] Supabase error detail:', JSON.stringify(errBody));
+                        } catch (e) {
+                            reason = `HTTP ${supabaseResult.value.status}`;
+                        }
+                    }
                     console.error('[submit] Supabase save failed:', reason);
                 }
 
