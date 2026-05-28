@@ -4430,71 +4430,82 @@
                     fileSummary,
                     ``,
                     `Submitted: ${new Date().toLocaleString('en-NZ', { timeZone: 'Pacific/Auckland' })}`,
+                    // DB_STATUS_PLACEHOLDER — replaced below after Supabase result known
                 ].filter(line => line !== undefined).join('\n');
 
-                const web3Payload = {
-                    access_key: '90e6ccce-cfbf-4c84-bf5d-8e57d2aa244a',
-                    subject: `New Quote #${currentVisitId} — ${data.client.name} — ${data.location.address || 'New Project'}`,
-                    from_name: 'ReWall Website',
-                    name: data.client.name,
-                    email: data.client.email,
-                    message: emailMessage,
-                };
+                // ---- Step 3a: Save to Supabase FIRST so we can include the result in the email ----
+                btn.innerHTML = '⏳ Saving to database...';
+                let quoteId = currentVisitId;
+                let supabaseSaved = false;
+                let dbErrorDetail = '';
 
-                // Fire both in parallel — neither blocks the other
-                const [supabaseResult, emailResult] = await Promise.allSettled([
-                    fetch('/.netlify/functions/submitQuote', {
+                let supabaseResponse;
+                try {
+                    supabaseResponse = await fetch('/.netlify/functions/submitQuote', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(quotePayload),
-                    }),
-                    fetch('https://api.web3forms.com/submit', {
+                    });
+                } catch (netErr) {
+                    dbErrorDetail = `Network error: ${netErr.message}`;
+                    console.error('[submit] Supabase fetch failed:', dbErrorDetail);
+                }
+
+                if (supabaseResponse) {
+                    try {
+                        const supabaseJson = await supabaseResponse.json();
+                        if (supabaseResponse.ok && supabaseJson.success) {
+                            quoteId = supabaseJson.quoteId || currentVisitId;
+                            supabaseSaved = true;
+                            console.log('[submit] Quote saved to Supabase — id:', quoteId);
+                        } else {
+                            dbErrorDetail = `HTTP ${supabaseResponse.status} | code: ${supabaseJson.code || '?'} | ${supabaseJson.error || JSON.stringify(supabaseJson)}`;
+                            console.error('[submit] Supabase save failed:', dbErrorDetail);
+                        }
+                    } catch (e) {
+                        dbErrorDetail = `HTTP ${supabaseResponse.status} (parse error)`;
+                    }
+                }
+
+                // Build final email — append DB status so you receive it regardless
+                const dbStatusLine = supabaseSaved
+                    ? `\nDB STATUS: ✅ Saved to database — ref #${quoteId}`
+                    : `\nDB STATUS: ❌ NOT saved to database — ERROR: ${dbErrorDetail || 'unknown'}\n⚠️  ACTION REQUIRED: manually record this quote. visitId=${currentVisitId}`;
+
+                const finalEmailMessage = emailMessage.replace(
+                    '// DB_STATUS_PLACEHOLDER — replaced below after Supabase result known',
+                    dbStatusLine
+                );
+
+                // ---- Step 3b: Send email notification via Web3Forms ----
+                btn.innerHTML = '⏳ Sending notification...';
+
+                const web3Payload = {
+                    access_key: '90e6ccce-cfbf-4c84-bf5d-8e57d2aa244a',
+                    subject: supabaseSaved
+                        ? `New Quote #${quoteId} — ${data.client.name} — ${data.location.address || 'New Project'}`
+                        : `⚠️ DB SAVE FAILED — Quote from ${data.client.name} — visitId ${currentVisitId}`,
+                    from_name: 'ReWall Website',
+                    name: data.client.name,
+                    email: data.client.email,
+                    message: finalEmailMessage,
+                };
+
+                let emailSent = false;
+                let emailError = '';
+                try {
+                    const emailResponse = await fetch('https://api.web3forms.com/submit', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify(web3Payload),
-                    }),
-                ]);
-
-                // -- Process Supabase result --
-                let quoteId = currentVisitId;
-                let supabaseSaved = false;
-                if (supabaseResult.status === 'fulfilled' && supabaseResult.value.ok) {
-                    const quoteData = await supabaseResult.value.json();
-                    quoteId = quoteData.quoteId || currentVisitId;
-                    supabaseSaved = true;
-                    console.log('[submit] Quote saved to Supabase — id:', quoteId);
-                } else {
-                    let reason = 'Unknown error';
-                    if (supabaseResult.status === 'rejected') {
-                        reason = supabaseResult.reason?.message || String(supabaseResult.reason);
-                    } else {
-                        try {
-                            const errBody = await supabaseResult.value.json();
-                            reason = `HTTP ${supabaseResult.value.status}: ${errBody.error || JSON.stringify(errBody)}`;
-                            console.error('[submit] Supabase error detail:', JSON.stringify(errBody));
-                        } catch (e) {
-                            reason = `HTTP ${supabaseResult.value.status}`;
-                        }
-                    }
-                    console.error('[submit] Supabase save failed:', reason);
-                }
-
-                // -- Process Web3Forms email result --
-                let emailSent = false;
-                let emailError = '';
-                if (emailResult.status === 'fulfilled') {
-                    try {
-                        const emailData = await emailResult.value.json();
-                        emailSent = emailResult.value.ok && emailData.success;
-                        if (!emailSent) emailError = emailData.message || JSON.stringify(emailData);
-                        console.log('[submit] Web3Forms response:', emailResult.value.status, JSON.stringify(emailData));
-                    } catch (e) {
-                        emailError = 'Could not parse email response';
-                        console.error('[submit] Web3Forms parse error:', e.message);
-                    }
-                } else {
-                    emailError = emailResult.reason?.message || 'Network error';
-                    console.error('[submit] Web3Forms fetch failed:', emailError);
+                    });
+                    const emailData = await emailResponse.json();
+                    emailSent = emailResponse.ok && emailData.success;
+                    if (!emailSent) emailError = emailData.message || JSON.stringify(emailData);
+                    console.log('[submit] Web3Forms response:', emailResponse.status, JSON.stringify(emailData));
+                } catch (e) {
+                    emailError = e.message;
+                    console.error('[submit] Web3Forms failed:', emailError);
                 }
 
                 // ---- Step 4: Show success ----
@@ -4507,15 +4518,13 @@
                 if (emailSent && supabaseSaved) {
                     emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Quote saved to database &amp; email notification sent</p>';
                 } else if (emailSent && !supabaseSaved) {
-                    // Email went through but DB save failed — the admin needs to know
-                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email sent but we could not save your request to our database — please also email your details directly to <a href="mailto:info@rewall.nz" style="color:var(--teal-accent);">info@rewall.nz</a> or call <a href="tel:+64273941127" style="color:var(--teal-accent);">027 394 1127</a> to confirm receipt.</p>`;
-                    console.error('[submit] DB save failed while email succeeded — user shown warning');
+                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email sent but database save failed.<br><small style="color:#999;">Error: ${dbErrorDetail || 'unknown'}</small><br>Our team has been notified in the email — we will record this manually.</p>`;
                 } else if (!emailSent && supabaseSaved) {
-                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email notification issue — quote IS saved to database.<br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
+                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Saved to database but email notification issue.<br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
                 } else {
-                    // Both Supabase and email failed — provide mailto fallback
+                    // Both failed
                     const subject = encodeURIComponent('ReWall Quote Request - ' + (data.location.address || 'New Project'));
-                    const emailBody = encodeURIComponent(emailMessage);
+                    const emailBody = encodeURIComponent(finalEmailMessage);
                     emailNote = `<p style="color: #dc3545; font-size: 0.85rem; margin-bottom: 8px;">⚠️ Could not reach our server — please send your request via email:</p>
                         <a href="mailto:info@rewall.nz?subject=${subject}&body=${emailBody}" style="display:inline-block; padding: 10px 20px; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Send via Email Client</a>`;
                 }
