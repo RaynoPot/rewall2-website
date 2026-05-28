@@ -102,11 +102,43 @@ exports.handler = async function (event) {
 
     console.log('[submitQuote] Inserting row:', JSON.stringify(row, null, 2));
 
-    const { data, error } = await supabase
+    // Try INSERT first (works for all new submissions)
+    let { data, error } = await supabase
       .from(TABLE_USERS)
-      .upsert(row, { onConflict: 'id' })
+      .insert(row)
       .select()
       .single();
+
+    // If duplicate visitId (same session re-submit), fall back to UPDATE
+    if (error && error.code === '23505') {
+      console.log('[submitQuote] Duplicate visitId detected — updating existing record:', visitId);
+      const { id: _id, ...updateFields } = row;
+      ({ data, error } = await supabase
+        .from(TABLE_USERS)
+        .update(updateFields)
+        .eq('id', visitId)
+        .select()
+        .single());
+    }
+
+    // If FK violation (visitId has no matching row in Re_wall_visits), create a visit record first
+    if (error && error.code === '23503') {
+      console.warn('[submitQuote] visitId FK violation — creating fallback visit record for visitId:', visitId);
+      const { data: newVisit, error: visitErr } = await supabase
+        .from(TABLE_VISITS)
+        .insert({ pages_visited: '/retaining-wall-quote', ip_address: ip_address })
+        .select('id')
+        .single();
+      if (!visitErr && newVisit) {
+        row.id = newVisit.id;
+        console.log('[submitQuote] Created fallback visit record — new id:', newVisit.id);
+        ({ data, error } = await supabase
+          .from(TABLE_USERS)
+          .insert(row)
+          .select()
+          .single());
+      }
+    }
 
     if (error) {
       console.error('[submitQuote] Supabase error code:', error.code);

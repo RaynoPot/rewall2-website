@@ -4468,9 +4468,13 @@
                 localStorage.setItem('rewallSubmits', JSON.stringify(_stored));
 
                 let emailNote = '';
-                if (emailSent) {
-                    emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Email notification sent to our team</p>';
-                } else if (supabaseSaved) {
+                if (emailSent && supabaseSaved) {
+                    emailNote = '<p style="color: #28a745; font-size: 0.9rem;">✅ Quote saved to database &amp; email notification sent</p>';
+                } else if (emailSent && !supabaseSaved) {
+                    // Email went through but DB save failed — the admin needs to know
+                    emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email sent but we could not save your request to our database — please also email your details directly to <a href="mailto:info@rewall.nz" style="color:var(--teal-accent);">info@rewall.nz</a> or call <a href="tel:+64273941127" style="color:var(--teal-accent);">027 394 1127</a> to confirm receipt.</p>`;
+                    console.error('[submit] DB save failed while email succeeded — user shown warning');
+                } else if (!emailSent && supabaseSaved) {
                     emailNote = `<p style="color: #e67e22; font-size: 0.85rem;">⚠️ Email notification issue — quote IS saved to database.<br><small style="color:#999;">${emailError || 'Unknown error'}</small></p>`;
                 } else {
                     // Both Supabase and email failed — provide mailto fallback
