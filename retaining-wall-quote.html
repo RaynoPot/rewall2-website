@@ -2312,7 +2312,7 @@
                 // LINZ Address API provides the most specific NZ addresses
                 const searches = [
                     // LINZ NZ Address Locator - best for specific NZ addresses
-                    fetch(`https://api.addressfinder.io/api/nz/address/autocomplete/?key=YPFNVGRTQDL9KE7MJAHU&q=${encodeURIComponent(query)}&max=8&format=json`).catch(() => null),
+                    fetch(`https://api.addressfinder.io/api/nz/address/autocomplete?key=YPFNVGRTQDL9KE7MJAHU&q=${encodeURIComponent(query)}&max=8&format=json`).catch(() => null),
                     // Nominatim as backup with NZ focus and street-level detail
                     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=nz&limit=8&addressdetails=1&bounded=1&viewbox=166.0,-47.5,178.5,-34.0`),
                     // Photon (another geocoding service)
@@ -2331,7 +2331,7 @@
                             for (const addr of afData.completions) {
                                 // Get full address details with coordinates
                                 try {
-                                    const metaRes = await fetch(`https://api.addressfinder.io/api/nz/address/metadata/?key=YPFNVGRTQDL9KE7MJAHU&pxid=${addr.pxid}&format=json`);
+                                    const metaRes = await fetch(`https://api.addressfinder.io/api/nz/address/metadata?key=YPFNVGRTQDL9KE7MJAHU&pxid=${addr.pxid}&format=json`);
                                     const meta = await metaRes.json();
                                     if (meta.x && meta.y) {
                                         results.push({
@@ -2588,7 +2588,7 @@
             
             // Hide tooltip when user starts drawing
             map.on('draw:drawstart', function() {
-                if (!tooltipHidden) {
+                if (!tooltipHidden && drawTooltip) {
                     drawTooltip.classList.add('hidden');
                     tooltipHidden = true;
                 }
