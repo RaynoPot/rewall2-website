@@ -2045,106 +2045,121 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     }
 }
 
-/* Mobile adjustments — replace orbital wheel with clean 2-column card grid */
+/* Mobile adjustments — keep circular orbital layout, scaled to fit phone screens */
 @media (max-width: 768px) {
+    /* Compact circle: ~340px wide × 365px tall */
     .journey-circle-container {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        height: auto !important;
+        display: flex !important;
+        width: 340px;
+        height: 365px;
         max-width: 100%;
-        overflow: visible;
+        margin: 0 auto var(--spacing-lg);
         transform: none !important;
-        transform-origin: unset;
-        margin-bottom: var(--spacing-lg) !important;
-        align-items: start;
-        padding: 0 4px;
+        overflow: visible;
+        padding: 0;
     }
 
-    /* Hide dashed orbital ring on mobile */
+    /* Dashed ring — scaled to fit */
     .journey-circle-container::before {
-        display: none !important;
+        display: block !important;
+        width: 270px !important;
+        height: 270px !important;
+        border-width: 3px !important;
     }
 
-    /* Center info box spans both columns as a compact header banner */
+    /* Center info circle */
     .journey-center {
-        grid-column: 1 / -1;
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-        width: 100% !important;
-        height: auto !important;
-        min-height: 56px;
-        border-radius: 12px !important;
-        padding: 14px var(--spacing-md) !important;
-        flex-direction: column;
-        text-align: center;
+        width: 150px !important;
+        height: 150px !important;
+        padding: var(--spacing-sm) !important;
     }
 
     .journey-center h3 {
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin: 0 0 4px;
     }
 
     .journey-center p {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
     }
 
     .journey-center div[id="service-mode-display"] {
-        font-size: 0.65rem !important;
+        font-size: 0.58rem !important;
     }
 
-    /* Each stage is a normal card in the grid — remove absolute positioning */
+    /* Stage nodes — smaller but still absolute/orbital */
     .journey-stage {
-        position: relative !important;
-        width: 100% !important;
-        height: auto !important;
-        min-height: 120px;
-        padding: 12px 8px 10px;
-        background: var(--white);
-        border-radius: 12px;
-        border: 2px solid var(--border-gray);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+        position: absolute !important;
+        width: 80px !important;
+        height: 80px !important;
     }
 
-    /* Clear all absolute nth-child orbital positions */
-    .journey-stage:nth-child(2),
-    .journey-stage:nth-child(3),
-    .journey-stage:nth-child(4),
-    .journey-stage:nth-child(5),
-    .journey-stage:nth-child(6),
-    .journey-stage:nth-child(7) {
+    /* Recalculate orbital positions for ~340px container */
+    .journey-stage:nth-child(2) { /* Planning — Top */
+        top: 0 !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translateX(-50%) !important;
+    }
+    .journey-stage:nth-child(3) { /* Design — Top Right */
+        top: 65px !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+    }
+    .journey-stage:nth-child(4) { /* Estimate — Bottom Right */
+        bottom: 65px !important;
+        right: 12px !important;
         top: auto !important;
         left: auto !important;
+        transform: none !important;
+    }
+    .journey-stage:nth-child(5) { /* Consent — Bottom */
+        bottom: 0 !important;
+        left: 50% !important;
+        top: auto !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+    }
+    .journey-stage:nth-child(6) { /* Construction — Bottom Left */
+        bottom: 65px !important;
+        left: 12px !important;
+        top: auto !important;
+        right: auto !important;
+        transform: none !important;
+    }
+    .journey-stage:nth-child(7) { /* Sign-Off — Top Left */
+        top: 65px !important;
+        left: 12px !important;
         right: auto !important;
         bottom: auto !important;
         transform: none !important;
     }
 
     .journey-stage-icon {
-        width: 72px;
-        height: 72px;
-        margin: 0 auto 8px;
+        width: 68px;
+        height: 68px;
     }
 
     .journey-stage-icon img {
-        width: 54px;
-        height: 54px;
+        width: 52px;
+        height: 52px;
     }
 
     .journey-stage-label {
-        font-size: 0.82rem;
-        white-space: normal;
-        margin-top: 4px;
-        padding: 4px 8px;
+        font-size: 0.72rem;
+        padding: 3px 7px;
+        white-space: nowrap;
     }
 
     .journey-stage.selected .journey-stage-icon::after {
-        width: 24px;
-        height: 24px;
-        font-size: 14px;
-        top: -6px;
-        right: -6px;
+        width: 22px;
+        height: 22px;
+        font-size: 13px;
+        top: -5px;
+        right: -5px;
     }
 }
 
@@ -2850,23 +2865,61 @@ footer a:hover {
         max-width: 250px !important;
     }
 
-    /* Journey wheel — on tiny screens just tighten spacing; grid handles layout */
+    /* Journey wheel — tighter circle for very small phones (<480px) */
     .journey-circle-container {
-        gap: 8px;
+        width: 300px !important;
+        height: 320px !important;
+    }
+
+    .journey-circle-container::before {
+        width: 236px !important;
+        height: 236px !important;
     }
 
     .journey-center {
-        padding: 10px var(--spacing-sm) !important;
+        width: 128px !important;
+        height: 128px !important;
+        padding: 8px !important;
+    }
+
+    .journey-stage {
+        width: 68px !important;
+        height: 68px !important;
+    }
+
+    .journey-stage:nth-child(3),
+    .journey-stage:nth-child(4),
+    .journey-stage:nth-child(6),
+    .journey-stage:nth-child(7) {
+        right: 8px !important;
+    }
+    .journey-stage:nth-child(6),
+    .journey-stage:nth-child(7) {
+        right: auto !important;
+        left: 8px !important;
+    }
+    .journey-stage:nth-child(3),
+    .journey-stage:nth-child(7) {
+        top: 55px !important;
+    }
+    .journey-stage:nth-child(4),
+    .journey-stage:nth-child(6) {
+        bottom: 55px !important;
     }
 
     .journey-stage-icon {
-        width: 60px;
-        height: 60px;
+        width: 58px;
+        height: 58px;
     }
 
     .journey-stage-icon img {
         width: 44px;
         height: 44px;
+    }
+
+    .journey-stage-label {
+        font-size: 0.65rem;
+        padding: 2px 5px;
     }
 
     /* Quote page how-it-works steps */
