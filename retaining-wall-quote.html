@@ -2324,7 +2324,7 @@
                 let results = [];
                 
                 // Process AddressFinder results first (most specific NZ addresses)
-                if (addressFinderRes.status === 'fulfilled' && addressFinderRes.value) {
+                if (addressFinderRes.status === 'fulfilled' && addressFinderRes.value && addressFinderRes.value.ok) {
                     try {
                         const afData = await addressFinderRes.value.json();
                         if (afData.completions) {
