@@ -2071,20 +2071,28 @@ section.alt-bg .project-card div[style*="position: absolute"] img {
     .journey-center {
         width: 150px !important;
         height: 150px !important;
-        padding: var(--spacing-sm) !important;
+        padding: 10px !important;
+        overflow: hidden !important;
     }
 
     .journey-center h3 {
-        font-size: 0.9rem;
-        margin: 0 0 4px;
+        font-size: 0.75rem !important;
+        margin: 0 0 3px;
+        line-height: 1.2;
     }
 
     .journey-center p {
-        font-size: 0.65rem;
+        font-size: 0.6rem !important;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0;
     }
 
     .journey-center div[id="service-mode-display"] {
-        font-size: 0.58rem !important;
+        font-size: 0.55rem !important;
     }
 
     /* Stage nodes — smaller but still absolute/orbital */
@@ -2880,6 +2888,19 @@ footer a:hover {
         width: 128px !important;
         height: 128px !important;
         padding: 8px !important;
+        overflow: hidden !important;
+    }
+
+    .journey-center h3 {
+        font-size: 0.68rem !important;
+        margin: 0 0 2px;
+        line-height: 1.2;
+    }
+
+    .journey-center p {
+        font-size: 0.55rem !important;
+        line-height: 1.2;
+        -webkit-line-clamp: 4;
     }
 
     .journey-stage {
