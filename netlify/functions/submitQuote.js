@@ -107,12 +107,6 @@ exports.handler = async function (event) {
       return supabase.from(TABLE_USERS).insert(rowShape).select().single();
     }
 
-    // Helper: attempt update (for re-submissions with same visitId)
-    async function attemptUpdate(rowShape) {
-      const { id: _id, ...fields } = rowShape;
-      return supabase.from(TABLE_USERS).update(fields).eq('id', rowShape.id).select().single();
-    }
-
     // Row shapes — progressively strip columns that may not exist in the DB
     // Shape 0: full row (everything — all 14 columns)
     // Shape 1: drop wall_data + services (confirmed missing per PGRST204)
@@ -140,10 +134,22 @@ exports.handler = async function (event) {
 
       console.warn(`[submitQuote] Insert shape ${i} failed — code: ${error.code}, msg: ${error.message}`);
 
-      // Duplicate visitId: fall back to UPDATE using the same shape, then stop retrying
+      // Duplicate visitId: the same visitor is submitting again — create a fresh
+      // visit record so this quote gets its own unique row rather than overwriting.
       if (error.code === '23505') {
-        console.log('[submitQuote] Duplicate visitId — updating existing record:', row.id);
-        ({ data, error } = await attemptUpdate(rowShapes[i]));
+        console.log('[submitQuote] Duplicate visitId — creating new visit record to preserve both quotes');
+        const { data: newVisit, error: visitErr } = await supabase
+          .from(TABLE_VISITS)
+          .insert({ pages_visited: '/retaining-wall-quote', ip_address: ip_address })
+          .select('id')
+          .single();
+        if (!visitErr && newVisit) {
+          console.log('[submitQuote] New visit created for re-submission — new id:', newVisit.id);
+          rowShapes.forEach(shape => { shape.id = newVisit.id; });
+          ({ data, error } = await attemptInsert(rowShapes[i]));
+        } else {
+          console.error('[submitQuote] Could not create new visit on duplicate:', visitErr?.message);
+        }
         break;
       }
 
