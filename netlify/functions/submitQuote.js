@@ -114,14 +114,14 @@ exports.handler = async function (event) {
     }
 
     // Row shapes — progressively strip columns that may not exist in the DB
-    // Shape 0: full row (everything)
-    // Shape 1: drop wall_data (large JSON — most likely missing column)
-    // Shape 2: drop wall_data + services
-    // Shape 3: bare minimum — only columns visibly confirmed in admin portal
+    // Shape 0: full row (everything — all 14 columns)
+    // Shape 1: drop wall_data + services (confirmed missing per PGRST204)
+    // Shape 2: also drop notes + attachments
+    // Shape 3: also drop ip_address — bare minimum 9 columns
     const rowShapes = [
       row,
-      { id: row.id, address: row.address, name: row.name, email: row.email, phone: row.phone, ip_address: row.ip_address, company_project: row.company_project, notes: row.notes, have_geos: row.have_geos, want_geos: row.want_geos, attachments: row.attachments, wall_type: row.wall_type, services: row.services },
       { id: row.id, address: row.address, name: row.name, email: row.email, phone: row.phone, ip_address: row.ip_address, company_project: row.company_project, notes: row.notes, have_geos: row.have_geos, want_geos: row.want_geos, attachments: row.attachments, wall_type: row.wall_type },
+      { id: row.id, address: row.address, name: row.name, email: row.email, phone: row.phone, ip_address: row.ip_address, company_project: row.company_project, have_geos: row.have_geos, want_geos: row.want_geos, wall_type: row.wall_type },
       { id: row.id, address: row.address, name: row.name, email: row.email, phone: row.phone, company_project: row.company_project, have_geos: row.have_geos, want_geos: row.want_geos, wall_type: row.wall_type },
     ];
 
@@ -163,9 +163,9 @@ exports.handler = async function (event) {
         break;
       }
 
-      // Missing column (42703): strip more columns next iteration
-      if (error.code === '42703') {
-        console.warn(`[submitQuote] Column missing — retrying with shape ${i + 1}`);
+      // Missing column — Postgres returns 42703, PostgREST returns PGRST204
+      if (error.code === '42703' || error.code === 'PGRST204') {
+        console.warn(`[submitQuote] Column missing (${error.code}) — retrying with shape ${i + 1}: ${error.message}`);
         continue;
       }
 
